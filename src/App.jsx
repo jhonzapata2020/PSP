@@ -20,6 +20,13 @@ import AyudaPage from './pages/AyudaPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 
+// Panel de administración (Fase 3 - Gestor de Identidades)
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminLayout, { AdminIndexRedirect } from './pages/admin/AdminLayout';
+import AdminUsuariosPage from './pages/admin/AdminUsuariosPage';
+import AdminRolesPage from './pages/admin/AdminRolesPage';
+import AdminMatrizPage from './pages/admin/AdminMatrizPage';
+
 // Legal & Policy Pages (Etapa 1)
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
 import PoliticaPrivacidadPage from './pages/PoliticaPrivacidadPage';
@@ -48,6 +55,42 @@ function App() {
                   <Route path="/registro" element={<AuthPage />} />
                   <Route path="/mi-cuenta" element={<ProfilePage />} />
                   <Route path="/mi-perfil-publico" element={<ProfilePage />} />
+
+                  {/* Fase 3: Gestor de Identidades (RBAC) */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute permissions={['users.read', 'roles.read']}>
+                        <AdminLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<AdminIndexRedirect />} />
+                    <Route
+                      path="usuarios"
+                      element={
+                        <ProtectedRoute permission="users.read">
+                          <AdminUsuariosPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="roles"
+                      element={
+                        <ProtectedRoute permission="roles.read">
+                          <AdminRolesPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="matriz"
+                      element={
+                        <ProtectedRoute permission="roles.read">
+                          <AdminMatrizPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
 
                   {/* Etapa 1 Legal Routes */}
                   <Route path="/terminos-y-condiciones" element={<TerminosCondicionesPage />} />

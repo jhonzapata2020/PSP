@@ -15,7 +15,8 @@ import {
   ChevronDown,
   LogOut,
   Sparkles,
-  UserPlus
+  UserPlus,
+  ShieldCheck
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -24,7 +25,7 @@ import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const { totalItemsCount, setIsCartOpen } = useCart();
   const location = useLocation();
 
@@ -188,6 +189,16 @@ const Header = () => {
                     </div>
 
                     <div className="py-1">
+                      {(hasPermission('users.read') || hasPermission('roles.read')) && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-psp-teal dark:text-teal-300 hover:bg-psp-cyan/10"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          Panel de Administración
+                        </Link>
+                      )}
                       <Link
                         to="/mi-cuenta"
                         onClick={() => setUserDropdownOpen(false)}

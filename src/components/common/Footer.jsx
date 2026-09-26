@@ -65,11 +65,11 @@ const Footer = () => {
               href="https://www.corplexsolutions.co/"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold hover:text-psp-cyan transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-extrabold hover:border-psp-cyan transition-all border border-slate-200 dark:border-slate-800 shadow-sm group"
               title="Visitar sitio oficial del desarrollador"
             >
-              <span>Desarrollado por</span>
-              <span className="text-psp-cyan">CORPLEX SOLUTIONS S.A.S.</span>
+              <span className="text-[11px] text-slate-500 font-medium">Desarrollado por</span>
+              <img src="/aliados/corplex.png" alt="Corplex Solutions S.A.S." className="h-4 sm:h-5 object-contain group-hover:scale-105 transition-transform" />
             </a>
           </div>
 

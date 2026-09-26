@@ -77,7 +77,7 @@ const EmpresasAliadasPage = () => {
 
       {/* 1. SECCIÓN ENTIDADES Y ALIADOS AFILIADOS (34 LOGO MATRIX) */}
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="border-b border-slate-200 dark:border-slate-800 pb-4 space-y-4">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-psp-cyan uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4" />
@@ -91,15 +91,18 @@ const EmpresasAliadasPage = () => {
             </p>
           </div>
 
-          {/* Category Filter Pills for Affiliates */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          {/* Full-width Category Filter Pills without horizontal scrollbar */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 mr-1 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5 text-psp-cyan" /> Filtrar por categoría:
+            </span>
             {affiliateCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedAffiliateCat(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   selectedAffiliateCat === cat
-                    ? 'bg-psp-cyan text-slate-950 shadow-md scale-105'
+                    ? 'bg-psp-cyan text-slate-950 shadow-md scale-105 ring-2 ring-psp-cyan/30'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
@@ -160,7 +163,7 @@ const EmpresasAliadasPage = () => {
 
       {/* 2. SECCIÓN SOCIOS Y EMPRESAS ESTRATÉGICAS */}
       <div className="space-y-6 pt-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="border-b border-slate-200 dark:border-slate-800 pb-4 space-y-4">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-wider mb-1">
               <Award className="w-4 h-4" />
@@ -174,14 +177,18 @@ const EmpresasAliadasPage = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          {/* Full-width Category Filter Pills without horizontal scrollbar */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 mr-1 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5 text-emerald-500" /> Filtrar por sector:
+            </span>
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   selectedCategory === cat
-                    ? 'bg-psp-cyan text-slate-950 shadow-md scale-105'
+                    ? 'bg-psp-cyan text-slate-950 shadow-md scale-105 ring-2 ring-psp-cyan/30'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >

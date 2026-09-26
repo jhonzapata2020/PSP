@@ -148,7 +148,21 @@ const EmpresasAliadasPage = () => {
                 <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold truncate max-w-[80px]">
                   {entidad.categoria.split(' ')[0]}
                 </span>
-                <ChevronRight className="w-3.5 h-3.5 text-psp-cyan opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex items-center gap-1">
+                  {entidad.sitioWeb && (
+                    <a
+                      href={entidad.sitioWeb}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded-md text-psp-cyan hover:bg-psp-cyan/15 transition-colors"
+                      title="Visitar sitio web oficial"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  <ChevronRight className="w-3.5 h-3.5 text-psp-cyan opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
             </div>
           ))}
@@ -299,13 +313,23 @@ const EmpresasAliadasPage = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
               <button
                 onClick={() => setSelectedAffiliateModal(null)}
-                className="px-5 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold shadow"
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold"
               >
                 Cerrar
               </button>
+              {selectedAffiliateModal.sitioWeb && (
+                <a
+                  href={selectedAffiliateModal.sitioWeb}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1.5 shadow hover:scale-105 transition-transform"
+                >
+                  Visitar Sitio Web <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </div>
         </div>

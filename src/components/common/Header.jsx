@@ -43,7 +43,7 @@ const Header = () => {
     <div className="sticky top-0 z-50 w-full">
       
       {/* TopBar / Micro-nav */}
-      <div className="border-b border-slate-200 dark:border-[#203330]/70 bg-white/90 dark:bg-[#0e1514]/90 backdrop-blur-md text-xs py-2 px-4 sm:px-6 lg:px-8 text-slate-600 dark:text-slate-400 w-full overflow-hidden">
+      <div className="border-b border-slate-200 dark:border-[#203330]/70 bg-white/90 dark:bg-[#0e1514]/90 backdrop-blur-md text-xs py-2 px-4 sm:px-6 lg:px-8 text-slate-600 dark:text-slate-400 w-full">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2 w-full">
           <div className="flex items-center gap-2 min-w-0 truncate">
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-brand-emerald dark:text-teal-300 dark:border dark:border-teal-500/30 shrink-0">
@@ -55,8 +55,8 @@ const Header = () => {
             </span>
           </div>
 
-          {/* Municipality quick tags */}
-          <div className="hidden xl:flex items-center space-x-2 text-slate-500 dark:text-slate-400 text-[11px] shrink-0">
+          {/* Municipality quick tags - Only enabled on 2xl screens (>=1536px) */}
+          <div className="hidden 2xl:flex items-center space-x-2 text-slate-500 dark:text-slate-400 text-[11px] shrink-0">
             <span className="font-medium text-slate-400 dark:text-slate-500">Municipios sede:</span>
             <Link to="/comercio" className="cursor-pointer hover:text-brand-emerald dark:hover:text-teal-300 transition">Apartadó</Link>
             <span className="text-slate-300 dark:text-slate-700">•</span>
@@ -90,8 +90,8 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links - Shown on XL screens (>=1280px) */}
-          <div className="hidden xl:flex items-center space-x-1 lg:space-x-2 text-xs lg:text-sm font-extrabold whitespace-nowrap shrink-0">
+          {/* Desktop Navigation Links - Only enabled on 2xl screens (>=1536px) where full space is available */}
+          <div className="hidden 2xl:flex items-center space-x-1 lg:space-x-2 text-xs lg:text-sm font-extrabold whitespace-nowrap shrink-0">
             {navLinks.map((link) => {
               const active = isActive(link.path);
               return (
@@ -228,10 +228,10 @@ const Header = () => {
               </Link>
             )}
 
-            {/* Mobile / Tablet Hamburguer Menu Button - Shown on screens < xl (1280px) */}
+            {/* Hamburguer Menu Button - Active across full range up to 2xl (< 1536px) */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182422] rounded-xl border border-slate-200 dark:border-[#203330] transition-colors shrink-0"
+              className="2xl:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182422] rounded-xl border border-slate-200 dark:border-[#203330] transition-colors shrink-0"
               title="Abrir menú de navegación"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -242,9 +242,9 @@ const Header = () => {
         </nav>
       </header>
 
-      {/* Mobile & Tablet Nav Drawer with Quick Controls */}
+      {/* Mobile & Tablet Nav Drawer - Active across full range up to 2xl (< 1536px) */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-white dark:bg-[#0e1514]/98 border-b border-slate-200 dark:border-[#203330] px-4 pt-4 pb-6 animate-in slide-in-from-top-3 shadow-2xl relative z-40">
+        <div className="2xl:hidden bg-white dark:bg-[#0e1514]/98 border-b border-slate-200 dark:border-[#203330] px-4 pt-4 pb-6 animate-in slide-in-from-top-3 shadow-2xl relative z-40">
           
           {/* Quick Utility Control Panel inside Mobile Drawer */}
           <div className="mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] flex items-center justify-between gap-3">

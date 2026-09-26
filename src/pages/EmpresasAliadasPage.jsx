@@ -117,9 +117,19 @@ const EmpresasAliadasPage = () => {
               onClick={() => setSelectedAffiliateModal(entidad)}
               className="cursor-pointer group relative bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-between text-center shadow-psp-soft hover:shadow-xl hover:border-psp-cyan/50 hover:-translate-y-1 transition-all duration-300"
             >
-              {/* Badge Icon / Logo Replacement */}
-              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${entidad.color} text-white font-extrabold text-sm sm:text-base flex items-center justify-center shadow-md mb-3 group-hover:scale-110 transition-transform`}>
-                {entidad.sigla}
+              {/* Real Image Logo Display */}
+              <div className="w-full h-16 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 flex items-center justify-center shadow-sm mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+                {entidad.logo ? (
+                  <img
+                    src={entidad.logo}
+                    alt={entidad.nombre}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <div className={`w-full h-full rounded-lg bg-gradient-to-br ${entidad.color} text-white font-extrabold text-xs flex items-center justify-center`}>
+                    {entidad.sigla}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1 w-full">
@@ -247,8 +257,18 @@ const EmpresasAliadasPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-psp-dark-card max-w-md w-full rounded-3xl p-6 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in duration-200">
             <div className="flex items-center gap-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${selectedAffiliateModal.color} text-white font-extrabold text-lg flex items-center justify-center shadow-lg shrink-0`}>
-                {selectedAffiliateModal.sigla}
+              <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 flex items-center justify-center shadow-md shrink-0 overflow-hidden">
+                {selectedAffiliateModal.logo ? (
+                  <img
+                    src={selectedAffiliateModal.logo}
+                    alt={selectedAffiliateModal.nombre}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <div className={`w-full h-full rounded-xl bg-gradient-to-br ${selectedAffiliateModal.color} text-white font-extrabold text-base flex items-center justify-center`}>
+                    {selectedAffiliateModal.sigla}
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">{selectedAffiliateModal.nombre}</h3>

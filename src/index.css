@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply font-sans antialiased max-w-full overflow-x-hidden;
+    width: 100%;
+  }
+
+  #root {
+    @apply max-w-full overflow-x-hidden;
+    width: 100%;
+  }
+}
+
+.soft-blur-glow {
+  filter: blur(80px);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
+}
+
+/* Glassmorphism effects */
+.glass-header {
+  @apply backdrop-blur-lg bg-white/95 dark:bg-[#0e1514]/95 border-b border-slate-200/70 dark:border-[#203330] shadow-sm dark:shadow-lg dark:shadow-black/30;
+}

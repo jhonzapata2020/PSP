@@ -1,0 +1,274 @@
+export const EMPRESAS_ALIADAS = [
+  {
+    id: '1',
+    nombre: 'Puerto Antioquia S.A.',
+    sector: 'Infraestructura & Logística',
+    categoria: 'Privado',
+    ods: [8, 9, 11],
+    ubicación: 'Bahía Colombia, Turbo, Urabá',
+    descripcion: 'Terminal multipropósito que transforma el comercio exterior de Colombia y genera oportunidades de desarrollo socioeconómico en Urabá.',
+    proyectos: 'Creación de 1,800+ empleos directos y programa de capacitación para comunidades locales.',
+    logo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://puertoantioquia.my',
+    destacada: true
+  },
+  {
+    id: '2',
+    nombre: 'Augura - Asociación de Bananeros de Colombia',
+    sector: 'Agroindustria & Sostenibilidad',
+    categoria: 'Gremial',
+    ods: [1, 8, 13, 15],
+    ubicación: 'Apartadó, Urabá',
+    descripcion: 'Agremia a productores e investiga mejores prácticas medioambientales para el cultivo sostenible del banano.',
+    proyectos: 'Biofábricas comunitarias y conservación de cuencas hidrográficas en Urabá.',
+    logo: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://augura.com.co',
+    destacada: true
+  },
+  {
+    id: '3',
+    nombre: 'Fundauniban',
+    sector: 'Desarrollo Social & Educación',
+    categoria: 'Fundación',
+    ods: [4, 5, 10, 17],
+    ubicación: 'Apartadó, Carepa, Chigorodó, Turbo',
+    descripcion: 'Fundación social del grupo Uniban orientada a mejorar la calidad de vida de las comunidades bananeras y plataneras.',
+    proyectos: 'Escuelas de emprendimiento, vivienda digna y fortalecimiento a la primera infancia.',
+    logo: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://fundauniban.org.co',
+    destacada: true
+  },
+  {
+    id: '4',
+    nombre: 'Comfenalco Antioquia (Regional Urabá)',
+    sector: 'Servicios Sociales & Empleo',
+    categoria: 'Caja de Compensación',
+    ods: [3, 4, 8],
+    ubicación: 'Apartadó, Urabá',
+    descripcion: 'Brinda cobertura de subsidios, empleo, cultura y recreación a trabajadores y sus familias en la subregión de Urabá.',
+    proyectos: 'Agencia de Empleo Urabá y programa de becas en educación superior.',
+    logo: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://comfenalcoantioquia.com.co',
+    destacada: false
+  },
+  {
+    id: '5',
+    nombre: 'SENA Regional Urabá - Complejo Tecnológico',
+    sector: 'Educación & Emprendimiento',
+    categoria: 'Público',
+    ods: [4, 8, 9],
+    ubicación: 'Apartadó, Urabá',
+    descripcion: 'Formación técnica y tecnológica gratuita orientada a las necesidades productivas y sociales de la región.',
+    proyectos: 'Fondo Emprender Urabá e incubación de agro-startups tecnológicas.',
+    logo: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://sena.edu.co',
+    destacada: true
+  },
+  {
+    id: '6',
+    nombre: 'EPM - Empresas Públicas de Medellín (Urabá)',
+    sector: 'Servicios Públicos & Energía Sostenible',
+    categoria: 'Público',
+    ods: [6, 7, 11, 13],
+    ubicación: 'Región Urabá',
+    descripcion: 'Líder en provisión de agua potable, saneamiento básico y energía renovable para los municipios de Urabá.',
+    proyectos: 'Electrificación rural mediante paneles solares y adecuación de alcantarillado costero.',
+    logo: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=300&auto=format&fit=crop&q=80',
+    sitioWeb: 'https://epm.com.co',
+    destacada: false
+  }
+];
+
+export const PRODUCTOS = [
+  {
+    id: 'p1',
+    nombre: 'Snacks de Plátano Mofongo Criollo (Pack x6)',
+    categoria: 'Alimentos & Agro',
+    precio: 28000,
+    precioAnterior: 32000,
+    proveedor: 'Agroemprendedores de Turbo',
+    calificacion: 4.9,
+    imagen: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Chips artesanalmente elaborados con plátano de Urabá 100% natural, sazonados con sal marina y ajo de origen sostenible.',
+    stock: 45
+  },
+  {
+    id: 'p2',
+    nombre: 'Miel Orgánica de Bosque Húmedo (500g)',
+    categoria: 'Alimentos & Agro',
+    precio: 35000,
+    precioAnterior: 38000,
+    proveedor: 'Asociación de Apicultores de Mutatá',
+    calificacion: 5.0,
+    imagen: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Miel multifloral recolectada en reservas naturales de Urabá, sin aditivos ni azúcares añadidos.',
+    stock: 20
+  },
+  {
+    id: 'p3',
+    nombre: 'Bolso Artesanal Tejido en Caña Flecha y Palma',
+    categoria: 'Artesanías & Moda',
+    precio: 120000,
+    precioAnterior: 140000,
+    proveedor: 'Colectivo Artesanas de Necoclí',
+    calificacion: 4.8,
+    imagen: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Diseño exclusivo elaborado a mano por mujeres artesanas de la costa caribeña de Urabá. Resiste uso diario.',
+    stock: 12
+  },
+  {
+    id: 'p4',
+    nombre: 'Café Especial Serranía del Abibe (Pack 450g)',
+    categoria: 'Alimentos & Agro',
+    precio: 42000,
+    precioAnterior: 45000,
+    proveedor: 'Café de Origen Chigorodó',
+    calificacion: 4.9,
+    imagen: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Granos arábicos cultivados a más de 1.400 msnm con notas a cacao, frutas silvestres y panela.',
+    stock: 30
+  }
+];
+
+export const SERVICIOS = [
+  {
+    id: 's1',
+    nombre: 'Consultoría en Certificación ODS y Sostenibilidad empresarial',
+    proveedor: 'Red Sostenible Urabá',
+    categoria: 'Asesoría Empresarial',
+    precioEstimado: 'Desde $1,500,000 COP',
+    modalidad: 'Híbrida',
+    imagen: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Acompañamiento a PYMES y grandes empresas en la medición de huella de carbono, reporte ODS e impacto social.'
+  },
+  {
+    id: 's2',
+    nombre: 'Capacitación en Habilidades Digitales para Emprendedores',
+    proveedor: 'Hub de Innovación Apartadó',
+    categoria: 'Educación & TIC',
+    precioEstimado: 'Gratuito (Subvencionado)',
+    modalidad: 'Virtual / Presencial',
+    imagen: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Talleres prácticos de marketing digital, comercio electrónico y finanzas para microempresas de Urabá.'
+  },
+  {
+    id: 's3',
+    nombre: 'Transporte de Carga Refrigerada & Logística Agroindustrial',
+    proveedor: 'Logística de los Mares',
+    categoria: 'Transporte & Carga',
+    precioEstimado: 'Cotización por Tonelada',
+    modalidad: 'Presencial',
+    imagen: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500&auto=format&fit=crop&q=80',
+    descripcion: 'Servicio con flota monitoreada por GPS y control térmico estricto para frutas tropicales y productos perecederos.'
+  }
+];
+
+export const RESTAURANTES = [
+  {
+    id: 'r1',
+    nombre: 'Restaurante Mar y Tierra - Sabor del Golfo',
+    ubicación: 'Malecón Turístico, Turbo',
+    especialidad: 'Cazuela de mariscos, Pescado frito con arroz de coco',
+    rangoPrecio: '$$',
+    calificacion: 4.9,
+    horario: '11:00 AM - 10:00 PM',
+    imagen: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'r2',
+    nombre: 'Donde Checho - Asados & Tradición',
+    ubicación: 'Zona Rosa, Apartadó',
+    especialidad: 'Cortes finos, Sancocho de gallina criolla los domingos',
+    rangoPrecio: '$$$',
+    calificacion: 4.7,
+    horario: '12:00 PM - 11:00 PM',
+    imagen: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80'
+  }
+];
+
+export const TRANSPORTE_RUTAS = [
+  {
+    id: 't1',
+    origen: 'Apartadó',
+    destino: 'Turbo / Puerto Antioquia',
+    tiempoEstimado: '45 minutos',
+    frecuencia: 'Cada 15 min',
+    precio: 9000,
+    empresa: 'Cootransuroeste'
+  },
+  {
+    id: 't2',
+    origen: 'Apartadó',
+    destino: 'Necoclí (Playas)',
+    tiempoEstimado: '1 hora 15 min',
+    frecuencia: 'Cada 30 min',
+    precio: 18000,
+    empresa: 'Sotraurabá'
+  },
+  {
+    id: 't3',
+    origen: 'Medellín',
+    destino: 'Apartadó (Eje Bananero)',
+    tiempoEstimado: '6 horas',
+    frecuencia: 'Salidas diarias',
+    precio: 85000,
+    empresa: 'Expreso Bolivariano / Sotramur'
+  }
+];
+
+export const TURISMO_DESTINOS = [
+  {
+    id: 'tu1',
+    nombre: 'Playas de Necoclí y Ciénaga de la Marimonda',
+    categoria: 'Ecoturismo & Sol',
+    ubicacion: 'Necoclí, Golfo de Urabá',
+    descripcion: 'Disfruta del mar cálido, volcanes de lodo curativo y avistamiento de aves acuáticas en reservorio ecológico.',
+    precio: 'Tours desde $85,000 COP',
+    imagen: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'tu2',
+    nombre: 'Reserva Natural Serranía del Abibe',
+    categoria: 'Senderismo & Biodiversidad',
+    ubicacion: 'Carepa - Chigorodó',
+    descripcion: 'Caminatas guiadas por selva húmeda tropical con cascadas naturales y avistamiento de fauna autóctona.',
+    precio: 'Tours desde $60,000 COP',
+    imagen: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80'
+  }
+];
+
+export const FORO_POSTS = [
+  {
+    id: 'post-1',
+    autor: 'Ing. Carmen Rosa Valencia',
+    cargo: 'Coordinadora de Proyectos Ambientales - Augura',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    titulo: '¿Cómo involucrar más a las PYMEs locales en la cadena de valor de Puerto Antioquia?',
+    contenido: 'Con la próxima apertura de operaciones de Puerto Antioquia en Turbo, es indispensable fortalecer a los proveedores locales en normas ISO, transporte limpio y facturación electrónica. ¿Qué iniciativas podemos articular desde la Plataforma Social?',
+    categoria: 'Desarrollo Regional',
+    fecha: 'Hace 2 horas',
+    likes: 34,
+    comentariosCount: 12,
+    etiquetas: ['PuertoAntioquia', 'Logistica', 'UrabáEmprende']
+  },
+  {
+    id: 'post-2',
+    autor: 'Julián Esteban Murillo',
+    cargo: 'Líder Juvenil & Emprendedor Tecnológico',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    titulo: 'Convocatoria abierta: Hackathon de Soluciones Agro-sostenibles para Urabá',
+    contenido: 'Organizamos junto al SENA y Fundauniban un encuentro de desarrolladores y creativos para diseñar soluciones de monitoreo hídrico y comercialización sin intermediarios. ¡Inscripciones abiertas!',
+    categoria: 'Innovación & TIC',
+    fecha: 'Hace 5 horas',
+    likes: 58,
+    comentariosCount: 19,
+    etiquetas: ['Hackathon', 'SENA', 'Sostenibilidad']
+  }
+];
+
+export const METRICAS_IMPACTO = [
+  { label: 'Organizaciones Aliadas', valor: '120+', icono: 'Building2' },
+  { label: 'Empleos Impulsados', valor: '4,500+', icono: 'Users' },
+  { label: 'Municipios en Urabá', valor: '11 Municipios', icono: 'MapPin' },
+  { label: 'Proyectos ODS Activos', valor: '38 Proyectos', icono: 'Target' },
+];

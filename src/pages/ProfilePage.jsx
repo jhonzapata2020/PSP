@@ -3,12 +3,14 @@ import { User, Camera, ShieldCheck, MapPin, Mail, Phone, Edit3, Save, ZoomIn, Ch
 import { useAuth } from '../context/AuthContext';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, loading, error, setError } = useAuth();
   
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user?.name || 'Jhon Zapata');
-  const [municipio, setMunicipio] = useState(user?.municipio || 'Apartadó, Urabá');
-  const [role, setRole] = useState(user?.role || 'Emprendedor Social');
+  const [name, setName] = useState(user?.name || '');
+  const [municipio, setMunicipio] = useState(user?.municipio || '');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [savedOk, setSavedOk] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoZoom, setPhotoZoom] = useState(100);
 
@@ -23,15 +25,31 @@ const ProfilePage = () => {
     );
   }
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateProfile({ name, municipio, role });
-    setEditing(false);
+    setSaving(true);
+    setSaveError('');
+    setSavedOk(false);
+    try {
+      // PUT /api/auth/profile → el rol NUNCA se edita desde aquí (sólo el admin).
+      await updateProfile({ name, municipio });
+      setSavedOk(true);
+      setEditing(false);
+    } catch (err) {
+      setSaveError(err?.message || 'No se pudieron guardar los cambios.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handlePhotoSelect = (newAvatar) => {
-    updateProfile({ avatar: newAvatar });
-    setShowPhotoModal(false);
+  const handlePhotoSelect = async (newAvatar) => {
+    setSaveError('');
+    try {
+      await updateProfile({ avatar: newAvatar });
+      setShowPhotoModal(false);
+    } catch (err) {
+      setSaveError(err?.message || 'No se pudo actualizar la foto.');
+    }
   };
 
   const presetAvatars = [
@@ -67,9 +85,14 @@ const ProfilePage = () => {
           <div className="space-y-2 text-center sm:text-left flex-1">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold">{user.name}</h1>
-              <span className="px-3 py-1 rounded-full bg-psp-cyan/20 text-psp-cyan text-xs font-bold border border-psp-cyan/30">
-                {user.role}
-              </span>
+              {(user.roleDisplayNames?.length ? user.roleDisplayNames : [user.role]).map((rol) => (
+                <span
+                  key={rol}
+                  className="px-3 py-1 rounded-full bg-psp-cyan/20 text-psp-cyan text-xs font-bold border border-psp-cyan/30"
+                >
+                  {rol}
+                </span>
+              ))}
             </div>
             <p className="text-xs text-slate-300 flex items-center justify-center sm:justify-start gap-1">
               <MapPin className="w-3.5 h-3.5 text-psp-cyan" /> {user.municipio}
@@ -90,8 +113,19 @@ const ProfilePage = () => {
       {/* Edit Form or Account Info */}
       {editing ? (
         <form onSubmit={handleSave} className="p-8 rounded-3xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Información Personal</h3>
-          
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Información Personal</h3>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Tu rol lo gestiona el administrador
+            </span>
+          </div>
+
+          {saveError && (
+            <p className="text-[11px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
+              {saveError}
+            </p>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre Completo / Razón Social</label>
@@ -123,36 +157,57 @@ const ProfilePage = () => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1.5"
+              disabled={saving}
+              className="px-5 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
             >
-              <Save className="w-4 h-4" /> Guardar Cambios
+              <Save className="w-4 h-4" /> {saving ? 'Guardando...' : 'Guardar Cambios'}
             </button>
           </div>
         </form>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Detalles de la Cuenta</h3>
-            <div className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
-              <p><strong>Tipo de Persona:</strong> {user.personType === 'juridica' ? 'Persona Jurídica (Empresa)' : 'Persona Natural'}</p>
-              {user.gender && <p><strong>Género:</strong> {user.gender === 'femenino' ? 'Femenino' : user.gender === 'masculino' ? 'Masculino' : 'Otro'}</p>}
-              <p><strong>Documento / NIT:</strong> {user.documentType} - {user.documentNumber}</p>
-              <p><strong>Estado del Perfil:</strong> <span className="text-emerald-400 font-bold">✓ 100% Completado</span></p>
+        <>
+          {savedOk && (
+            <p className="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
+              ✓ Perfil actualizado correctamente.
+            </p>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Detalles de la Cuenta</h3>
+              <div className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <p><strong>Tipo de Persona:</strong> {user.personType === 'juridica' ? 'Persona Jurídica (Empresa)' : 'Persona Natural'}</p>
+                {user.gender && <p><strong>Género:</strong> {user.gender === 'femenino' ? 'Femenino' : user.gender === 'masculino' ? 'Masculino' : 'Otro'}</p>}
+                <p><strong>Documento / NIT:</strong> {user.documentType} - {user.documentNumber}</p>
+                <p><strong>Teléfono:</strong> {user.phone || '—'}</p>
+                <p>
+                  <strong>Estado del Perfil:</strong>{' '}
+                  {user.completedProfile >= 100 ? (
+                    <span className="text-emerald-400 font-bold">✓ 100% Completado</span>
+                  ) : (
+                    <span className="text-amber-400 font-bold">{user.completedProfile}% Completado</span>
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accesos Rápidos</h3>
-            <div className="space-y-2 text-xs">
-              <a href="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
-                🛍 Mis Compras & Listas Guardadas
-              </a>
-              <a href="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
-                💬 Mis Temas Publicados en el Foro
-              </a>
+            <div className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accesos Rápidos</h3>
+              <div className="space-y-2 text-xs">
+                <a href="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
+                  🛍 Mis Compras & Listas Guardadas
+                </a>
+                <a href="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
+                  💬 Mis Temas Publicados en el Foro
+                </a>
+                {user.permissions?.includes('roles.manage') && (
+                  <a href="/admin" className="block p-3 rounded-xl bg-psp-cyan/10 border border-psp-cyan/30 hover:bg-psp-cyan/20 font-bold text-psp-cyan">
+                    🛡 Panel de Administración (Gestor de Identidades)
+                  </a>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Profile Photo Crop / Selector Modal */}

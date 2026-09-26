@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const AuthPage = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [personType, setPersonType] = useState('natural'); // 'natural' or 'juridica'
-  const { login } = useAuth();
+  const { login, register, loading, error, setError } = useAuth();
   const navigate = useNavigate();
 
   // Form Fields
@@ -22,8 +22,9 @@ const AuthPage = () => {
   const [habeasDataConsent, setHabeasDataConsent] = useState(false);
   const [legalError, setLegalError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError?.(null);
 
     if (isRegister && !habeasDataConsent) {
       setLegalError('Debes aceptar el tratamiento de datos personales (Ley 1581 de 2012) para registrarte.');
@@ -31,34 +32,44 @@ const AuthPage = () => {
     }
     setLegalError('');
 
-    // Assign default avatar based on entity type & gender
-    let defaultAvatar = '';
-    if (personType === 'juridica') {
-      // Company / Corporate default logo avatar
-      defaultAvatar = 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&auto=format&fit=crop&q=80';
-    } else if (gender === 'femenino') {
-      // Female default profile avatar
-      defaultAvatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80';
-    } else if (gender === 'masculino') {
-      // Male default profile avatar
-      defaultAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80';
-    } else {
-      // Neutral default profile avatar
-      defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80';
-    }
+    try {
+      if (isRegister) {
+        // Asigna avatar por defecto según tipo de persona y género
+        let defaultAvatar = '';
+        if (personType === 'juridica') {
+          defaultAvatar = 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&auto=format&fit=crop&q=80';
+        } else if (gender === 'femenino') {
+          defaultAvatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80';
+        } else if (gender === 'masculino') {
+          defaultAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80';
+        } else {
+          defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80';
+        }
 
-    login({
-      name: name || (personType === 'juridica' ? 'Agroservicios de Urabá S.A.S.' : 'Jhon Zapata'),
-      email: email || 'usuario@plataformasocial.co',
-      avatar: defaultAvatar,
-      role: personType === 'juridica' ? 'Empresa Aliada' : 'Emprendedor Social',
-      personType,
-      gender: personType === 'natural' ? gender : null,
-      documentType: docType,
-      documentNumber: personType === 'juridica' ? nit : docNum,
-    });
-    navigate('/mi-cuenta');
+        // POST /api/auth/register → el backend asigna el rol por defecto
+        // (emprendedor_social | empresa_aliada) según personType.
+        await register({
+          email,
+          password,
+          name,
+          personType,
+          documentType: personType === 'juridica' ? 'NIT' : docType,
+          documentNumber: personType === 'juridica' ? nit : docNum,
+          gender: personType === 'natural' ? gender : null,
+          avatar: defaultAvatar,
+          habeasDataConsent: true,
+        });
+      } else {
+        // POST /api/auth/login → devuelve JWT + roles + permisos
+        await login(email, password);
+      }
+      navigate('/mi-cuenta');
+    } catch {
+      // El mensaje ya quedó en AuthContext.error y se pinta más abajo.
+    }
   };
+
+  const showError = legalError || error;
 
   return (
     <div className="min-h-[calc(100vh-5rem)] py-8 sm:py-12 lg:py-16 px-4 flex items-center justify-center">
@@ -265,12 +276,26 @@ const AuthPage = () => {
             </div>
           )}
 
+          {/* Error del backend (credenciales inválidas, correo duplicado, cuenta bloqueada...) */}
+          {!legalError && error && (
+            <p className="text-[11px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-psp-cyan to-psp-teal text-slate-950 font-extrabold text-sm shadow-lg shadow-psp-cyan/20 hover:opacity-95 transition-opacity flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-psp-cyan to-psp-teal text-slate-950 font-extrabold text-sm shadow-lg shadow-psp-cyan/20 hover:opacity-95 transition-opacity flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
           >
-            <span>{isRegister ? 'Completar Registro' : 'Iniciar Sesión'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>
+              {loading
+                ? 'Un momento...'
+                : isRegister
+                  ? 'Completar Registro'
+                  : 'Iniciar Sesión'}
+            </span>
+            {!loading && <ArrowRight className="w-4 h-4" />}
           </button>
         </form>
 

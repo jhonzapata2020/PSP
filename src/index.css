@@ -36,3 +36,8 @@
 .glass-header {
   @apply backdrop-blur-lg bg-white/95 dark:bg-[#0e1514]/95 border-b border-slate-200/70 dark:border-[#203330] shadow-sm dark:shadow-lg dark:shadow-black/30;
 }
+
+/* Leaflet Dark Mode Tile Filter */
+.dark-map-tiles .leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}

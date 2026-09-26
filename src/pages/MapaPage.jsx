@@ -58,10 +58,8 @@ const MapaPage = () => {
 
     const map = leafletMapRef.current;
 
-    // Tile Layer based on theme
-    const tileUrl = theme === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    // OpenStreetMap 100% Free Keyless Tile Layer
+    const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     // Remove existing tile layers
     map.eachLayer((layer) => {
@@ -70,10 +68,18 @@ const MapaPage = () => {
       }
     });
 
-    L.tileLayer(tileUrl, {
+    const tileLayer = L.tileLayer(tileUrl, {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    // Apply dark mode CSS filter to Leaflet container if theme is dark
+    const container = map.getContainer();
+    if (theme === 'dark') {
+      container.classList.add('dark-map-tiles');
+    } else {
+      container.classList.remove('dark-map-tiles');
+    }
 
   }, [theme]);
 

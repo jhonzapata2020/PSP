@@ -248,23 +248,76 @@ export const FORO_POSTS = [
     categoria: 'Desarrollo Regional',
     fecha: 'Hace 2 horas',
     likes: 34,
-    comentariosCount: 12,
-    etiquetas: ['PuertoAntioquia', 'Logistica', 'UrabáEmprende']
+    likedBy: ['usr-05', 'usr-08'],
+    comentariosCount: 3,
+    etiquetas: ['PuertoAntioquia', 'Logistica', 'UrabáEmprende'],
+    comentarios: [
+      {
+        id: 'c-101',
+        autor: 'Carlos Eduardo Ramírez',
+        cargo: 'Asesor PyME - Cámara de Comercio',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        fecha: 'Hace 1 hora',
+        contenido: 'Podríamos organizar mesas de trabajo mensuales para certificar a los transportadores locales de carga pesada.',
+        imagenUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80',
+        likes: 5,
+        likedBy: [],
+        respuestas: [
+          {
+            id: 'r-101-1',
+            autor: 'Ing. Carmen Rosa Valencia',
+            cargo: 'Coordinadora de Proyectos Ambientales - Augura',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+            fecha: 'Hace 45 min',
+            contenido: '¡Excelente idea Carlos! Desde Augura podemos apoyar con los consultores ambientales.',
+            likes: 3,
+            likedBy: []
+          }
+        ]
+      },
+      {
+        id: 'c-102',
+        autor: 'Mariana Ospina',
+        cargo: 'Directora de Logística Urabá',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        fecha: 'Hace 30 min',
+        contenido: 'También es clave capacitar en plataformas digitales de facturación electrónica y seguimiento en tiempo real.',
+        likes: 4,
+        likedBy: [],
+        respuestas: []
+      }
+    ]
   },
   {
     id: 'post-2',
     autor: 'Julián Esteban Murillo',
     cargo: 'Líder Juvenil & Emprendedor Tecnológico',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     titulo: 'Convocatoria abierta: Hackathon de Soluciones Agro-sostenibles para Urabá',
     contenido: 'Organizamos junto al SENA y Fundauniban un encuentro de desarrolladores y creativos para diseñar soluciones de monitoreo hídrico y comercialización sin intermediarios. ¡Inscripciones abiertas!',
     categoria: 'Innovación & TIC',
     fecha: 'Hace 5 horas',
     likes: 58,
-    comentariosCount: 19,
-    etiquetas: ['Hackathon', 'SENA', 'Sostenibilidad']
+    likedBy: [],
+    comentariosCount: 1,
+    etiquetas: ['Hackathon', 'SENA', 'Sostenibilidad'],
+    comentarios: [
+      {
+        id: 'c-201',
+        autor: 'David Restrepo',
+        cargo: 'Instructor SENA Apartadó',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+        fecha: 'Hace 3 horas',
+        contenido: 'Contamos con los laboratorios de prototipado rápido en la sede Apartadó listos para recibir a los equipos.',
+        imagenUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=500&auto=format&fit=crop&q=80',
+        likes: 8,
+        likedBy: [],
+        respuestas: []
+      }
+    ]
   }
 ];
+
 
 export const METRICAS_IMPACTO = [
   { label: 'Organizaciones Aliadas', valor: '120+', icono: 'Building2' },

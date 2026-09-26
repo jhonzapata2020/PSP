@@ -121,7 +121,7 @@ const EmpresasAliadasPage = () => {
               className="cursor-pointer group relative bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-between text-center shadow-psp-soft hover:shadow-xl hover:border-psp-cyan/50 hover:-translate-y-1 transition-all duration-300"
             >
               {/* Real Image Logo Display */}
-              <div className="w-full h-16 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 flex items-center justify-center shadow-sm mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+              <div className="w-full h-20 sm:h-24 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 flex items-center justify-center shadow-sm mb-3 group-hover:scale-105 transition-transform overflow-hidden">
                 {entidad.logo ? (
                   <img
                     src={entidad.logo}

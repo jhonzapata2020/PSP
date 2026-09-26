@@ -34,6 +34,7 @@ const Header = () => {
   // Clean, uncluttered navigation links for header breathing room
   const navLinks = [
     { name: 'Inicio', path: '/' },
+    { name: 'Mapa Interactivo', path: '/mapa' },
     { name: 'Empresas Aliadas', path: '/empresas-aliadas' },
     { name: 'Foro Social', path: '/foro' },
     { name: 'Ayuda & Transparencia', path: '/ayuda' },

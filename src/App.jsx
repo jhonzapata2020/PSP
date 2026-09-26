@@ -12,6 +12,7 @@ import CartDrawer from './components/common/CartDrawer';
 import EcommerceFloatingButton from './components/common/EcommerceFloatingButton';
 
 import HomePage from './pages/HomePage';
+import MapaPage from './pages/MapaPage';
 import EmpresasAliadasPage from './pages/EmpresasAliadasPage';
 import ComercioPage from './pages/ComercioPage';
 import ForoPage from './pages/ForoPage';
@@ -37,6 +38,8 @@ function App() {
               <main className="flex-grow w-full max-w-full overflow-x-hidden">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/mapa" element={<MapaPage />} />
+                  <Route path="/map" element={<MapaPage />} />
                   <Route path="/empresas-aliadas" element={<EmpresasAliadasPage />} />
                   <Route path="/comercio/*" element={<ComercioPage />} />
                   <Route path="/foro" element={<ForoPage />} />

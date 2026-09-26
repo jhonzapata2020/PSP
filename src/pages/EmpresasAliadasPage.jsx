@@ -305,6 +305,15 @@ const EmpresasAliadasPage = () => {
                 <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{selectedAffiliateModal.sector}</p>
               </div>
 
+              {selectedAffiliateModal.ubicacion && (
+                <div>
+                  <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Ubicación / Sedes</h4>
+                  <p className="text-xs font-semibold text-psp-cyan flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" /> {selectedAffiliateModal.ubicacion}
+                  </p>
+                </div>
+              )}
+
               <div>
                 <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Descripción & Propósito</h4>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">

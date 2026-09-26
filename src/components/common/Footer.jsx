@@ -57,8 +57,22 @@ const Footer = () => {
         </div>
 
         {/* Bottom legal line */}
-        <div className="mt-10 pt-6 border-t border-slate-100 dark:border-[#203330] flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-400 dark:text-slate-500">
-          <p className="text-center sm:text-left">© {new Date().getFullYear()} Plataforma Social con Propósito Urabá & Colombia. Todos los derechos reservados.</p>
+        <div className="mt-10 pt-6 border-t border-slate-100 dark:border-[#203330] flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 dark:text-slate-500">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} Plataforma Social con Propósito Urabá & Colombia.</p>
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+            <a
+              href="https://www.corplexsolutions.co/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold hover:text-psp-cyan transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+              title="Visitar sitio oficial del desarrollador"
+            >
+              <span>Desarrollado por</span>
+              <span className="text-psp-cyan">CORPLEX SOLUTIONS S.A.S.</span>
+            </a>
+          </div>
+
           <div className="flex flex-wrap justify-center gap-4">
             <Link className="hover:text-slate-600 dark:hover:text-slate-300 transition" to="/terminos-y-condiciones">Términos de Uso</Link>
             <Link className="hover:text-slate-600 dark:hover:text-slate-300 transition" to="/politica-de-privacidad">Política de Datos</Link>

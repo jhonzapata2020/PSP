@@ -363,7 +363,7 @@ export const RESTAURANTES = [
     descripcion: 'El restaurante pionero en cortes de carne madurada al carbón de leña y tradición culinaria antioqueña en Apartadó.',
     descripcionDetallada: 'Donde Checho combina la tradición de la parrilla madurada con la calidez del servicio de Urabá. Famoso por su sancocho trillado en leña de los domingos y sus platos familiares.',
     menuDestacado: [
-      { nombre: 'Punta de Anchoa Madurada (400g)', precio: 48000, descripcion: 'Corte magro a la parrilla con chimichurri casero y papas criollas' },
+      { nombre: 'Punta de Anca Madurada (400g)', precio: 48000, descripcion: 'Corte magro a la parrilla con chimichurri casero y papas criollas' },
       { nombre: 'Sancocho Trifásico Criollo', precio: 35000, descripcion: 'Servido en olla de barro con gallina, costilla de cerdo, plátano y yuca' },
       { nombre: 'Picada Mar y Tierra (Para 3 personas)', precio: 65000, descripcion: 'Carne de res, chicharrón crujiente, chorizo, patacones y suero' }
     ],

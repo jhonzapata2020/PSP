@@ -17,7 +17,8 @@ import {
   Search,
   Check,
   Zap,
-  Briefcase
+  Briefcase,
+  Bus
 } from 'lucide-react';
 
 const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {

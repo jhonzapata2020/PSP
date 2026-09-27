@@ -44,7 +44,7 @@ const HomePage = () => {
       <section className="pt-6 pb-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group transition-all duration-300">
           <img
-            src="/hero-banner-psp.jpg"
+            src="/hero-banner-psp.png"
             alt="Plataforma Social con Propósito - Urabá & Colombia"
             className="w-full h-auto object-cover brightness-[1.02] contrast-[1.04] transition-transform duration-700 hover:scale-[1.01]"
           />

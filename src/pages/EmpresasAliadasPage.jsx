@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Building2, ExternalLink, MapPin, Award, Users, Sparkles, Filter, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Search, Building2, ExternalLink, MapPin, Award, Users, Sparkles, Filter, ChevronRight, CheckCircle2, Percent, Tag, Briefcase, Handshake, MessageCircle, X, ShieldCheck, Check } from 'lucide-react';
 import { EMPRESAS_ALIADAS, ENTIDADES_AFILIADAS } from '../data/mockData';
 
 const EmpresasAliadasPage = () => {
@@ -8,6 +8,14 @@ const EmpresasAliadasPage = () => {
   const [selectedAffiliateCat, setSelectedAffiliateCat] = useState('Todas');
   const [selectedEmpresaModal, setSelectedEmpresaModal] = useState(null);
   const [selectedAffiliateModal, setSelectedAffiliateModal] = useState(null);
+  const [isAffiliationModalOpen, setIsAffiliationModalOpen] = useState(false);
+
+  // Affiliation Form State
+  const [affiliateName, setAffiliateName] = useState('');
+  const [affiliateContact, setAffiliateContact] = useState('');
+  const [affiliatePhone, setAffiliatePhone] = useState('');
+  const [affiliateSector, setAffiliateSector] = useState('Tecnología & Comercio');
+  const [affiliateSuccess, setAffiliateSuccess] = useState(false);
 
   const categories = ['Todas', 'Privado', 'Público', 'Gremial', 'Fundación', 'Caja de Compensación'];
   const affiliateCategories = ['Todas', 'Agro & Campo', 'Educación & Cultura', 'Tecnología & Comercio', 'Salud & Bienestar', 'Fundaciones & Juventud'];
@@ -48,8 +56,105 @@ const EmpresasAliadasPage = () => {
           <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-200">
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-psp-cyan" /> 34+ Aliados Registrados</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-psp-cyan" /> Cobertura Subregional</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-psp-cyan" /> Impacto ODS Directo</span>
+            <span className="flex items-center gap-1.5"><Percent className="w-4 h-4 text-psp-cyan" /> 10% Descuento Cruzado</span>
           </div>
+        </div>
+      </div>
+
+      {/* 🌟 SECCIÓN ESPECIAL: BENEFICIOS EXCLUSIVOS DE LA RED SOCIAL EMPRESARIAL PSP */}
+      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-[#0e1716] to-[#0c4236] p-6 sm:p-10 border border-teal-500/30 text-white shadow-2xl space-y-8 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-extrabold border border-teal-500/30">
+              <Percent className="w-3.5 h-3.5 text-teal-300" />
+              Red de Beneficios Ecosistémica Urabá
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              ¿Por qué pertenecer a la Red Social Empresarial PSP?
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Conectamos comunidades, empresas, emprendimientos e instituciones de toda la subregión de Urabá para generar sinergias económicas, <strong>10% de descuento preferencial cruzado</strong> e impacto social directo.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setIsAffiliationModalOpen(true)}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-teal-500/20 transition-all transform active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Handshake className="w-4 h-4 text-slate-950" />
+            <span>Afiliar mi Empresa / Entidad (Obtener 10% Desc.)</span>
+          </button>
+        </div>
+
+        {/* Grid de 4 Pilares de Beneficios Exclusivos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10 pt-2">
+          
+          {/* Beneficio 1: 10% Descuento Cruzado */}
+          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-teal-500/40 hover:border-teal-400 transition-all space-y-3 group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
+              <Tag className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="space-y-1">
+              <span className="inline-block px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">
+                10% Descuento Preferencial
+              </span>
+              <h3 className="text-sm font-extrabold text-white">Convenio Cruzado Red PSP</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Si perteneces a una entidad de la red, recibes automáticamente un <strong>10% de descuento</strong> al comprar productos, servicios, inscripciones o consultorías en cualquier otra empresa afiliada.
+            </p>
+          </div>
+
+          {/* Beneficio 2: Encadenamiento B2B */}
+          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
+              <Briefcase className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="space-y-1">
+              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
+                Sinergias & Compras B2B
+              </span>
+              <h3 className="text-sm font-extrabold text-white">Alianzas Comerciales</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Intercambio preferencial de servicios entre afiliados (tecnología Corplex, mensajería D&D, salud ocupacional BP, publicidad Colonia Stereo, etc.).
+            </p>
+          </div>
+
+          {/* Beneficio 3: Vitrina Regional */}
+          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
+              <Sparkles className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="space-y-1">
+              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
+                Visibilidad en 11 Municipios
+              </span>
+              <h3 className="text-sm font-extrabold text-white">Posicionamiento Subregional</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Presencia institucional ante la comunidad y tejido empresarial de Apartadó, Turbo, Necoclí, Carepa, Chigorodó, Mutatá y todo Urabá.
+            </p>
+          </div>
+
+          {/* Beneficio 4: Impacto ODS & Respaldo */}
+          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
+              <ShieldCheck className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="space-y-1">
+              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
+                Sello PSP Verificado
+              </span>
+              <h3 className="text-sm font-extrabold text-white">Sostenibilidad ODS</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Respaldo de la Corporación, insignia de Aliado Verificado, cumplimiento Ley 1581 (Habeas Data) y articulación social comunitaria.
+            </p>
+          </div>
+
         </div>
       </div>
 
@@ -320,6 +425,15 @@ const EmpresasAliadasPage = () => {
                   {selectedAffiliateModal.descripcion}
                 </p>
               </div>
+
+              {/* 10% Discount Benefit Badge inside Modal */}
+              <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-3">
+                <Tag className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="text-[11px] text-slate-700 dark:text-slate-200">
+                  <strong className="text-slate-900 dark:text-white block">Convenio Red PSP: 10% de Descuento</strong>
+                  <span>Aplica 10% desc. en servicios/productos al identificarse como afiliado a la Red PSP Urabá.</span>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -379,6 +493,141 @@ const EmpresasAliadasPage = () => {
                 Visitar Sitio Web <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🤝 SOLICITUD DE AFILIACIÓN A LA RED PSP MODAL */}
+      {isAffiliationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-teal-500/30 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-in zoom-in duration-200">
+            
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
+                  <Handshake className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Solicitud de Afiliación Red PSP Urabá
+                  </h3>
+                  <span className="text-[11px] text-teal-400 font-bold">Convenio 10% Descuento Preferencial</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAffiliationModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {affiliateSuccess ? (
+              <div className="p-6 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-center space-y-4">
+                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+                <h4 className="text-base font-extrabold text-white">¡Solicitud Registrada con Éxito!</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Gracias por tu interés en integrar <strong>{affiliateName}</strong> a la Red Social Empresarial PSP Urabá. El equipo de coordinación institucional se comunicará contigo vía WhatsApp en menos de 24 horas.
+                </p>
+                <button
+                  onClick={() => { setAffiliateSuccess(false); setIsAffiliationModalOpen(false); }}
+                  className="px-5 py-2.5 rounded-xl bg-teal-400 text-slate-950 font-bold text-xs shadow-md"
+                >
+                  Aceptar y Volver
+                </button>
+              </div>
+            ) : (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setAffiliateSuccess(true);
+                  const msg = encodeURIComponent(`Hola, me interesa afiliar la entidad/empresa "${affiliateName}" (Contacto: ${affiliateContact}, Teléfono: ${affiliatePhone}, Sector: ${affiliateSector}) a la Red Social Empresarial PSP Urabá para ofrecer y recibir el 10% de descuento cruzado.`);
+                  window.open(`https://wa.me/573124567890?text=${msg}`, '_blank');
+                }} 
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Nombre de la Empresa, Fundación u Organización *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Comercializadora del Golfo S.A.S."
+                    value={affiliateName}
+                    onChange={(e) => setAffiliateName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Nombre del Representante o Contacto *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej. Ana Lucía Gómez"
+                      value={affiliateContact}
+                      onChange={(e) => setAffiliateContact(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Teléfono Celular / WhatsApp *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="Ej. 312 456 7890"
+                      value={affiliatePhone}
+                      onChange={(e) => setAffiliatePhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Sector de Desempeño
+                  </label>
+                  <select
+                    value={affiliateSector}
+                    onChange={(e) => setAffiliateSector(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 cursor-pointer"
+                  >
+                    <option value="Tecnología & Comercio">Tecnología & Comercio</option>
+                    <option value="Educación & Cultura">Educación & Cultura</option>
+                    <option value="Agro & Campo">Agro & Campo</option>
+                    <option value="Salud & Bienestar">Salud & Bienestar</option>
+                    <option value="Fundaciones & Juventud">Fundaciones & Juventud</option>
+                    <option value="Gastronomía & Servicios">Gastronomía & Servicios</option>
+                  </select>
+                </div>
+
+                {/* Benefits Notice */}
+                <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-xs text-slate-300 space-y-1">
+                  <span className="font-extrabold text-teal-300 block">✨ Beneficios incluidos con la afiliación:</span>
+                  <p className="text-[11px] text-slate-400">
+                    • Inclusión directa en la Red de 34+ entidades afiliadas de Urabá.<br />
+                    • Acceso al 10% de descuento preferencial cruzado entre empresas de la red.<br />
+                    • Publicación en la vitrina digital subregional y respaldo ODS.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-slate-950" />
+                  <span>Enviar Solicitud de Afiliación por WhatsApp</span>
+                </button>
+              </form>
+            )}
+
           </div>
         </div>
       )}

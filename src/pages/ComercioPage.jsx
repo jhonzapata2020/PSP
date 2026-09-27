@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight } from 'lucide-react';
+import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
 import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
 import { useCart } from '../context/CartContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 import CommerceDetailView from '../components/comercio/CommerceDetailView';
+import PSPExpressHub from '../components/comercio/PSPExpressHub';
 
 const ComercioPage = () => {
   const [activeTab, setActiveTab] = useState('productos');
@@ -16,7 +17,7 @@ const ComercioPage = () => {
     { id: 'productos', label: 'Productos Locales', icon: ShoppingBag },
     { id: 'servicios', label: 'Servicios Especializados', icon: Wrench },
     { id: 'restaurantes', label: 'Restaurantes & Gastronomía', icon: Utensils },
-    { id: 'transporte', label: 'Rutas & Transporte', icon: Bus },
+    { id: 'transporte', label: 'Movilidad & Domicilios Express (Uber/Rappi)', icon: Bike },
     { id: 'turismo', label: 'Turismo & Experiencias', icon: Compass },
   ];
 
@@ -237,48 +238,12 @@ const ComercioPage = () => {
         </div>
       )}
 
-      {/* TAB 4: TRANSPORTE */}
+      {/* TAB 4: MOVILIDAD & DOMICILIOS EXPRESS (UBER / RAPPI URABÁ) */}
       {activeTab === 'transporte' && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-psp-teal-dark to-slate-900 p-6 rounded-2xl text-white flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-              <h3 className="text-lg font-bold">Solicitud de Transporte & Envíos Urabá</h3>
-              <p className="text-xs text-slate-300 mt-1">Conecta con cooperativas de transporte de carga y pasajeros para Apartadó, Turbo, Necoclí y Medellín.</p>
-            </div>
-            <button className="px-5 py-2.5 rounded-xl bg-psp-cyan text-slate-950 font-extrabold text-xs shadow-lg whitespace-nowrap">
-              Cotizar Envío Especial
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TRANSPORTE_RUTAS.map((ruta) => (
-              <div 
-                key={ruta.id} 
-                onClick={() => setSelectedCommerceItem(ruta)}
-                className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4 hover:shadow-xl transition-all cursor-pointer group"
-              >
-                <div className="flex justify-between items-center text-xs font-bold text-psp-cyan">
-                  <span>Ruta Directa</span>
-                  <span className="px-2 py-0.5 rounded bg-psp-cyan/15">{ruta.empresa}</span>
-                </div>
-                <h4 className="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-teal-500 transition-colors">
-                  {ruta.origen} ➔ {ruta.destino}
-                </h4>
-                <div className="text-xs text-slate-500 space-y-1">
-                  <p>⏱ Tiempo estimado: <strong>{ruta.tiempoEstimado}</strong></p>
-                  <p>🔄 Frecuencia: <strong>{ruta.frecuencia}</strong></p>
-                </div>
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <span className="text-base font-extrabold text-slate-900 dark:text-white">${ruta.precio.toLocaleString()} COP</span>
-                  <button className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold group-hover:bg-psp-cyan group-hover:text-slate-950 transition-colors flex items-center gap-1">
-                    <span>Ver Ruta & Mapa</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PSPExpressHub 
+          transportRoutes={TRANSPORTE_RUTAS} 
+          onSelectRoute={(ruta) => setSelectedCommerceItem(ruta)} 
+        />
       )}
 
       {/* TAB 5: TURISMO */}

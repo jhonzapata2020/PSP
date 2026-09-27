@@ -15,17 +15,14 @@ import { useAuth } from '../context/AuthContext';
 
 const AuthPage = () => {
 
-  const [isRegister, setIsRegister] = useState(false);
-  const [personType, setPersonType] = useState('natural'); // 'natural' or 'juridica'
-  const { login, register, loading, error, setError } = useAuth();
+  // location debe declararse ANTES del useState que lo usa en su initializer
   const location = useLocation();
-
-  const navigate = useNavigate();
-  const { login } = useAuth();
 
   // Determine initial tab based on route (/registro vs /ingresar)
   const [isRegister, setIsRegister] = useState(() => location.pathname === '/registro');
   const [personType, setPersonType] = useState('natural'); // 'natural' | 'juridica'
+  const { login, register, loading, error, setError } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   // Form Fields State
@@ -97,8 +94,6 @@ const AuthPage = () => {
       // El mensaje ya quedó en AuthContext.error y se pinta más abajo.
     }
   };
-
-  const showError = legalError || error;
 
   const handleSocialLogin = (provider) => {
     setSocialLoading(provider);
@@ -367,8 +362,16 @@ const AuthPage = () => {
               </label>
             </div>
           )}
+          {/* Error de validación local (Habeas Data / Ley 1581) */}
+          {formError && (
+            <div className="flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900/50">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Error del backend (credenciales inválidas, correo duplicado, cuenta bloqueada...) */}
-          {!legalError && error && (
+          {!formError && error && (
             <p className="text-[11px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
               {error}
             </p>

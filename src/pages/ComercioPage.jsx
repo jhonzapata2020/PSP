@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
 import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
 import { useCart } from '../context/CartContext';
@@ -7,11 +8,44 @@ import CommerceDetailView from '../components/comercio/CommerceDetailView';
 import PSPExpressHub from '../components/comercio/PSPExpressHub';
 
 const ComercioPage = () => {
-  const [activeTab, setActiveTab] = useState('productos');
+  const location = useLocation();
+  const { addToCart } = useCart();
+
+  const getTabFromLocation = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    const path = location.pathname.toLowerCase();
+
+    if (tabParam) {
+      if (tabParam === 'transporte' || tabParam === 'domicilios' || tabParam === 'rappi' || tabParam === 'express') return 'transporte';
+      if (tabParam === 'restaurantes' || tabParam === 'comida') return 'restaurantes';
+      if (tabParam === 'servicios') return 'servicios';
+      if (tabParam === 'turismo') return 'turismo';
+      if (tabParam === 'productos') return 'productos';
+    }
+
+    if (path.includes('domicilio') || path.includes('express') || path.includes('rappi') || path.includes('movilidad') || path.includes('transporte')) {
+      return 'transporte';
+    }
+    if (path.includes('restaurante')) return 'restaurantes';
+    if (path.includes('servicio')) return 'servicios';
+    if (path.includes('turismo')) return 'turismo';
+
+    return 'productos';
+  };
+
+  const [activeTab, setActiveTab] = useState(getTabFromLocation);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCommerceItem, setSelectedCommerceItem] = useState(null);
-  const { addToCart } = useCart();
+
+  // Sync activeTab when URL or search parameters change
+  useEffect(() => {
+    const tab = getTabFromLocation();
+    setActiveTab(tab);
+    setSelectedProduct(null);
+    setSelectedCommerceItem(null);
+  }, [location.pathname, location.search]);
 
   const tabs = [
     { id: 'productos', label: 'Productos Locales', icon: ShoppingBag },

@@ -42,6 +42,11 @@ function App() {
                   <Route path="/map" element={<MapaPage />} />
                   <Route path="/empresas-aliadas" element={<EmpresasAliadasPage />} />
                   <Route path="/comercio/*" element={<ComercioPage />} />
+                  <Route path="/domicilios" element={<ComercioPage />} />
+                  <Route path="/domicilios-express" element={<ComercioPage />} />
+                  <Route path="/rappi" element={<ComercioPage />} />
+                  <Route path="/express" element={<ComercioPage />} />
+                  <Route path="/movilidad" element={<ComercioPage />} />
                   <Route path="/foro" element={<ForoPage />} />
                   <Route path="/ayuda" element={<AyudaPage />} />
                   <Route path="/ingresar" element={<AuthPage />} />

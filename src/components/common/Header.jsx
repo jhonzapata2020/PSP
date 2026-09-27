@@ -32,6 +32,8 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Inicio', shortName: 'Inicio', path: '/' },
+    { name: 'Comercio & Domicilios', shortName: 'Comercio', path: '/comercio' },
+    { name: 'Domicilios Express', shortName: 'Domicilios', path: '/domicilios' },
     { name: 'Mapa Interactivo', shortName: 'Mapa', path: '/mapa' },
     { name: 'Empresas Aliadas', shortName: 'Empresas', path: '/empresas-aliadas' },
     { name: 'Foro Social', shortName: 'Foro', path: '/foro' },

@@ -57,6 +57,18 @@ const CommerceDetailView = ({ item, categoryType, onBack, allItems = [], onSelec
   const lng = item.lng || (item.municipio?.includes('Turbo') ? -76.7320 : item.municipio?.includes('Necoclí') ? -76.7865 : -76.6256);
   const addressString = item.direccion || `${item.ubicación || item.municipio || 'Urabá'}, Antioquia, Colombia`;
 
+  // Check if delivery is applicable (only for restaurants, food businesses, or items with explicit menus/delivery)
+  const isDeliveryAvailable = 
+    categoryType === 'restaurantes' ||
+    Boolean(item.menuDestacado && item.menuDestacado.length > 0) ||
+    Boolean(item.ofreceDomicilio) ||
+    (item.categoria && (
+      item.categoria.toLowerCase().includes('restaurante') ||
+      item.categoria.toLowerCase().includes('gastronomía') ||
+      item.categoria.toLowerCase().includes('comida') ||
+      item.categoria.toLowerCase().includes('alimentos')
+    ));
+
   // Initialize Leaflet Map for "Cómo Llegar"
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -338,14 +350,26 @@ const CommerceDetailView = ({ item, categoryType, onBack, allItems = [], onSelec
 
           {/* Direct CTA Buttons (WhatsApp + Domicilios + Cómo Llegar) */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {/* Express Delivery Button */}
-            <button
-              onClick={() => setIsDeliveryModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:opacity-95 text-slate-950 text-xs font-black shadow-lg flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
-            >
-              <Bike className="w-4 h-4" />
-              <span>Pedir a Domicilio Express</span>
-            </button>
+            {/* Express Delivery Button - Only if food/restaurant/delivery item */}
+            {isDeliveryAvailable && (
+              <button
+                onClick={() => setIsDeliveryModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:opacity-95 text-slate-950 text-xs font-black shadow-lg flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+              >
+                <Bike className="w-4 h-4" />
+                <span>Pedir a Domicilio Express</span>
+              </button>
+            )}
+
+            {!isDeliveryAvailable && (item.serviciosOfrecidos || categoryType === 'servicios') && (
+              <button
+                onClick={handleBookService}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:opacity-95 text-slate-950 text-xs font-black shadow-lg flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+              >
+                <Calendar className="w-4 h-4 text-slate-950" />
+                <span>Solicitar Asesoría / Cotizar</span>
+              </button>
+            )}
 
             <button
               onClick={handleWhatsAppContact}
@@ -366,21 +390,23 @@ const CommerceDetailView = ({ item, categoryType, onBack, allItems = [], onSelec
         </div>
       </div>
 
-      {/* Red de Domiciliarios Sociales PSP Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-teal-500/10 dark:bg-teal-500/15 border border-teal-500/30 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-950 flex items-center justify-center shrink-0 font-extrabold shadow-md">
-          <Bike className="w-6 h-6" />
+      {/* Red de Domiciliarios Sociales PSP Banner - ONLY FOR FOOD/RESTAURANT ESTABLISHMENTS */}
+      {isDeliveryAvailable && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-teal-500/10 dark:bg-teal-500/15 border border-teal-500/30 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-950 flex items-center justify-center shrink-0 font-extrabold shadow-md">
+            <Bike className="w-6 h-6" />
+          </div>
+          <div className="space-y-0.5 text-xs text-slate-700 dark:text-slate-200">
+            <h4 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <span>Red de Domiciliarios Sociales PSP Urabá</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px]">Ecosistema Conectado</span>
+            </h4>
+            <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+              Conectamos restaurantes de la subregión con transportadores y domiciliarios locales en Apartadó, Turbo, Necoclí, Mutatá, Chigorodó y Carepa. Tarifa plana de $5.000 COP por domicilio.
+            </p>
+          </div>
         </div>
-        <div className="space-y-0.5 text-xs text-slate-700 dark:text-slate-200">
-          <h4 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <span>Red de Domiciliarios Sociales PSP Urabá</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px]">Ecosistema Conectado</span>
-          </h4>
-          <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-            Conectamos restaurantes de la subregión con transportadores y domiciliarios locales en Apartadó, Turbo, Necoclí, Mutatá, Chigorodó y Carepa. Tarifa plana de $5.000 COP por domicilio.
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Main Grid Section (2 Columns: Left Details + Right Map & Contact Ficha) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">

@@ -137,6 +137,19 @@ export const api = {
   permissions: () => request('/api/permissions'),
 
   permissionMatrix: () => request('/api/permissions/matrix'),
+
+  // ---------- STATS / AUDIT (Fase 4) ----------
+  /** Agregados del dashboard: totales por estado, por rol y actividad reciente. */
+  stats: () => request('/api/stats'),
+
+  /** Historial de auditoría paginado. `action` acepta prefijo: "user." agrupa. */
+  audit: ({ action = '', entityType = '', search = '', page = 1, pageSize = 20 } = {}) => {
+    const params = new URLSearchParams({ page, pageSize });
+    if (action) params.set('action', action);
+    if (entityType) params.set('entityType', entityType);
+    if (search) params.set('search', search);
+    return request(`/api/audit?${params.toString()}`);
+  },
 };
 
 export default api;

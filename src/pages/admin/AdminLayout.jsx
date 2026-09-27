@@ -8,12 +8,16 @@ import {
   LogOut,
   ExternalLink,
   Home,
+  LayoutDashboard,
+  History,
 } from 'lucide-react';
 
 const NAV = [
+  { to: '/admin/resumen', label: 'Resumen', icon: LayoutDashboard, perm: 'users.read' },
   { to: '/admin/usuarios', label: 'Usuarios', icon: Users, perm: 'users.read' },
   { to: '/admin/roles', label: 'Roles', icon: ShieldCheck, perm: 'roles.read' },
   { to: '/admin/matriz', label: 'Matriz de permisos', icon: Grid3x3, perm: 'roles.read' },
+  { to: '/admin/auditoria', label: 'Auditoría', icon: History, perm: 'audit.read' },
 ];
 
 /**

@@ -26,6 +26,8 @@ import AdminLayout, { AdminIndexRedirect } from './pages/admin/AdminLayout';
 import AdminUsuariosPage from './pages/admin/AdminUsuariosPage';
 import AdminRolesPage from './pages/admin/AdminRolesPage';
 import AdminMatrizPage from './pages/admin/AdminMatrizPage';
+import AdminResumenPage from './pages/admin/AdminResumenPage';
+import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
 
 // Legal & Policy Pages (Etapa 1)
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
@@ -67,6 +69,14 @@ function App() {
                   >
                     <Route index element={<AdminIndexRedirect />} />
                     <Route
+                      path="resumen"
+                      element={
+                        <ProtectedRoute permission="users.read">
+                          <AdminResumenPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="usuarios"
                       element={
                         <ProtectedRoute permission="users.read">
@@ -87,6 +97,14 @@ function App() {
                       element={
                         <ProtectedRoute permission="roles.read">
                           <AdminMatrizPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="auditoria"
+                      element={
+                        <ProtectedRoute permission="audit.read">
+                          <AdminAuditoriaPage />
                         </ProtectedRoute>
                       }
                     />

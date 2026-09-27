@@ -217,13 +217,34 @@ export const PRODUCTOS = [
 export const SERVICIOS = [
   {
     id: 's1',
-    nombre: 'Consultoría en Certificación ODS y Sostenibilidad empresarial',
+    nombre: 'Consultoría en Certificación ODS y Sostenibilidad Empresarial',
     proveedor: 'Red Sostenible Urabá',
     categoria: 'Asesoría Empresarial',
     precioEstimado: 'Desde $1,500,000 COP',
     modalidad: 'Híbrida',
-    imagen: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
-    descripcion: 'Acompañamiento a PYMES y grandes empresas en la medición de huella de carbono, reporte ODS e impacto social.'
+    municipio: 'Apartadó, Urabá',
+    lat: 7.8829,
+    lng: -76.6256,
+    direccion: 'Calle 98 #102-15, Centro Empresarial Plaza, Apartadó, Antioquia',
+    telefono: '+57 (604) 828-4500',
+    whatsapp: '+573124567890',
+    horario: 'Lunes a Viernes: 8:00 AM - 5:30 PM',
+    calificacion: 4.9,
+    imagen: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Acompañamiento a PYMES y grandes empresas en la medición de huella de carbono, reporte ODS e impacto social.',
+    descripcionDetallada: 'Red Sostenible Urabá es una firma consultora especializada en guiar la transición ecológica e industrial de las organizaciones en Urabá. Ofrecemos auditorías energéticas, diseño de reportes GRI y alineación estratégica con los Objetivos de Desarrollo Sostenible (ODS).',
+    serviciosOfrecidos: [
+      'Medición y compensación de Huella de Carbono Corporativa',
+      'Certificación en Estándares de Sostenibilidad ODS 8, 12, 13',
+      'Auditoría y Gestión de Residuos Agroindustriales',
+      'Formación ejecutiva en Gobierno Corporativo y ESG'
+    ],
+    metodosPago: 'Transferencia Bancaria, Nequi, Facturación Electrónica'
   },
   {
     id: 's2',
@@ -232,8 +253,29 @@ export const SERVICIOS = [
     categoria: 'Educación & TIC',
     precioEstimado: 'Gratuito (Subvencionado)',
     modalidad: 'Virtual / Presencial',
-    imagen: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&auto=format&fit=crop&q=80',
-    descripcion: 'Talleres prácticos de marketing digital, comercio electrónico y finanzas para microempresas de Urabá.'
+    municipio: 'Apartadó, Urabá',
+    lat: 7.8860,
+    lng: -76.6280,
+    direccion: 'Cra 100 #95-30, Parque Tecnológico & Creativo, Apartadó, Antioquia',
+    telefono: '+57 (604) 828-9000',
+    whatsapp: '+573145678901',
+    horario: 'Lunes a Sábado: 8:00 AM - 6:00 PM',
+    calificacion: 4.8,
+    imagen: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Talleres prácticos de marketing digital, comercio electrónico y finanzas para microempresas de Urabá.',
+    descripcionDetallada: 'Programa impulsado para acelerar la digitalización del ecosistema emprendedor de Urabá. Los participantes aprenden a configurar su tienda virtual, procesar pagos digitales, gestionar redes sociales y dominar herramientas de inteligencia artificial.',
+    serviciosOfrecidos: [
+      'Bootcamp de Comercio Electrónico y E-Commerce',
+      'Taller de Marketing Digital y Redes Sociales',
+      'Asesoría en Facturación Digital y Medios de Pago (Nequi/Daviplata)',
+      'Mentores personalizados en estrategia de ventas online'
+    ],
+    metodosPago: '100% Gratuito mediante alianza PSP & Gobernación'
   },
   {
     id: 's3',
@@ -242,8 +284,29 @@ export const SERVICIOS = [
     categoria: 'Transporte & Carga',
     precioEstimado: 'Cotización por Tonelada',
     modalidad: 'Presencial',
-    imagen: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500&auto=format&fit=crop&q=80',
-    descripcion: 'Servicio con flota monitoreada por GPS y control térmico estricto para frutas tropicales y productos perecederos.'
+    municipio: 'Turbo, Urabá',
+    lat: 8.0926,
+    lng: -76.7281,
+    direccion: 'Sector Zona Portuaria Bahía Colombia, Turbo, Antioquia',
+    telefono: '+57 (604) 827-3400',
+    whatsapp: '+573186789012',
+    horario: 'Atención 24/7 Operaciones Portuarias',
+    calificacion: 5.0,
+    imagen: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Servicio con flota monitoreada por GPS y control térmico estricto para frutas tropicales y productos perecederos.',
+    descripcionDetallada: 'Líderes en logística de cadena de frío para el eje bananero y de exportación agrícola de Urabá. Flota moderna equipada con sensores termográficos IoT y rastreo en tiempo real.',
+    serviciosOfrecidos: [
+      'Transporte en furgones termoking de 5 a 24 toneladas',
+      'Consolidación de carga seca y perecedera hacia el interior del país',
+      'Agenciamiento de aduanas en Puerto Antioquia y Turbo',
+      'Monitoreo satelital 24/7 con botón de pánico y póliza de carga'
+    ],
+    metodosPago: 'Transferencia Crédito 30 días, PSE, Tarjeta Corporativa'
   }
 ];
 
@@ -252,21 +315,59 @@ export const RESTAURANTES = [
     id: 'r1',
     nombre: 'Restaurante Mar y Tierra - Sabor del Golfo',
     ubicación: 'Malecón Turístico, Turbo',
+    municipio: 'Turbo, Urabá',
+    lat: 8.0945,
+    lng: -76.7320,
+    direccion: 'Av. Malecón Turístico #12-40, Frente al Golfo, Turbo, Antioquia',
+    telefono: '+57 (604) 827-1122',
+    whatsapp: '+573112345678',
     especialidad: 'Cazuela de mariscos, Pescado frito con arroz de coco',
     rangoPrecio: '$$',
     calificacion: 4.9,
-    horario: '11:00 AM - 10:00 PM',
-    imagen: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80'
+    horario: 'Lunes a Domingo: 11:00 AM - 10:00 PM',
+    imagen: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Ubicado frente al atardecer del Golfo de Urabá en el malecón de Turbo. Gastronomía marina auténtica con pesca del día.',
+    descripcionDetallada: 'Mar y Tierra ofrece una experiencia gastronómica Caribe-Antioqueña inolvidable. Nuestros chefs locales preparan mariscos frescos traídos directamente por los pescadores artesanales de la bahía, acompañados de patacones de plátano verde y arroz con coco artesanal.',
+    menuDestacado: [
+      { nombre: 'Cazuela de Mariscos Golfo de Urabá', precio: 45000, descripcion: 'Camarones, langostinos y pesca del día con gratén de queso y crema de coco' },
+      { nombre: 'Pargo Rojo Frito Artesanal', precio: 40000, descripcion: 'Servido con arroz de coco titoté, patacón gigante y ensalada de aguacate' },
+      { nombre: 'Ceviche de Camarón a la Costeña', precio: 28000, descripcion: 'Camarones marinados en limón criollo, suero costeño y cebolla morada' }
+    ],
+    metodosPago: 'Efectivo, Nequi, Daviplata, Tarjetas Débito y Crédito'
   },
   {
     id: 'r2',
     nombre: 'Donde Checho - Asados & Tradición',
     ubicación: 'Zona Rosa, Apartadó',
+    municipio: 'Apartadó, Urabá',
+    lat: 7.8850,
+    lng: -76.6240,
+    direccion: 'Cra 102 #97-15, Zona Rosa, Apartadó, Antioquia',
+    telefono: '+57 (604) 828-9988',
+    whatsapp: '+573133456789',
     especialidad: 'Cortes finos, Sancocho de gallina criolla los domingos',
     rangoPrecio: '$$$',
     calificacion: 4.7,
-    horario: '12:00 PM - 11:00 PM',
-    imagen: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80'
+    horario: 'Lunes a Domingo: 12:00 PM - 11:00 PM',
+    imagen: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558030006-450675393462?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'El restaurante pionero en cortes de carne madurada al carbón de leña y tradición culinaria antioqueña en Apartadó.',
+    descripcionDetallada: 'Donde Checho combina la tradición de la parrilla madurada con la calidez del servicio de Urabá. Famoso por su sancocho trillado en leña de los domingos y sus platos familiares.',
+    menuDestacado: [
+      { nombre: 'Punta de Anchoa Madurada (400g)', precio: 48000, descripcion: 'Corte magro a la parrilla con chimichurri casero y papas criollas' },
+      { nombre: 'Sancocho Trifásico Criollo', precio: 35000, descripcion: 'Servido en olla de barro con gallina, costilla de cerdo, plátano y yuca' },
+      { nombre: 'Picada Mar y Tierra (Para 3 personas)', precio: 65000, descripcion: 'Carne de res, chicharrón crujiente, chorizo, patacones y suero' }
+    ],
+    metodosPago: 'Efectivo, Nequi, Daviplata, Tarjetas Débito y Crédito'
   }
 ];
 
@@ -275,28 +376,78 @@ export const TRANSPORTE_RUTAS = [
     id: 't1',
     origen: 'Apartadó',
     destino: 'Turbo / Puerto Antioquia',
+    empresa: 'Cootransuroeste',
+    categoria: 'Transporte Intermunicipal',
+    municipio: 'Apartadó - Turbo',
+    lat: 7.8835,
+    lng: -76.6265,
+    direccion: 'Terminal de Transportes de Apartadó, Módulo 2, Taquilla 14',
+    telefono: '+57 (604) 828-1010',
+    whatsapp: '+573154567890',
     tiempoEstimado: '45 minutos',
-    frecuencia: 'Cada 15 min',
+    frecuencia: 'Cada 15 minutos',
     precio: 9000,
-    empresa: 'Cootransuroeste'
+    horario: '4:30 AM - 9:00 PM (Diario)',
+    calificacion: 4.8,
+    imagen: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Conexión continua en microbuses climatizados con WiFi y carga USB entre el centro urbano de Apartadó y la zona portuaria de Turbo.',
+    descripcionDetallada: 'Ruta principal que conecta el corazón comercial de Apartadó con el puerto comercial en Turbo. Unidades modernas con aire acondicionado y conductores capacitados en seguridad vial.',
+    metodosPago: 'Efectivo en Taquilla, Reserva Digital PSP, Nequi'
   },
   {
     id: 't2',
     origen: 'Apartadó',
     destino: 'Necoclí (Playas)',
+    empresa: 'Sotraurabá',
+    categoria: 'Transporte Turístico & Pasajeros',
+    municipio: 'Apartadó - Necoclí',
+    lat: 7.8835,
+    lng: -76.6265,
+    direccion: 'Terminal de Transportes de Apartadó, Taquilla 5',
+    telefono: '+57 (604) 828-2020',
+    whatsapp: '+573165678901',
     tiempoEstimado: '1 hora 15 min',
-    frecuencia: 'Cada 30 min',
+    frecuencia: 'Cada 30 minutos',
     precio: 18000,
-    empresa: 'Sotraurabá'
+    horario: '5:00 AM - 7:30 PM (Diario)',
+    calificacion: 4.9,
+    imagen: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Ruta costera con paradas directas en las playas de Necoclí, hoteles y terminal marítimo para embarcaciones a Capurganá.',
+    descripcionDetallada: 'Flota cómoda para viajeros y turistas que se dirigen al norte del golfo de Urabá. Equipados con portaequipajes amplio y aire acondicionado.',
+    metodosPago: 'Efectivo en Taquilla, Nequi, Daviplata'
   },
   {
     id: 't3',
     origen: 'Medellín',
     destino: 'Apartadó (Eje Bananero)',
+    empresa: 'Expreso Bolivariano / Sotramur',
+    categoria: 'Transporte Interdepartamental',
+    municipio: 'Medellín - Apartadó',
+    lat: 7.8835,
+    lng: -76.6265,
+    direccion: 'Terminal del Norte Medellín / Terminal de Apartadó',
+    telefono: '+57 (604) 828-3030',
+    whatsapp: '+573176789012',
     tiempoEstimado: '6 horas',
-    frecuencia: 'Salidas diarias',
+    frecuencia: 'Salidas cada hora',
     precio: 85000,
-    empresa: 'Expreso Bolivariano / Sotramur'
+    horario: '24 Horas con salidas nocturnas',
+    calificacion: 4.9,
+    imagen: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Servicio preferencial de bus de dos pisos con pantallas individuales, reclinación 160°, WiFi y conector de energía.',
+    descripcionDetallada: 'Conecta la capital antioqueña con la próspera región de Urabá a través de las nuevas autopistas de 4ta generación.',
+    metodosPago: 'Efectivo, PSE, Tarjeta de Crédito, Nequi'
   }
 ];
 
@@ -306,18 +457,60 @@ export const TURISMO_DESTINOS = [
     nombre: 'Playas de Necoclí y Ciénaga de la Marimonda',
     categoria: 'Ecoturismo & Sol',
     ubicacion: 'Necoclí, Golfo de Urabá',
-    descripcion: 'Disfruta del mar cálido, volcanes de lodo curativo y avistamiento de aves acuáticas en reservorio ecológico.',
+    municipio: 'Necoclí, Urabá',
+    lat: 8.4246,
+    lng: -76.7865,
+    direccion: 'Sector Playa El Almejal & Ciénaga de Marimonda, Necoclí, Antioquia',
+    telefono: '+57 (604) 821-5050',
+    whatsapp: '+573109876543',
+    horario: 'Abierto todos los días: 7:00 AM - 6:00 PM',
+    calificacion: 4.9,
     precio: 'Tours desde $85,000 COP',
-    imagen: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80'
+    imagen: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Disfruta del mar cálido del golfo, volcanes de lodo curativo y avistamiento de aves acuáticas en reservorio ecológico.',
+    descripcionDetallada: 'Necoclí ofrece una combinación idílica de playas doradas, manglares vírgenes y la mágica Ciénaga de la Marimonda. Guías comunitarios locales te llevarán en recorridos en lancha ecológica.',
+    itinerario: [
+      { titulo: 'Recepción en Muelle de Necoclí', detalle: 'Bienvenida con jugo de fruta tropical y charla de conservación' },
+      { titulo: 'Navegación por Ciénaga de Marimonda', detalle: 'Avistamiento de monos aulladores, garzas reales y flora endémica' },
+      { titulo: 'Baño Curativo en Volcán de Lodo', detalle: 'Masaje de fango natural rico en minerales y baño de mar' },
+      { titulo: 'Almuerzo Típico Caribeño', detalle: 'Pescado fresco, arroz de coco y patacón con limonada de panela' }
+    ],
+    metodosPago: 'Efectivo, Nequi, Daviplata'
   },
   {
     id: 'tu2',
     nombre: 'Reserva Natural Serranía del Abibe',
     categoria: 'Senderismo & Biodiversidad',
     ubicacion: 'Carepa - Chigorodó',
-    descripcion: 'Caminatas guiadas por selva húmeda tropical con cascadas naturales y avistamiento de fauna autóctona.',
+    municipio: 'Chigorodó, Urabá',
+    lat: 7.6672,
+    lng: -76.6806,
+    direccion: 'Vereda La Sombra, Pie de Monte Serranía del Abibe, Chigorodó',
+    telefono: '+57 (604) 825-7070',
+    whatsapp: '+573208765432',
+    horario: 'Tours guiados previa reserva: 6:00 AM - 4:00 PM',
+    calificacion: 4.9,
     precio: 'Tours desde $60,000 COP',
-    imagen: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80'
+    imagen: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&auto=format&fit=crop&q=80'
+    ],
+    descripcion: 'Caminatas guiadas por selva húmeda tropical con cascadas naturales y avistamiento de fauna autóctona.',
+    descripcionDetallada: 'Un santuario de biodiversidad neotropical en los límites montañosos del Chocó biogeográfico. Asciende por senderos ecológicos hasta pozos cristalinos y cascadas de más de 20 metros de altura.',
+    itinerario: [
+      { titulo: 'Punto de Encuentro Chigorodó', detalle: 'Traslado 4x4 hasta la vereda La Sombra' },
+      { titulo: 'Trek por Selva Húmeda Tropical', detalle: 'Caminata de 3.5 km con interpretación ambiental de flora medicinal' },
+      { titulo: 'Baño de Cascada & Poza Azul', detalle: 'Tiempo libre para natación en aguas puras de montaña' },
+      { titulo: 'Refrigerio de Frutas de Urabá & Café', detalle: 'Degustación de café orgánico y plátano horneado local' }
+    ],
+    metodosPago: 'Efectivo, Nequi, Daviplata'
   }
 ];
 

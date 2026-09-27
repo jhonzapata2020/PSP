@@ -87,9 +87,30 @@ export const PRODUCTOS = [
     precio: 28000,
     precioAnterior: 32000,
     proveedor: 'Agroemprendedores de Turbo',
+    municipio: 'Turbo, Urabá',
     calificacion: 4.9,
-    imagen: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=500&auto=format&fit=crop&q=80',
+    reseñasCount: 142,
+    imagen: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1528751014936-863e6e7a319c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800&auto=format&fit=crop&q=80'
+    ],
     descripcion: 'Chips artesanalmente elaborados con plátano de Urabá 100% natural, sazonados con sal marina y ajo de origen sostenible.',
+    descripcionDetallada: 'Nuestros snacks de plátano mofongo criollo son producidos por familias plataneras del municipio de Turbo, Urabá. Horneados a fuego controlado con aceite de girasol no transgénico y sazonados artesanalmente con ajo criollo y sal marina pura. Preservan toda la fibra natural y el sabor característico de los suelos del Caribe antioqueño.',
+    caracteristicas: [
+      'Plátano Hartón seleccionado de parcelas con certificación social',
+      'Libre de gluten, grasa trans y conservantes químicos',
+      'Empaque bilaminado de alta barrera para conservar crujencia por 6 meses',
+      'Comercio justo que beneficia directamente a 18 pequeños campesinos'
+    ],
+    especificaciones: {
+      'Presentación': 'Caja de 6 paquetes individuales (80g c/u)',
+      'Origen': 'Turbo, Antioquia (Subregión Urabá)',
+      'Registro Sanitario': 'INVIMA NSA-0012948-2022',
+      'Vida útil': '180 días a temperatura ambiente'
+    },
+    ods: [8, 12, 15],
     stock: 45
   },
   {
@@ -99,9 +120,30 @@ export const PRODUCTOS = [
     precio: 35000,
     precioAnterior: 38000,
     proveedor: 'Asociación de Apicultores de Mutatá',
+    municipio: 'Mutatá, Urabá',
     calificacion: 5.0,
-    imagen: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=500&auto=format&fit=crop&q=80',
+    reseñasCount: 98,
+    imagen: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1471943311424-646960669fbc?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800&auto=format&fit=crop&q=80'
+    ],
     descripcion: 'Miel multifloral recolectada en reservas naturales de Urabá, sin aditivos ni azúcares añadidos.',
+    descripcionDetallada: 'Cosechada a mano en colmenas apícolas situadas en el pie de monte de la Serranía del Abibe en Mutatá. Esta miel multifloral de bosque húmedo tropical destaca por su tono ámbar profundo, aroma floral autóctono y alta concentración de antioxidantes y enzimas naturales.',
+    caracteristicas: [
+      'Miel 100% cruda, no pasteurizada y filtrada en frío',
+      'Cosecha sostenible que protege las abejas nativas sin aguijón',
+      'Frasco de vidrio esterilizado con sellado térmico de garantía',
+      'Fortalece el sistema inmunológico y es endulzante natural de bajo índice glucémico'
+    ],
+    especificaciones: {
+      'Contenido Neto': '500g (Frasco de Vidrio Reciclable)',
+      'Origen': 'Mutatá, Antioquia (Subregión Urabá)',
+      'Registro Sanitario': 'INVIMA RSA-0004521-2021',
+      'Cosecha': 'Bosque Húmedo Neotropical 2026'
+    },
+    ods: [13, 15],
     stock: 20
   },
   {
@@ -111,9 +153,30 @@ export const PRODUCTOS = [
     precio: 120000,
     precioAnterior: 140000,
     proveedor: 'Colectivo Artesanas de Necoclí',
+    municipio: 'Necoclí, Urabá',
     calificacion: 4.8,
-    imagen: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format&fit=crop&q=80',
+    reseñasCount: 76,
+    imagen: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80'
+    ],
     descripcion: 'Diseño exclusivo elaborado a mano por mujeres artesanas de la costa caribeña de Urabá. Resiste uso diario.',
+    descripcionDetallada: 'Bolso estructurado de mano tejido hilo a hilo por maestras artesanas de la etnia Zenú y comunidades afrodescendientes de Necoclí. Emplea la tradicional trenza de caña flecha entrelazada con palma iraca teñida con tintes vegetales botánicos.',
+    caracteristicas: [
+      'Tejido ancestral hecho 100% a mano durante 14 días de trabajo',
+      'Asas reforzadas con cuero ecológico vegetal',
+      'Forro interno de lienzo con bolsillo interno con cremallera',
+      'Pieza única e irrepetible con sello de origen artesanal'
+    ],
+    especificaciones: {
+      'Dimensiones': '35cm (Alto) x 40cm (Ancho) x 12cm (Profundidad)',
+      'Materiales': 'Caña Flecha, Palma Iraca y Cuero Vegetal',
+      'Origen': 'Necoclí, Antioquia (Golfo de Urabá)',
+      'Cuidados': 'Limpieza con paño seco y protección contra humedad extrema'
+    },
+    ods: [5, 8, 10],
     stock: 12
   },
   {
@@ -123,9 +186,30 @@ export const PRODUCTOS = [
     precio: 42000,
     precioAnterior: 45000,
     proveedor: 'Café de Origen Chigorodó',
+    municipio: 'Chigorodó, Urabá',
     calificacion: 4.9,
-    imagen: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&auto=format&fit=crop&q=80',
+    reseñasCount: 164,
+    imagen: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&auto=format&fit=crop&q=80',
+    imagenes: [
+      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80'
+    ],
     descripcion: 'Granos arábicos cultivados a más de 1.400 msnm con notas a cacao, frutas silvestres y panela.',
+    descripcionDetallada: 'Cultivado en las laderas orientales de la Serranía del Abibe en Chigorodó. Granos de varietales Castillo y Caturra beneficiados por vía húmeda con fermentación prolongada de 36 horas y tostión media artesanal que exalta sus notas dulces a melaza y frutos rojos.',
+    caracteristicas: [
+      'Café de alta montaña (Puntaje de Taza SCA: 86.5 puntos)',
+      'Tostado semanalmente para garantizar máxima frescura aromática',
+      'Empaque multilaminado con válvula desgasificadora unidireccional',
+      'Cosecha por micro-lotes de agricultura de conservación'
+    ],
+    especificaciones: {
+      'Presentación': 'Bolsa de 450g en Grano o Molido (Seleccionable)',
+      'Tostión': 'Media (City Plus)',
+      'Origen': 'Finca La Esperanza, Chigorodó (1.450 msnm)',
+      'Certificación': 'Café de Colombia & Comercio Sostenible'
+    },
+    ods: [8, 12],
     stock: 30
   }
 ];

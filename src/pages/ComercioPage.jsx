@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall } from 'lucide-react';
+import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye } from 'lucide-react';
 import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
 import { useCart } from '../context/CartContext';
+import ProductDetailView from '../components/comercio/ProductDetailView';
 
 const ComercioPage = () => {
   const [activeTab, setActiveTab] = useState('productos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const { addToCart } = useCart();
 
   const tabs = [
@@ -15,6 +17,20 @@ const ComercioPage = () => {
     { id: 'transporte', label: 'Rutas & Transporte', icon: Bus },
     { id: 'turismo', label: 'Turismo & Experiencias', icon: Compass },
   ];
+
+  // Render Product Detail View if a product is selected
+  if (selectedProduct) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <ProductDetailView 
+          product={selectedProduct} 
+          onBack={() => setSelectedProduct(null)} 
+          allProducts={PRODUCTOS}
+          onSelectProduct={(p) => setSelectedProduct(p)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8">
@@ -59,17 +75,41 @@ const ComercioPage = () => {
       {activeTab === 'productos' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PRODUCTOS.map((prod) => (
-            <div key={prod.id} className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all">
-              <div>
-                <img src={prod.imagen} alt={prod.nombre} className="w-full h-48 object-cover" />
+            <div 
+              key={prod.id} 
+              className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
+            >
+              {/* Card Header with Clickable Image */}
+              <div 
+                onClick={() => setSelectedProduct(prod)}
+                className="cursor-pointer"
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={prod.imagen} 
+                    alt={prod.nombre} 
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                    </span>
+                  </div>
+                </div>
+
                 <div className="p-5">
                   <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{prod.nombre}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{prod.descripcion}</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
+                    {prod.nombre}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
+                    {prod.descripcion}
+                  </p>
                   <p className="text-[11px] font-semibold text-emerald-500 mt-3">Por: {prod.proveedor}</p>
                 </div>
               </div>
 
+              {/* Card Footer with Price & Quick Add */}
               <div className="p-5 pt-0 flex items-center justify-between">
                 <div>
                   <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
@@ -78,7 +118,10 @@ const ComercioPage = () => {
                   )}
                 </div>
                 <button
-                  onClick={() => addToCart(prod)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(prod);
+                  }}
                   className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md"
                 >
                   Añadir al carrito

@@ -12,6 +12,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { loadAvatarDefaults, pickDefaultAvatar } from '../services/avatarDefaults';
 
 const AuthPage = () => {
 
@@ -60,17 +61,12 @@ const AuthPage = () => {
 
     try {
       if (isRegister) {
-        // Asigna avatar por defecto según tipo de persona y género
-        let defaultAvatar = '';
-        if (personType === 'juridica') {
-          defaultAvatar = 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&auto=format&fit=crop&q=80';
-        } else if (gender === 'femenino') {
-          defaultAvatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80';
-        } else if (gender === 'masculino') {
-          defaultAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80';
-        } else {
-          defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80';
-        }
+        // Foto de fábrica (bucket R2) según tipo de persona y género. El
+        // backend descarta las URLs de otras web, así que aquí sólo puede
+        // entrar una foto nuestra: si no hay ninguna, queda sin avatar y el
+        // front muestra la primera de la lista.
+        const defaults = await loadAvatarDefaults();
+        const defaultAvatar = pickDefaultAvatar(defaults, { personType, gender });
 
         // POST /api/auth/register → el backend asigna el rol por defecto
         // (emprendedor_social | empresa_aliada) según personType.

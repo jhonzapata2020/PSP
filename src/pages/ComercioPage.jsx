@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
-import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import { SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import productsApi from '../services/productsApi';
 import { useCart } from '../context/CartContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 import CommerceDetailView from '../components/comercio/CommerceDetailView';
@@ -39,6 +40,47 @@ const ComercioPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCommerceItem, setSelectedCommerceItem] = useState(null);
 
+  // Catálogo de productos: YA NO sale del mock, sale de psp.products.
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const page = await productsApi.list({ pageSize: 48 });
+        if (!cancelled) {
+          setProducts(page.items);
+          setError(null);
+        }
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /**
+   * Al pulsar una tarjeta se pide la ficha completa a la API: el listado no trae
+   * descripcionDetallada, imagenes, caracteristicas ni especificaciones. Se muestra
+   * primero la tarjeta para no dejar una pantalla en blanco mientras carga.
+   */
+  const openProduct = (prod) => {
+    setSelectedProduct(prod);
+    productsApi
+      .get(prod.id)
+      .then((full) => setSelectedProduct(full))
+      .catch(() => {
+        /* sin detalle nos quedamos con la tarjeta: la vista degrada, no se rompe */
+      });
+  };
+
   // Sync activeTab when URL or search parameters change
   useEffect(() => {
     const tab = getTabFromLocation();
@@ -61,9 +103,9 @@ const ComercioPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <ProductDetailView 
           product={selectedProduct} 
-          onBack={() => setSelectedProduct(null)} 
-          allProducts={PRODUCTOS}
-          onSelectProduct={(p) => setSelectedProduct(p)}
+          onBack={() => setSelectedProduct(null)}
+          allProducts={products}
+          onSelectProduct={openProduct}
         />
       </div>
     );
@@ -134,10 +176,28 @@ const ComercioPage = () => {
         })}
       </div>
 
-      {/* TAB 1: PRODUCTOS */}
-      {activeTab === 'productos' && (
+      {/* TAB 1: PRODUCTOS — desde la API psp.products (el mock sólo cubre el resto de pestañas) */}
+      {activeTab === 'productos' && loading && (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+          Cargando el catálogo desde la API…
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && error && (
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 p-6 text-sm font-semibold text-rose-700 dark:text-rose-300">
+          No se pudo cargar el catálogo: {error}
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && !error && products.length === 0 && (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm text-slate-500 dark:text-slate-400">
+          Todavía no hay productos publicados en el catálogo.
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && !error && products.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTOS.map((prod) => (
+          {products.map((prod) => (
             <div 
               key={prod.id} 
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"

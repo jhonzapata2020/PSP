@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api, { getToken, setToken } from '../services/api';
+import { loadAvatarDefaults } from '../services/avatarDefaults';
 
 const AuthContext = createContext(null);
 
@@ -8,8 +9,12 @@ const USER_KEY = 'psp_user';
 /**
  * Convierte el UserProfileDto del backend al shape que ya usan
  * Header, ProfilePage y ForoPage (user.role, user.avatar, user.name...).
+ *
+ * `fallbackAvatar` es la primera foto de fábrica: sólo se usa cuando la cuenta
+ * todavía no tiene foto propia (p. ej. recién registrada con un avatar externo
+ * que el backend descartó). Nunca es una URL de otra web.
  */
-function mapUser(dto) {
+function mapUser(dto, fallbackAvatar = '') {
   if (!dto) return null;
   const roleDisplay = dto.roleDisplayNames?.length
     ? dto.roleDisplayNames
@@ -19,7 +24,7 @@ function mapUser(dto) {
     id: dto.id,
     name: dto.name,
     email: dto.email,
-    avatar: dto.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+    avatar: dto.avatar || fallbackAvatar || '',
     municipio: dto.municipio ?? 'Apartadó, Urabá',
     personType: dto.personType ?? 'natural',
     documentType: dto.documentType ?? 'CC',
@@ -54,6 +59,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /**
+   * Fotos de fábrica (R2). Se piden una vez al arrancar y se guardan aquí para
+   * dos cosas: pintar el selector del modal de foto y fallback de avatar para
+   * las cuentas que todavía no tienen foto propia.
+   */
+  const [avatarDefaults, setAvatarDefaults] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadAvatarDefaults().then((list) => {
+      if (!cancelled) setAvatarDefaults(list);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const persist = useCallback((nextUser) => {
     setUser(nextUser);
     if (nextUser) localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
@@ -70,8 +92,11 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       try {
-        const dto = await api.me();
-        if (!cancelled) persist(mapUser(dto));
+        const [dto, defaults] = await Promise.all([api.me(), loadAvatarDefaults()]);
+        if (!cancelled) {
+          setAvatarDefaults(defaults);
+          persist(mapUser(dto, defaults[0]));
+        }
       } catch {
         // 401/403 o API caída: limpia la sesión local.
         if (!cancelled) {
@@ -94,9 +119,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const res = await api.login(email, password);
+        const [res, defaults] = await Promise.all([
+          api.login(email, password),
+          loadAvatarDefaults(),
+        ]);
         setToken(res.token);
-        const mapped = mapUser(res.user);
+        setAvatarDefaults(defaults);
+        const mapped = mapUser(res.user, defaults[0]);
         persist(mapped);
         return mapped;
       } catch (err) {
@@ -114,9 +143,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const res = await api.register(payload);
+        const [res, defaults] = await Promise.all([
+          api.register(payload),
+          loadAvatarDefaults(),
+        ]);
         setToken(res.token);
-        const mapped = mapUser(res.user);
+        setAvatarDefaults(defaults);
+        const mapped = mapUser(res.user, defaults[0]);
         persist(mapped);
         return mapped;
       } catch (err) {
@@ -149,7 +182,7 @@ export const AuthProvider = ({ children }) => {
           phone: fields.phone ?? user.phone,
           gender: fields.gender ?? user.gender,
         });
-        const mapped = mapUser(dto);
+        const mapped = mapUser(dto, (await loadAvatarDefaults())[0]);
         persist(mapped);
         return mapped;
       } catch (err) {
@@ -160,6 +193,30 @@ export const AuthProvider = ({ children }) => {
       }
     },
     [user, persist]
+  );
+
+  /**
+   * Sube una foto del dispositivo (PC o móvil) y actualiza la sesión con el
+   * perfil que devuelve la API: la imagen nueva ya está en el bucket y la
+   * anterior se borró en el servidor.
+   */
+  const uploadAvatar = useCallback(
+    async (file) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const dto = await api.uploadAvatar(file);
+        const mapped = mapUser(dto, (await loadAvatarDefaults())[0]);
+        persist(mapped);
+        return mapped;
+      } catch (err) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [persist]
   );
 
   /** Cambia la contraseña propia. */
@@ -196,12 +253,14 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       updateProfile,
+      uploadAvatar,
+      avatarDefaults,
       changePassword,
       hasPermission,
       hasRole,
       isAuthenticated: Boolean(user),
     }),
-    [user, loading, initializing, error, login, register, logout, updateProfile, changePassword, hasPermission, hasRole]
+    [user, loading, initializing, error, login, register, logout, updateProfile, uploadAvatar, avatarDefaults, changePassword, hasPermission, hasRole]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

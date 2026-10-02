@@ -29,6 +29,9 @@ import AdminRolesPage from './pages/admin/AdminRolesPage';
 import AdminMatrizPage from './pages/admin/AdminMatrizPage';
 import AdminResumenPage from './pages/admin/AdminResumenPage';
 import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
+import AdminProductosPage from './pages/admin/AdminProductosPage';
+import AdminCatalogoPage from './pages/admin/AdminCatalogoPage';
+import ProductFormPage from './pages/admin/ProductFormPage';
 
 // Legal & Policy Pages (Etapa 1)
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
@@ -113,6 +116,38 @@ function App() {
                       element={
                         <ProtectedRoute permission="audit.read">
                           <AdminAuditoriaPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="productos"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <AdminProductosPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <AdminCatalogoPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo/nuevo"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <ProductFormPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo/editar/:sku"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <ProductFormPage />
                         </ProtectedRoute>
                       }
                     />

@@ -21,10 +21,12 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, auth = true } = {}) {
+async function request(path, { method = 'GET', body, formData, auth = true } = {}) {
   const headers = { Accept: 'application/json' };
 
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  // En multipart el Content-Type lo pone el navegador (con su boundary):
+  // fijarlo a mano rompería la subida de imágenes.
+  if (formData === undefined && body !== undefined) headers['Content-Type'] = 'application/json';
 
   const token = getToken();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
@@ -34,7 +36,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     response = await fetch(`${API_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: formData !== undefined ? formData : body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
     throw new ApiError(0, 'No se pudo conectar con el servidor. Verifica que la API esté activa.');
@@ -97,6 +99,23 @@ export const api = {
       method: 'PUT',
       body: { currentPassword, newPassword },
     }),
+
+  // ---------- AVATARES ----------
+  /**
+   * Fotos de fábrica que vive en el bucket (R2). Pública a propósito: hace
+   * falta en el registro, donde todavía no hay token.
+   */
+  avatarDefaults: () => request('/api/auth/avatar/defaults', { auth: false }),
+
+  /**
+   * Sube una imagen del dispositivo (PC o móvil). El navegador sólo habla con
+   * la API; la API valida la firma binaria, sube a R2 y borra la anterior.
+   */
+  uploadAvatar: (file) => {
+    const form = new FormData();
+    form.append('file', file, file.name || 'avatar');
+    return request('/api/auth/avatar', { method: 'POST', formData: form });
+  },
 
   // ---------- USERS (requiere permisos users.*) ----------
   users: ({ q = '', status = '', page = 1, pageSize = 20 } = {}) => {

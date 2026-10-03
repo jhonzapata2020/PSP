@@ -1,3 +1,4 @@
+
 /**
  * Cliente HTTP para la API Identity Hub (ASP.NET Core 8).
  * - Adjunta el JWT en cada petición autenticada.
@@ -172,3 +173,4 @@ export const api = {
 };
 
 export default api;
+

@@ -1,6 +1,8 @@
+
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api, { getToken, setToken } from '../services/api';
 import { loadAvatarDefaults } from '../services/avatarDefaults';
+
 
 const AuthContext = createContext(null);
 
@@ -41,6 +43,7 @@ function mapUser(dto, fallbackAvatar = '') {
     roles: dto.roles ?? [],
     roleDisplayNames: roleDisplay,
     permissions: dto.permissions ?? [],
+
   };
 }
 
@@ -253,6 +256,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       updateProfile,
+
       uploadAvatar,
       avatarDefaults,
       changePassword,
@@ -261,6 +265,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: Boolean(user),
     }),
     [user, loading, initializing, error, login, register, logout, updateProfile, uploadAvatar, avatarDefaults, changePassword, hasPermission, hasRole]
+
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

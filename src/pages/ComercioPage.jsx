@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
-import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import productsApi from '../services/productsApi';
 import { useCart } from '../context/CartContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 import CommerceDetailView from '../components/comercio/CommerceDetailView';
@@ -35,9 +36,93 @@ const ComercioPage = () => {
   };
 
   const [activeTab, setActiveTab] = useState(getTabFromLocation);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState('');
+  const [categoriesList, setCategoriesList] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCommerceItem, setSelectedCommerceItem] = useState(null);
+
+  // Catálogo de productos paginado y filtrable dinámicamente desde la API psp.products
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const pageSize = 12;
+
+  // Cargar lista de categorías activas para el filtro
+  useEffect(() => {
+    let active = true;
+    productsApi.categories()
+      .then(res => { if (active) setCategoriesList(res || []); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  // Debounce para actualizar debouncedQuery sólo tras 1500ms sin escribir
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchInput.trim());
+      setPage(1);
+    }, 1500);
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  // Cargar catálogo de productos/servicios con soporte para búsqueda, categoría y paginación desde la API psp.products
+  useEffect(() => {
+    let categoryCodeFilter = selectedCategoryCode;
+
+    if (activeTab === 'servicios') categoryCodeFilter = 'servicios-empresariales';
+    else if (activeTab === 'restaurantes') categoryCodeFilter = 'bebidas-gastronomia';
+    else if (activeTab === 'transporte') categoryCodeFilter = 'transporte-logistica';
+    else if (activeTab === 'turismo') categoryCodeFilter = 'turismo-experiencias';
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await productsApi.list({
+          q: debouncedQuery,
+          categoryCode: categoryCodeFilter,
+          page,
+          pageSize: activeTab === 'productos' ? pageSize : 24
+        });
+        if (!cancelled) {
+          setProducts(res.items || []);
+          setTotal(res.total || 0);
+          setTotalPages(res.totalPages || 1);
+          setError(null);
+        }
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, debouncedQuery, selectedCategoryCode, page]);
+
+  /**
+   * Al pulsar una tarjeta se pide la ficha completa a la API: el listado no trae
+   * descripcionDetallada, imagenes, caracteristicas ni especificaciones. Se muestra
+   * primero la tarjeta para no dejar una pantalla en blanco mientras carga.
+   */
+  const openProduct = (prod) => {
+    setSelectedProduct(prod);
+    productsApi
+      .get(prod.id)
+      .then((full) => setSelectedProduct(full))
+      .catch(() => {
+        /* sin detalle nos quedamos con la tarjeta: la vista degrada, no se rompe */
+      });
+  };
 
   // Sync activeTab when URL or search parameters change
   useEffect(() => {
@@ -61,9 +146,9 @@ const ComercioPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <ProductDetailView 
           product={selectedProduct} 
-          onBack={() => setSelectedProduct(null)} 
-          allProducts={PRODUCTOS}
-          onSelectProduct={(p) => setSelectedProduct(p)}
+          onBack={() => setSelectedProduct(null)}
+          allProducts={products}
+          onSelectProduct={openProduct}
         />
       </div>
     );
@@ -134,72 +219,168 @@ const ComercioPage = () => {
         })}
       </div>
 
-      {/* TAB 1: PRODUCTOS */}
+      {/* Barra de Filtro y Buscador Dinámico (Sólo visible para la pestaña Productos) */}
       {activeTab === 'productos' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTOS.map((prod) => (
-            <div 
-              key={prod.id} 
-              className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
-            >
-              <div 
-                onClick={() => setSelectedProduct(prod)}
-                className="cursor-pointer"
+        <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-psp-dark-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Caja de Búsqueda por Nombre / SKU / Término */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, SKU (ej. CHO-001) o palabra clave... (presiona Enter para buscar)"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setDebouncedQuery(searchInput.trim());
+                  setPage(1);
+                }
+              }}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+            />
+            {searchInput && (
+              <button 
+                onClick={() => { setSearchInput(''); setDebouncedQuery(''); setPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={prod.imagen} 
-                    alt={prod.nombre} 
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5" /> Ver Detalles
-                    </span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Selector de Categoría Dinámico */}
+          <div className="sm:w-64">
+            <select
+              value={selectedCategoryCode}
+              onChange={(e) => { setSelectedCategoryCode(e.target.value); setPage(1); }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+            >
+              <option value="">Todas las Categorías</option>
+              {categoriesList.map((cat) => (
+                <option key={cat.id} value={cat.codigo}>
+                  {cat.nombre} ({cat.totalProductos})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 1: PRODUCTOS — desde la API psp.products con soporte paginado y filtros */}
+      {activeTab === 'productos' && loading && (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+          <div className="animate-spin h-5 w-5 border-2 border-psp-cyan border-t-transparent rounded-full" />
+          <span>Buscando productos en el catálogo…</span>
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && error && (
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 p-6 text-sm font-semibold text-rose-700 dark:text-rose-300">
+          No se pudo cargar el catálogo: {error}
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && !error && products.length === 0 && (
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-12 text-center text-sm text-slate-500 dark:text-slate-400 space-y-2">
+          <p className="text-base font-bold text-slate-700 dark:text-slate-200">No se encontraron productos</p>
+          <p className="text-xs">Prueba ajustando el término de búsqueda o seleccionando otra categoría.</p>
+        </div>
+      )}
+
+      {activeTab === 'productos' && !loading && !error && products.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map((prod) => (
+              <div 
+                key={prod.id} 
+                className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
+              >
+                <div 
+                  onClick={() => openProduct(prod)}
+                  className="cursor-pointer"
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={prod.imagen} 
+                      alt={prod.nombre} 
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
+                      <span className="text-[10px] font-mono text-slate-400">{prod.sku}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
+                      {prod.nombre}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
+                      {prod.descripcion}
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
-                    {prod.nombre}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
-                    {prod.descripcion}
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-500 mt-3">Por: {prod.proveedor}</p>
+                <div className="p-5 pt-0 flex items-center justify-between">
+                  <div>
+                    <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
+                    {prod.precioAnterior && (
+                      <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(prod);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                  >
+                    Añadir al carrito
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="p-5 pt-0 flex items-center justify-between">
-                <div>
-                  <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
-                  {prod.precioAnterior && (
-                    <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
-                  )}
-                </div>
+          {/* Control de Paginación para Productos */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-psp-dark-card rounded-2xl border border-slate-200 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-medium">
+                Página <strong>{page}</strong> de <strong>{totalPages}</strong> (Mostrando {products.length} de {total} productos)
+              </span>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(prod);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Añadir al carrito
+                  <ChevronLeft className="w-4 h-4" /> Anterior
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Siguiente <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* TAB 2: SERVICIOS */}
       {activeTab === 'servicios' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {SERVICIOS.map((serv) => (
+          {(products.length > 0 ? products : SERVICIOS).map((serv) => (
             <div 
               key={serv.id} 
-              onClick={() => setSelectedCommerceItem(serv)}
+              onClick={() => openProduct(serv)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft p-6 flex flex-col justify-between hover:shadow-xl transition-all cursor-pointer group"
             >
               <div>
@@ -207,18 +388,23 @@ const ComercioPage = () => {
                   <img src={serv.imagen} alt={serv.nombre} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                      <Navigation className="w-3.5 h-3.5" /> Ver Comercio & Mapa
+                      <Eye className="w-3.5 h-3.5" /> Ver Detalle del Servicio
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{serv.categoria}</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{serv.categoria}</span>
+                  {serv.sku && <span className="text-[10px] font-mono text-slate-400">{serv.sku}</span>}
+                </div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1 mb-2 group-hover:text-teal-500 transition-colors">{serv.nombre}</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-2">{serv.descripcion}</p>
               </div>
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Tarifa Estimada</span>
-                  <span className="text-xs font-extrabold text-psp-cyan">{serv.precioEstimado}</span>
+                  <span className="text-xs font-extrabold text-psp-cyan">
+                    {serv.precioEstimado || (serv.precio ? `$${serv.precio.toLocaleString()} COP` : 'Consultar')}
+                  </span>
                 </div>
                 <button className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold group-hover:bg-psp-cyan group-hover:text-slate-950 transition-colors flex items-center gap-1">
                   <span>Ver Detalle</span>
@@ -233,17 +419,17 @@ const ComercioPage = () => {
       {/* TAB 3: RESTAURANTES */}
       {activeTab === 'restaurantes' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {RESTAURANTES.map((rest) => (
+          {(products.length > 0 ? products : RESTAURANTES).map((rest) => (
             <div 
               key={rest.id} 
-              onClick={() => setSelectedCommerceItem(rest)}
+              onClick={() => openProduct(rest)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 p-6 flex flex-col sm:flex-row gap-6 shadow-psp-soft hover:shadow-xl transition-all cursor-pointer group"
             >
               <div className="w-full sm:w-44 h-44 rounded-xl overflow-hidden shrink-0 relative">
                 <img src={rest.imagen} alt={rest.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-[10px] font-bold shadow-md">
-                    Ver Menú & Mapa
+                    Ver Menú & Detalle
                   </span>
                 </div>
               </div>
@@ -251,18 +437,18 @@ const ComercioPage = () => {
                 <div>
                   <div className="flex justify-between items-start">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-500 transition-colors">{rest.nombre}</h3>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold shrink-0">★ {rest.calificacion}</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold shrink-0">★ {rest.calificacion || rest.ratingAvg || 4.9}</span>
                   </div>
                   <p className="text-xs text-psp-cyan font-medium mt-1 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {rest.ubicación}
+                    {rest.ubicación || rest.municipio || 'Turbo, Urabá'}
                   </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2"><strong>Especialidad:</strong> {rest.especialidad}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2"><strong>Especialidad / Plato:</strong> {rest.especialidad || rest.descripcion}</p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Horario: {rest.horario}</span>
+                  <span className="text-slate-900 dark:text-white font-extrabold">${(rest.precio || 35000).toLocaleString()} COP</span>
                   <button className="px-3 py-1.5 rounded-lg bg-psp-cyan text-slate-950 font-bold hover:bg-psp-cyan-hover flex items-center gap-1">
-                    <span>Ver Menú & Ubicación</span>
+                    <span>Ver Platos & Pedir</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -275,37 +461,40 @@ const ComercioPage = () => {
       {/* TAB 4: MOVILIDAD & DOMICILIOS EXPRESS (UBER / RAPPI URABÁ) */}
       {activeTab === 'transporte' && (
         <PSPExpressHub 
-          transportRoutes={TRANSPORTE_RUTAS} 
-          onSelectRoute={(ruta) => setSelectedCommerceItem(ruta)} 
+          transportRoutes={products.length > 0 ? products.map(p => ({ id: p.id, origen: 'Apartadó', destino: p.nombre, empresa: p.municipio || 'Cootransuroeste', categoria: p.categoria, municipio: p.municipio, tiempoEstimado: '45 min', precio: p.precio, calificacion: 4.8, imagen: p.imagen, descripcion: p.descripcion, ...p })) : TRANSPORTE_RUTAS} 
+          onSelectRoute={(ruta) => openProduct(ruta)} 
         />
       )}
 
       {/* TAB 5: TURISMO */}
       {activeTab === 'turismo' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {TURISMO_DESTINOS.map((dest) => (
+          {(products.length > 0 ? products : TURISMO_DESTINOS).map((dest) => (
             <div 
               key={dest.id} 
-              onClick={() => setSelectedCommerceItem(dest)}
+              onClick={() => openProduct(dest)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all cursor-pointer group"
             >
               <div className="relative overflow-hidden">
                 <img src={dest.imagen} alt={dest.nombre} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5" /> Ver Itinerario & Mapa
+                    <Compass className="w-3.5 h-3.5" /> Ver Itinerario & Detalles
                   </span>
                 </div>
               </div>
 
               <div className="p-6 space-y-3">
-                <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{dest.categoria}</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{dest.categoria}</span>
+                  {dest.sku && <span className="text-[10px] font-mono text-slate-400">{dest.sku}</span>}
+                </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-teal-500 transition-colors">{dest.nombre}</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{dest.descripcion}</p>
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <span className="text-xs font-bold text-emerald-400">{dest.precio}</span>
+                  <span className="text-xs font-bold text-emerald-400">{dest.precio ? `Desde $${dest.precio.toLocaleString()} COP` : dest.precioEstimado || 'Desde $60,000 COP'}</span>
                   <button className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1">
-                    <span>Ver Detalles & Mapa</span>
+                    <span>Ver Detalles & Reserva</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

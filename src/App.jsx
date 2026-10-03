@@ -21,6 +21,18 @@ import AyudaPage from './pages/AyudaPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 
+// Panel de administración (Fase 3 - Gestor de Identidades)
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminLayout, { AdminIndexRedirect } from './pages/admin/AdminLayout';
+import AdminUsuariosPage from './pages/admin/AdminUsuariosPage';
+import AdminRolesPage from './pages/admin/AdminRolesPage';
+import AdminMatrizPage from './pages/admin/AdminMatrizPage';
+import AdminResumenPage from './pages/admin/AdminResumenPage';
+import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
+import AdminProductosPage from './pages/admin/AdminProductosPage';
+import AdminCatalogoPage from './pages/admin/AdminCatalogoPage';
+import ProductFormPage from './pages/admin/ProductFormPage';
+
 // Legal & Policy Pages (Etapa 1)
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
 import PoliticaPrivacidadPage from './pages/PoliticaPrivacidadPage';
@@ -56,10 +68,96 @@ function App() {
                     <Route path="/mi-cuenta" element={<ProfilePage />} />
                     <Route path="/mi-perfil-publico" element={<ProfilePage />} />
 
-                    {/* Etapa 1 Legal Routes */}
-                    <Route path="/terminos-y-condiciones" element={<TerminosCondicionesPage />} />
-                    <Route path="/politica-de-privacidad" element={<PoliticaPrivacidadPage />} />
-                    <Route path="/politica-de-cookies" element={<PoliticaCookiesPage />} />
+
+                  {/* Fase 3: Gestor de Identidades (RBAC) */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute permissions={['users.read', 'roles.read']}>
+                        <AdminLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<AdminIndexRedirect />} />
+                    <Route
+                      path="resumen"
+                      element={
+                        <ProtectedRoute permission="users.read">
+                          <AdminResumenPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="usuarios"
+                      element={
+                        <ProtectedRoute permission="users.read">
+                          <AdminUsuariosPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="roles"
+                      element={
+                        <ProtectedRoute permission="roles.read">
+                          <AdminRolesPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="matriz"
+                      element={
+                        <ProtectedRoute permission="roles.read">
+                          <AdminMatrizPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="auditoria"
+                      element={
+                        <ProtectedRoute permission="audit.read">
+                          <AdminAuditoriaPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="productos"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <AdminProductosPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <AdminCatalogoPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo/nuevo"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <ProductFormPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="catalogo/editar/:sku"
+                      element={
+                        <ProtectedRoute permission="products.manage">
+                          <ProductFormPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
+
+                  {/* Etapa 1 Legal Routes */}
+                  <Route path="/terminos-y-condiciones" element={<TerminosCondicionesPage />} />
+                  <Route path="/politica-de-privacidad" element={<PoliticaPrivacidadPage />} />
+                  <Route path="/politica-de-cookies" element={<PoliticaCookiesPage />} />
+
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>

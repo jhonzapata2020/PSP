@@ -13,7 +13,11 @@ import {
   Menu, 
   X, 
   ChevronDown,
-  LogOut
+  LogOut,
+  Sparkles,
+  UserPlus,
+  ShieldCheck
+
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -22,7 +26,7 @@ import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const { totalItemsCount, setIsCartOpen } = useCart();
   const location = useLocation();
 

@@ -12,15 +12,18 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { loadAvatarDefaults, pickDefaultAvatar } from '../services/avatarDefaults';
 
 const AuthPage = () => {
+
+  // location debe declararse ANTES del useState que lo usa en su initializer
   const location = useLocation();
-  const navigate = useNavigate();
-  const { login } = useAuth();
 
   // Determine initial tab based on route (/registro vs /ingresar)
   const [isRegister, setIsRegister] = useState(() => location.pathname === '/registro');
   const [personType, setPersonType] = useState('natural'); // 'natural' | 'juridica'
+  const { login, register, loading, error, setError } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   // Form Fields State
@@ -46,8 +49,9 @@ const AuthPage = () => {
     }
   }, [location.pathname]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError?.(null);
 
     if (isRegister && !habeasDataConsent) {
       setFormError('Debes aceptar el tratamiento de datos personales (Ley 1581 de 2012) para registrarte.');
@@ -55,30 +59,36 @@ const AuthPage = () => {
     }
     setFormError('');
 
-    // Assign default avatar based on entity type & gender
-    let defaultAvatar = '';
-    if (personType === 'juridica') {
-      defaultAvatar = 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&auto=format&fit=crop&q=80';
-    } else if (gender === 'femenino') {
-      defaultAvatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80';
-    } else if (gender === 'masculino') {
-      defaultAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80';
-    } else {
-      defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80';
-    }
+    try {
+      if (isRegister) {
+        // Foto de fábrica (bucket R2) según tipo de persona y género. El
+        // backend descarta las URLs de otras web, así que aquí sólo puede
+        // entrar una foto nuestra: si no hay ninguna, queda sin avatar y el
+        // front muestra la primera de la lista.
+        const defaults = await loadAvatarDefaults();
+        const defaultAvatar = pickDefaultAvatar(defaults, { personType, gender });
 
-    login({
-      name: name || (isRegister ? (personType === 'juridica' ? 'Empresa Aliada Urabá S.A.S.' : 'María Fernanda Gómez') : 'Jhon Zapata'),
-      email: email || 'usuario@plataformasocial.co',
-      avatar: defaultAvatar,
-      role: personType === 'juridica' ? 'Empresa Aliada' : 'Emprendedor Social',
-      personType,
-      gender: personType === 'natural' ? gender : null,
-      documentType: docType,
-      documentNumber: personType === 'juridica' ? nit : docNum,
-    });
-    
-    navigate('/mi-cuenta');
+        // POST /api/auth/register → el backend asigna el rol por defecto
+        // (emprendedor_social | empresa_aliada) según personType.
+        await register({
+          email,
+          password,
+          name,
+          personType,
+          documentType: personType === 'juridica' ? 'NIT' : docType,
+          documentNumber: personType === 'juridica' ? nit : docNum,
+          gender: personType === 'natural' ? gender : null,
+          avatar: defaultAvatar,
+          habeasDataConsent: true,
+        });
+      } else {
+        // POST /api/auth/login → devuelve JWT + roles + permisos
+        await login(email, password);
+      }
+      navigate('/mi-cuenta');
+    } catch {
+      // El mensaje ya quedó en AuthContext.error y se pinta más abajo.
+    }
   };
 
   const handleSocialLogin = (provider) => {
@@ -97,6 +107,7 @@ const AuthPage = () => {
       navigate('/mi-cuenta');
     }, 600);
   };
+
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-[#0b1311] relative overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-colors duration-300">
@@ -347,8 +358,7 @@ const AuthPage = () => {
               </label>
             </div>
           )}
-
-          {/* Error Banner */}
+          {/* Error de validación local (Habeas Data / Ley 1581) */}
           {formError && (
             <div className="flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900/50">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
@@ -356,13 +366,27 @@ const AuthPage = () => {
             </div>
           )}
 
-          {/* Main CTA Button */}
+          {/* Error del backend (credenciales inválidas, correo duplicado, cuenta bloqueada...) */}
+          {!formError && error && (
+            <p className="text-[11px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 hover:opacity-95 text-white font-semibold text-sm shadow-lg shadow-teal-500/25 transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer group mt-2"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-psp-cyan to-psp-teal text-slate-950 font-extrabold text-sm shadow-lg shadow-psp-cyan/20 hover:opacity-95 transition-opacity flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
           >
-            <span>{isRegister ? 'Completar Registro' : 'Iniciar Sesión'}</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <span>
+              {loading
+                ? 'Un momento...'
+                : isRegister
+                  ? 'Completar Registro'
+                  : 'Iniciar Sesión'}
+            </span>
+            {!loading && <ArrowRight className="w-4 h-4" />}
+
           </button>
         </form>
 

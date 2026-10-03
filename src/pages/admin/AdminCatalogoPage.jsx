@@ -33,6 +33,38 @@ export default function AdminCatalogoPage() {
   const [categoryFilter, setCategory] = useState(initialCategory);
   const [categoriesList, setCategories] = useState([]);
   const [actionMsg, setActionMsg]     = useState(null);
+  const [selectedSkus, setSelectedSkus] = useState([]);
+
+  // Limpiar selección cuando cambien los filtros o la página
+  useEffect(() => {
+    setSelectedSkus([]);
+  }, [page, pageSize, q, statusFilter, categoryFilter]);
+
+  const isAllSelected = products.length > 0 && products.every(p => selectedSkus.includes(p.sku));
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedSkus([]);
+    } else {
+      setSelectedSkus(products.map(p => p.sku));
+    }
+  };
+
+  const toggleSelectSku = (sku) => {
+    setSelectedSkus(prev =>
+      prev.includes(sku) ? prev.filter(s => s !== sku) : [...prev, sku]
+    );
+  };
+
+  const handleBulkStatus = async (estado) => {
+    if (selectedSkus.length === 0) return;
+    try {
+      const res = await productsApi.setBulkStatus(selectedSkus, estado);
+      notify(`Se actualizaron ${res.updated ?? selectedSkus.length} producto(s) a "${estado}"`);
+      setSelectedSkus([]);
+      load();
+    } catch (e) { notify(e.message, 'error'); }
+  };
 
   // Cargar lista de categorías activas para el filtro
   useEffect(() => {
@@ -254,6 +286,38 @@ export default function AdminCatalogoPage() {
         )}
       </div>
 
+      {/* Barra de Acciones Masivas */}
+      {selectedSkus.length > 0 && (
+        <div className="mb-4 p-3 bg-slate-900 text-white dark:bg-slate-700 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-lg border border-slate-700">
+          <div className="flex items-center gap-3 text-sm font-semibold">
+            <span className="bg-psp-cyan px-2.5 py-1 rounded-lg text-xs font-mono text-white">
+              {selectedSkus.length} seleccionado(s)
+            </span>
+            <span>Acciones en lote:</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBulkStatus('published')}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <CheckCircle className="w-4 h-4" /> Aprobar Selección
+            </button>
+            <button
+              onClick={() => handleBulkStatus('rejected')}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <XCircle className="w-4 h-4" /> Rechazar Selección
+            </button>
+            <button
+              onClick={() => setSelectedSkus([])}
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors"
+            >
+              Desmarcar todos
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
@@ -275,6 +339,15 @@ export default function AdminCatalogoPage() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 dark:text-slate-400 tracking-wide">
                 <tr>
+                  <th className="w-10 px-3 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={toggleSelectAll}
+                      className="rounded text-psp-cyan focus:ring-psp-cyan h-4 w-4 cursor-pointer"
+                      title="Seleccionar / desmarcar todos en esta página"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left">Imagen</th>
                   <th className="px-4 py-3 text-left">Nombre / SKU</th>
                   <th className="px-4 py-3 text-left">Categoría</th>
@@ -286,7 +359,16 @@ export default function AdminCatalogoPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {products.map(p => (
-                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr key={p.id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors ${selectedSkus.includes(p.sku) ? 'bg-cyan-50/50 dark:bg-cyan-950/20' : ''}`}>
+                    {/* Checkbox */}
+                    <td className="w-10 px-3 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedSkus.includes(p.sku)}
+                        onChange={() => toggleSelectSku(p.sku)}
+                        className="rounded text-psp-cyan focus:ring-psp-cyan h-4 w-4 cursor-pointer"
+                      />
+                    </td>
                     {/* Imagen */}
                     <td className="px-4 py-3">
                       {p.imagen ? (

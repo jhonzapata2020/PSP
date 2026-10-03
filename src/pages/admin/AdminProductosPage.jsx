@@ -6,6 +6,7 @@ export default function AdminProductosPage() {
   const [zipFile, setZipFile]       = useState(null);
   const [dataFile, setDataFile]     = useState(null);
   const [batchSize, setBatchSize]   = useState(25);
+  const [autoApprove, setAutoApprove] = useState(true);
   const [status, setStatus]         = useState({ type: '', message: '' });
   const [importReport, setReport]   = useState(null);
   const [isLoading, setIsLoading]   = useState(false);
@@ -36,7 +37,7 @@ export default function AdminProductosPage() {
     setStatus({ type: 'info', message: `Procesando productos en lotes de ${batchSize}...` });
 
     try {
-      const res = await productsApi.uploadBulkProducts(dataFile, batchSize);
+      const res = await productsApi.uploadBulkProducts(dataFile, batchSize, autoApprove);
       setReport(res);
       setStatus({
         type: res.skipped > 0 ? 'warning' : 'success',
@@ -195,7 +196,7 @@ export default function AdminProductosPage() {
           </p>
 
           {/* Configuración de lotes */}
-          <div className="flex items-center justify-between mb-4 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tamaño del lote:</span>
             <select
               value={batchSize}
@@ -208,6 +209,21 @@ export default function AdminProductosPage() {
               <option value={50}>50 productos / lote</option>
               <option value={100}>100 productos / lote</option>
             </select>
+          </div>
+
+          {/* Opción Auto-aprobación */}
+          <div className="flex items-center gap-2 mb-4 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+            <input
+              type="checkbox"
+              id="autoApprove"
+              checked={autoApprove}
+              onChange={(e) => setAutoApprove(e.target.checked)}
+              disabled={isLoading}
+              className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+            />
+            <label htmlFor="autoApprove" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+              Publicar productos inmediatamente al importar <span className="text-emerald-600 font-bold">(Aprobación automática)</span>
+            </label>
           </div>
 
           <div className="mb-6">

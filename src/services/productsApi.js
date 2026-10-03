@@ -110,6 +110,12 @@ export const productsApi = {
       method: 'POST', body: { estado },
     }),
 
+  setBulkStatus: (skus, estado = 'published') =>
+    request('/api/admin/products/bulk-status', {
+      method: 'POST',
+      body: { skus, estado },
+    }),
+
   setFeatured: (idOrSku, destacado) =>
     request(`/api/admin/products/${encodeURIComponent(idOrSku)}/featured`, {
       method: 'PUT', body: { destacado },
@@ -149,11 +155,11 @@ export const productsApi = {
     return data;
   },
 
-  uploadBulkProducts: async (file, batchSize = 25) => {
+  uploadBulkProducts: async (file, batchSize = 25, autoApprove = true) => {
     const token = localStorage.getItem(TOKEN_KEY);
     const formData = new FormData();
     formData.append('file', file);
-    const response = await fetch(`${PRODUCTS_URL}/api/admin/bulk/products?batchSize=${batchSize}`, {
+    const response = await fetch(`${PRODUCTS_URL}/api/admin/bulk/products?batchSize=${batchSize}&autoApprove=${autoApprove}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -163,9 +169,9 @@ export const productsApi = {
     return data;
   },
 
-  uploadBulkCsv: async (file) => {
+  uploadBulkCsv: async (file, autoApprove = true) => {
     // Redirige al nuevo método unificado de productos (soporta .xlsx, .xls y .csv)
-    return productsApi.uploadBulkProducts(file);
+    return productsApi.uploadBulkProducts(file, 25, autoApprove);
   },
 
   downloadBulkTemplate: async () => {

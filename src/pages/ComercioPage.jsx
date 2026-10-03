@@ -72,9 +72,14 @@ const ComercioPage = () => {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  // Cargar catálogo de productos con soporte para búsqueda (SKU, nombre), categoría y paginación
+  // Cargar catálogo de productos/servicios con soporte para búsqueda, categoría y paginación desde la API psp.products
   useEffect(() => {
-    if (activeTab !== 'productos') return;
+    let categoryCodeFilter = selectedCategoryCode;
+
+    if (activeTab === 'servicios') categoryCodeFilter = 'servicios-empresariales';
+    else if (activeTab === 'restaurantes') categoryCodeFilter = 'bebidas-gastronomia';
+    else if (activeTab === 'transporte') categoryCodeFilter = 'transporte-logistica';
+    else if (activeTab === 'turismo') categoryCodeFilter = 'turismo-experiencias';
 
     let cancelled = false;
     (async () => {
@@ -82,9 +87,9 @@ const ComercioPage = () => {
       try {
         const res = await productsApi.list({
           q: debouncedQuery,
-          categoryCode: selectedCategoryCode,
+          categoryCode: categoryCodeFilter,
           page,
-          pageSize
+          pageSize: activeTab === 'productos' ? pageSize : 24
         });
         if (!cancelled) {
           setProducts(res.items || []);
@@ -372,10 +377,10 @@ const ComercioPage = () => {
       {/* TAB 2: SERVICIOS */}
       {activeTab === 'servicios' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {SERVICIOS.map((serv) => (
+          {(products.length > 0 ? products : SERVICIOS).map((serv) => (
             <div 
               key={serv.id} 
-              onClick={() => setSelectedCommerceItem(serv)}
+              onClick={() => openProduct(serv)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft p-6 flex flex-col justify-between hover:shadow-xl transition-all cursor-pointer group"
             >
               <div>
@@ -383,18 +388,23 @@ const ComercioPage = () => {
                   <img src={serv.imagen} alt={serv.nombre} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                      <Navigation className="w-3.5 h-3.5" /> Ver Comercio & Mapa
+                      <Eye className="w-3.5 h-3.5" /> Ver Detalle del Servicio
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{serv.categoria}</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{serv.categoria}</span>
+                  {serv.sku && <span className="text-[10px] font-mono text-slate-400">{serv.sku}</span>}
+                </div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1 mb-2 group-hover:text-teal-500 transition-colors">{serv.nombre}</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-2">{serv.descripcion}</p>
               </div>
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Tarifa Estimada</span>
-                  <span className="text-xs font-extrabold text-psp-cyan">{serv.precioEstimado}</span>
+                  <span className="text-xs font-extrabold text-psp-cyan">
+                    {serv.precioEstimado || (serv.precio ? `$${serv.precio.toLocaleString()} COP` : 'Consultar')}
+                  </span>
                 </div>
                 <button className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold group-hover:bg-psp-cyan group-hover:text-slate-950 transition-colors flex items-center gap-1">
                   <span>Ver Detalle</span>
@@ -409,17 +419,17 @@ const ComercioPage = () => {
       {/* TAB 3: RESTAURANTES */}
       {activeTab === 'restaurantes' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {RESTAURANTES.map((rest) => (
+          {(products.length > 0 ? products : RESTAURANTES).map((rest) => (
             <div 
               key={rest.id} 
-              onClick={() => setSelectedCommerceItem(rest)}
+              onClick={() => openProduct(rest)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 p-6 flex flex-col sm:flex-row gap-6 shadow-psp-soft hover:shadow-xl transition-all cursor-pointer group"
             >
               <div className="w-full sm:w-44 h-44 rounded-xl overflow-hidden shrink-0 relative">
                 <img src={rest.imagen} alt={rest.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-[10px] font-bold shadow-md">
-                    Ver Menú & Mapa
+                    Ver Menú & Detalle
                   </span>
                 </div>
               </div>
@@ -427,18 +437,18 @@ const ComercioPage = () => {
                 <div>
                   <div className="flex justify-between items-start">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-500 transition-colors">{rest.nombre}</h3>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold shrink-0">★ {rest.calificacion}</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold shrink-0">★ {rest.calificacion || rest.ratingAvg || 4.9}</span>
                   </div>
                   <p className="text-xs text-psp-cyan font-medium mt-1 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {rest.ubicación}
+                    {rest.ubicación || rest.municipio || 'Turbo, Urabá'}
                   </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2"><strong>Especialidad:</strong> {rest.especialidad}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2"><strong>Especialidad / Plato:</strong> {rest.especialidad || rest.descripcion}</p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Horario: {rest.horario}</span>
+                  <span className="text-slate-900 dark:text-white font-extrabold">${(rest.precio || 35000).toLocaleString()} COP</span>
                   <button className="px-3 py-1.5 rounded-lg bg-psp-cyan text-slate-950 font-bold hover:bg-psp-cyan-hover flex items-center gap-1">
-                    <span>Ver Menú & Ubicación</span>
+                    <span>Ver Platos & Pedir</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -451,37 +461,40 @@ const ComercioPage = () => {
       {/* TAB 4: MOVILIDAD & DOMICILIOS EXPRESS (UBER / RAPPI URABÁ) */}
       {activeTab === 'transporte' && (
         <PSPExpressHub 
-          transportRoutes={TRANSPORTE_RUTAS} 
-          onSelectRoute={(ruta) => setSelectedCommerceItem(ruta)} 
+          transportRoutes={products.length > 0 ? products.map(p => ({ id: p.id, origen: 'Apartadó', destino: p.nombre, empresa: p.municipio || 'Cootransuroeste', categoria: p.categoria, municipio: p.municipio, tiempoEstimado: '45 min', precio: p.precio, calificacion: 4.8, imagen: p.imagen, descripcion: p.descripcion, ...p })) : TRANSPORTE_RUTAS} 
+          onSelectRoute={(ruta) => openProduct(ruta)} 
         />
       )}
 
       {/* TAB 5: TURISMO */}
       {activeTab === 'turismo' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {TURISMO_DESTINOS.map((dest) => (
+          {(products.length > 0 ? products : TURISMO_DESTINOS).map((dest) => (
             <div 
               key={dest.id} 
-              onClick={() => setSelectedCommerceItem(dest)}
+              onClick={() => openProduct(dest)}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all cursor-pointer group"
             >
               <div className="relative overflow-hidden">
                 <img src={dest.imagen} alt={dest.nombre} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5" /> Ver Itinerario & Mapa
+                    <Compass className="w-3.5 h-3.5" /> Ver Itinerario & Detalles
                   </span>
                 </div>
               </div>
 
               <div className="p-6 space-y-3">
-                <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{dest.categoria}</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-extrabold text-psp-cyan uppercase">{dest.categoria}</span>
+                  {dest.sku && <span className="text-[10px] font-mono text-slate-400">{dest.sku}</span>}
+                </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-teal-500 transition-colors">{dest.nombre}</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{dest.descripcion}</p>
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <span className="text-xs font-bold text-emerald-400">{dest.precio}</span>
+                  <span className="text-xs font-bold text-emerald-400">{dest.precio ? `Desde $${dest.precio.toLocaleString()} COP` : dest.precioEstimado || 'Desde $60,000 COP'}</span>
                   <button className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1">
-                    <span>Ver Detalles & Mapa</span>
+                    <span>Ver Detalles & Reserva</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

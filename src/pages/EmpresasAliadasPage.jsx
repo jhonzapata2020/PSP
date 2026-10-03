@@ -43,7 +43,8 @@ const EmpresasAliadasPage = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-12 sm:space-y-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pb-28 sm:pb-32 space-y-12 sm:space-y-16">
+
       
       {/* Header Banner */}
       <div className="relative rounded-3xl bg-gradient-to-r from-psp-green via-[#0f5144] to-[#0c4236] p-8 sm:p-12 text-white shadow-2xl overflow-hidden">
@@ -190,9 +191,9 @@ const EmpresasAliadasPage = () => {
       <div className="space-y-6">
         
         {/* 🌟 BANNER DE PROPÓSITO SOCIAL Y COMPRAS CON IMPACTO EN URABÁ */}
-        <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200/90 dark:bg-emerald-950/40 dark:border-emerald-800/60 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+        <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200/90 dark:bg-emerald-950/40 dark:border-emerald-800/60 p-6 sm:p-7 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
               <HeartHandshake className="w-6 h-6" />
             </div>
             <div className="space-y-1">
@@ -200,10 +201,10 @@ const EmpresasAliadasPage = () => {
                 <Heart className="w-3 h-3 fill-emerald-500 text-emerald-500" />
                 Impacto Social Ecosistémico
               </div>
-              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white">
                 Compras con Propósito en Urabá
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
                 Un porcentaje de cada compra o servicio contratado en la plataforma se destina automáticamente a financiar las iniciativas y fundaciones sociales de nuestra región.
               </p>
             </div>
@@ -211,7 +212,7 @@ const EmpresasAliadasPage = () => {
 
           <button
             onClick={() => setIsSolidarityModalOpen(true)}
-            className="px-4.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-xs font-black transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+            className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-xs font-black transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2 shrink-0 cursor-pointer self-start md:self-center"
           >
             <span>Ver proyectos beneficiados</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -245,16 +246,18 @@ const EmpresasAliadasPage = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedAffiliateCat(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
                     isSelected
-                      ? 'bg-psp-cyan text-slate-950 font-black shadow-md scale-105 ring-2 ring-psp-cyan/30'
+                      ? isImpactoSocial
+                        ? 'bg-emerald-600 text-white font-black shadow-md scale-105 ring-2 ring-emerald-400/40'
+                        : 'bg-psp-cyan text-slate-950 font-black shadow-md scale-105 ring-2 ring-psp-cyan/30'
                       : isImpactoSocial
                       ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 font-extrabold shadow-sm'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold'
                   }`}
                 >
                   {isImpactoSocial && (
-                    <Heart className={`w-3.5 h-3.5 ${isSelected ? 'fill-slate-950 text-slate-950' : 'fill-emerald-500 text-emerald-500 animate-pulse'}`} />
+                    <Heart className={`w-3.5 h-3.5 ${isSelected ? 'fill-white text-white' : 'fill-emerald-500 text-emerald-500 animate-pulse'}`} />
                   )}
                   <span>{cat}</span>
                 </button>
@@ -297,8 +300,8 @@ const EmpresasAliadasPage = () => {
                   </div>
                 )}
 
-                {/* Real Image Logo Display */}
-                <div className="w-full h-20 sm:h-24 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 flex items-center justify-center shadow-sm mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+                {/* Real Image Logo Display con altura fija consistente */}
+                <div className="w-full h-24 sm:h-28 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3 flex items-center justify-center shadow-sm mb-3 group-hover:scale-105 transition-transform overflow-hidden shrink-0">
                   {entidad.logo ? (
                     <img
                       src={entidad.logo}

@@ -20,7 +20,7 @@ const EmpresasAliadasPage = () => {
   const [affiliateSuccess, setAffiliateSuccess] = useState(false);
 
   const categories = ['Todas', 'Privado', 'Público', 'Gremial', 'Fundación', 'Caja de Compensación'];
-  const affiliateCategories = ['Todas', 'Agro & Campo', 'Educación & Cultura', 'Tecnología & Comercio', 'Salud & Bienestar', 'Fundaciones & Juventud'];
+  const affiliateCategories = ['Todas', 'Agro & Campo', 'Educación & Cultura', 'Tecnología & Comercio', 'Salud & Bienestar', 'Impacto Social'];
 
   const filteredEmpresas = EMPRESAS_ALIADAS.filter(e => {
     const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,9 +34,13 @@ const EmpresasAliadasPage = () => {
     const matchesSearch = ent.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           ent.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           ent.sigla.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = selectedAffiliateCat === 'Todas' || ent.categoria === selectedAffiliateCat;
+    const matchesCat = selectedAffiliateCat === 'Todas' ||
+                       (selectedAffiliateCat === 'Impacto Social' 
+                         ? (ent.categoria === 'Fundaciones & Juventud' || ent.categoria === 'Impacto Social')
+                         : ent.categoria === selectedAffiliateCat);
     return matchesSearch && matchesCat;
   });
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-12 sm:space-y-16">
@@ -234,7 +238,7 @@ const EmpresasAliadasPage = () => {
               <Filter className="w-3.5 h-3.5 text-psp-cyan" /> Filtrar por categoría:
             </span>
             {affiliateCategories.map((cat) => {
-              const isFundacion = cat === 'Fundaciones & Juventud';
+              const isImpactoSocial = cat === 'Impacto Social';
               const isSelected = selectedAffiliateCat === cat;
 
               return (
@@ -244,12 +248,12 @@ const EmpresasAliadasPage = () => {
                   className={`px-3.5 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
                     isSelected
                       ? 'bg-psp-cyan text-slate-950 font-black shadow-md scale-105 ring-2 ring-psp-cyan/30'
-                      : isFundacion
+                      : isImpactoSocial
                       ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 font-extrabold shadow-sm'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold'
                   }`}
                 >
-                  {isFundacion && (
+                  {isImpactoSocial && (
                     <Heart className={`w-3.5 h-3.5 ${isSelected ? 'fill-slate-950 text-slate-950' : 'fill-emerald-500 text-emerald-500 animate-pulse'}`} />
                   )}
                   <span>{cat}</span>
@@ -263,13 +267,20 @@ const EmpresasAliadasPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {filteredAffiliates.map((entidad) => {
             const isFoundation = entidad.categoria === 'Fundaciones & Juventud' || 
+                                 entidad.categoria === 'Impacto Social' ||
                                  entidad.nombre.toLowerCase().includes('fundació') || 
                                  entidad.nombre.toLowerCase().includes('fundacion');
 
             return (
               <div
                 key={entidad.id}
-                onClick={() => setSelectedAffiliateModal(entidad)}
+                onClick={() => {
+                  if (entidad.sitioWeb) {
+                    window.open(entidad.sitioWeb, '_blank', 'noopener,noreferrer');
+                  } else {
+                    setSelectedAffiliateModal(entidad);
+                  }
+                }}
                 className={`cursor-pointer group relative bg-white dark:bg-psp-dark-card border rounded-2xl p-4 flex flex-col items-center justify-between text-center shadow-psp-soft hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${
                   isFoundation
                     ? 'border-emerald-300/80 dark:border-emerald-700/60 hover:border-emerald-500'
@@ -316,7 +327,11 @@ const EmpresasAliadasPage = () => {
                       <HeartHandshake className="w-3 h-3 text-emerald-500" />
                       Labor Social
                     </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
+                    {entidad.sitioWeb ? (
+                      <ExternalLink className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
+                    )}
                   </div>
                 ) : (
                   <div className="mt-3 w-full pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">

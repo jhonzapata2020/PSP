@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, UploadCloud, AlertCircle } from 'lucide-react';
+import {
+  ArrowLeft, Save, Plus, Trash2, UploadCloud, AlertCircle,
+  ChevronLeft, ChevronRight, Star, CheckCircle, FileText, Eye
+} from 'lucide-react';
 import productsApi from '../../services/productsApi';
 
 // Categorías del catálogo como fallback garantizado con sus slugs y grupos
@@ -34,6 +37,7 @@ const EMPTY = {
   municipio: '',
   descripcion: '',
   descripcionDetallada: '',
+  estado: 'published',
   caracteristicas: [],
   especificaciones: [],
 };
@@ -45,13 +49,13 @@ export default function ProductFormPage() {
 
   const [form, setForm]             = useState(EMPTY);
   const [categories, setCategories] = useState([]);
-  const [images, setImages]         = useState([]);
-  const [pendingFiles, setPending]  = useState([]);
+  const [galleryItems, setGallery]  = useState([]); // Unificado: { id, url, file, isPending }
   const [saving, setSaving]         = useState(false);
   const [error, setError]           = useState(null);
   const [loadingProd, setLoadingProd] = useState(isEdit);
+  const [draggedIdx, setDraggedIdx] = useState(null);
 
-  // Cargar categorías reales de la API (devuelve { id, codigo, nombre, ... })
+  // Cargar categorías reales de la API
   useEffect(() => {
     let isMounted = true;
     productsApi.categories()
@@ -75,7 +79,6 @@ export default function ProductFormPage() {
       try {
         const p = await productsApi.adminGet(editSku);
         
-        // Convertir especificaciones (objeto clave-valor en backend) a lista para el formulario
         let specsList = [];
         if (p.especificaciones && typeof p.especificaciones === 'object') {
           if (Array.isArray(p.especificaciones)) {
@@ -95,10 +98,17 @@ export default function ProductFormPage() {
           municipio:            p.municipio ?? '',
           descripcion:          p.descripcion ?? '',
           descripcionDetallada: p.descripcionDetallada ?? '',
+          estado:               p.estado ?? 'published',
           caracteristicas:      Array.isArray(p.caracteristicas) ? p.caracteristicas : [],
           especificaciones:     specsList,
         });
-        setImages(p.imagenes ?? []);
+
+        const initialGallery = (p.imagenes ?? []).map((imgUrl, i) => ({
+          id: `existing-${i}-${Date.now()}`,
+          url: imgUrl,
+          isPending: false
+        }));
+        setGallery(initialGallery);
       } catch (e) {
         setError('No se pudo cargar el producto: ' + e.message);
       } finally {
@@ -109,17 +119,75 @@ export default function ProductFormPage() {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
-  // ── Características (lista de strings) ──────────────────────────────────
+  // ── Gestión de imágenes de galería (Reordenamiento y Portada) ───────────
+
+  const handleAddFiles = (filesList) => {
+    if (!filesList || filesList.length === 0) return;
+    const newItems = Array.from(filesList).map((file, i) => ({
+      id: `pending-${i}-${Date.now()}-${Math.random()}`,
+      url: URL.createObjectURL(file),
+      file,
+      isPending: true
+    }));
+    setGallery(prev => [...prev, ...newItems]);
+  };
+
+  const moveImage = (fromIdx, direction) => {
+    const toIdx = fromIdx + direction;
+    if (toIdx < 0 || toIdx >= galleryItems.length) return;
+    setGallery(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIdx, 1);
+      updated.splice(toIdx, 0, moved);
+      return updated;
+    });
+  };
+
+  const makeCover = (idx) => {
+    if (idx === 0) return;
+    setGallery(prev => {
+      const updated = [...prev];
+      const [cover] = updated.splice(idx, 1);
+      updated.unshift(cover);
+      return updated;
+    });
+  };
+
+  const removeImage = (idx) => {
+    const item = galleryItems[idx];
+    if (item?.isPending && item.url) {
+      URL.revokeObjectURL(item.url);
+    }
+    setGallery(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Drag & Drop reordering
+  const handleDragStart = (idx) => setDraggedIdx(idx);
+  const handleDragOver = (e, idx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    setGallery(prev => {
+      const updated = [...prev];
+      const [item] = updated.splice(draggedIdx, 1);
+      updated.splice(idx, 0, item);
+      return updated;
+    });
+    setDraggedIdx(idx);
+  };
+  const handleDragEnd = () => setDraggedIdx(null);
+
+  // ── Características y Especificaciones ─────────────────────────────────
+
   const addCaracteristica = () => set('caracteristicas', [...form.caracteristicas, '']);
   const setCaract = (i, v) => set('caracteristicas', form.caracteristicas.map((c, idx) => idx === i ? v : c));
   const removeCaract = (i) => set('caracteristicas', form.caracteristicas.filter((_, idx) => idx !== i));
 
-  // ── Especificaciones (lista de { clave, valor }) ─────────────────────────
   const addSpec = () => set('especificaciones', [...form.especificaciones, { clave: '', valor: '' }]);
   const setSpec = (i, key, v) => set('especificaciones', form.especificaciones.map((s, idx) => idx === i ? { ...s, [key]: v } : s));
   const removeSpec = (i) => set('especificaciones', form.especificaciones.filter((_, idx) => idx !== i));
 
   // ── Guardar ──────────────────────────────────────────────────────────────
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -131,7 +199,6 @@ export default function ProductFormPage() {
 
     setSaving(true);
 
-    // Convertir lista de especificaciones [{ clave, valor }] al diccionario que espera el backend
     const especificacionesObj = {};
     form.especificaciones.forEach(s => {
       const k = s.clave?.trim();
@@ -141,7 +208,8 @@ export default function ProductFormPage() {
       }
     });
 
-    const existingUrls = images.map(img => (typeof img === 'string' ? img : img.url)).filter(Boolean);
+    const existingUrls = galleryItems.filter(item => !item.isPending).map(item => item.url);
+    const pendingFiles = galleryItems.filter(item => item.isPending).map(item => item.file);
 
     const payload = {
       nombre:               form.nombre.trim(),
@@ -153,6 +221,7 @@ export default function ProductFormPage() {
       descripcionDetallada: form.descripcionDetallada?.trim() || null,
       municipio:            form.municipio?.trim() || null,
       sku:                  form.sku?.trim() || null,
+      estado:               form.estado || 'published',
       imagenes:             existingUrls,
       caracteristicas:      form.caracteristicas.map(c => c.trim()).filter(Boolean),
       especificaciones:     Object.keys(especificacionesObj).length > 0 ? especificacionesObj : null,
@@ -166,7 +235,7 @@ export default function ProductFormPage() {
         saved = await productsApi.create(payload);
       }
 
-      // Subir imágenes pendientes si se seleccionaron
+      // Subir imágenes pendientes manteniendo el orden
       const targetSku = editSku || saved?.sku || form.sku;
       if (pendingFiles.length > 0 && targetSku) {
         for (const file of pendingFiles) {
@@ -190,7 +259,6 @@ export default function ProductFormPage() {
     );
   }
 
-  // Combinar categorías de la BD con el agrupador
   const finalCategories = categories.length > 0
     ? categories.map(c => ({
         id: c.id,
@@ -239,6 +307,85 @@ export default function ProductFormPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* ── Estado de publicación ────────────────────────────────────── */}
+        <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 space-y-4 shadow-sm">
+          <h2 className="font-bold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide">
+            Estado de publicación
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <label className={`flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              form.estado === 'published'
+                ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+            }`}>
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="radio"
+                  name="estado"
+                  value="published"
+                  checked={form.estado === 'published'}
+                  onChange={() => set('estado', 'published')}
+                  className="text-emerald-600 focus:ring-emerald-500"
+                />
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" /> Publicado
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 pl-6">
+                El producto aparecerá de inmediato en el catálogo público para los compradores.
+              </p>
+            </label>
+
+            <label className={`flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              form.estado === 'pending'
+                ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+            }`}>
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="radio"
+                  name="estado"
+                  value="pending"
+                  checked={form.estado === 'pending'}
+                  onChange={() => set('estado', 'pending')}
+                  className="text-amber-600 focus:ring-amber-500"
+                />
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-amber-600" /> En Moderación
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 pl-6">
+                Quedará guardado en la cola de revisión antes de ser publicado comercialmente.
+              </p>
+            </label>
+
+            <label className={`flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              form.estado === 'archived'
+                ? 'border-slate-500 bg-slate-100 dark:bg-slate-700/40'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+            }`}>
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="radio"
+                  name="estado"
+                  value="archived"
+                  checked={form.estado === 'archived'}
+                  onChange={() => set('estado', 'archived')}
+                  className="text-slate-600 focus:ring-slate-500"
+                />
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                  <Eye className="w-4 h-4 text-slate-500" /> Archivado / Oculto
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 pl-6">
+                El producto se guardará en inventario pero no estará visible públicamente.
+              </p>
+            </label>
+          </div>
+        </section>
+
         {/* ── Información básica ─────────────────────────────────────── */}
         <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 space-y-4 shadow-sm">
           <h2 className="font-bold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide">
@@ -252,10 +399,12 @@ export default function ProductFormPage() {
               </label>
               <input
                 required
+                type="text"
+                maxLength={160}
                 value={form.nombre}
                 onChange={e => set('nombre', e.target.value)}
                 className="input-field"
-                placeholder="Ej. Chocolates Artesanales de Urabá"
+                placeholder="Ej. Bolso Canasto Artesanal en Fibra Natural"
               />
             </div>
 
@@ -269,11 +418,11 @@ export default function ProductFormPage() {
                 onChange={e => set('categoriaId', e.target.value)}
                 className="input-field"
               >
-                <option value="">-- Selecciona una categoría --</option>
+                <option value="">Selecciona una categoría</option>
                 {Object.entries(groups).map(([groupName, items]) => (
                   <optgroup key={groupName} label={groupName}>
                     {items.map(c => (
-                      <option key={c.id} value={c.id}>
+                      <option key={c.id || c.codigo} value={c.codigo}>
                         {c.nombre}
                       </option>
                     ))}
@@ -284,14 +433,15 @@ export default function ProductFormPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                SKU {isEdit ? '(inmutable)' : '(opcional)'}
+                SKU (Código único) (opcional)
               </label>
               <input
-                value={form.sku}
-                onChange={e => set('sku', e.target.value)}
+                type="text"
                 disabled={isEdit}
-                placeholder="Ej. CHOC-001 (se genera si se deja vacío)"
-                className="input-field disabled:opacity-60 disabled:cursor-not-allowed"
+                value={form.sku}
+                onChange={e => set('sku', e.target.value.toUpperCase())}
+                className="input-field font-mono uppercase disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                placeholder="Ej. ART-CAN-01"
               />
             </div>
 
@@ -307,7 +457,7 @@ export default function ProductFormPage() {
                 value={form.precio}
                 onChange={e => set('precio', e.target.value)}
                 className="input-field"
-                placeholder="Ej. 20000"
+                placeholder="Ej. 65000"
               />
             </div>
 
@@ -322,7 +472,7 @@ export default function ProductFormPage() {
                 value={form.precioAnterior}
                 onChange={e => set('precioAnterior', e.target.value)}
                 className="input-field"
-                placeholder="Ej. 25000 (para mostrar descuento)"
+                placeholder="Ej. 75000 (para mostrar descuento)"
               />
             </div>
 
@@ -337,7 +487,7 @@ export default function ProductFormPage() {
                 value={form.stock}
                 onChange={e => set('stock', e.target.value)}
                 className="input-field"
-                placeholder="Ej. 10"
+                placeholder="Ej. 30"
               />
             </div>
 
@@ -349,7 +499,7 @@ export default function ProductFormPage() {
                 value={form.municipio}
                 onChange={e => set('municipio', e.target.value)}
                 className="input-field"
-                placeholder="Ej. Apartadó, Turbo, Carepa"
+                placeholder="Ej. Turbo, Apartadó, Carepa"
               />
             </div>
           </div>
@@ -382,45 +532,111 @@ export default function ProductFormPage() {
           </div>
         </section>
 
-        {/* ── Galería de imágenes ──────────────────────────────────────── */}
+        {/* ── Galería de imágenes (Reordenamiento interactivo) ───────────── */}
         <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 space-y-4 shadow-sm">
-          <h2 className="font-bold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide">
-            Galería de imágenes
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide">
+              Galería de imágenes
+            </h2>
+            <span className="text-xs text-slate-400 font-medium">
+              Arrastra o usa los botones para ordenar. La <strong>#1</strong> será la portada.
+            </span>
+          </div>
 
-          {images.length > 0 && (
-            <div className="flex flex-wrap gap-3 mb-2">
-              {images.map((img, i) => {
-                const url = typeof img === 'string' ? img : img.url;
-                const isMain = i === 0 || (typeof img === 'object' && img.isMain);
+          {galleryItems.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+              {galleryItems.map((item, i) => {
+                const isCover = i === 0;
                 return (
-                  <div key={i} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                    <img src={url} alt={`Foto ${i + 1}`} className="w-24 h-24 object-cover" />
-                    {isMain && (
-                      <span className="absolute top-1 left-1 bg-psp-cyan text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
-                        PORTADA
-                      </span>
-                    )}
+                  <div
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(i)}
+                    onDragOver={(e) => handleDragOver(e, i)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group rounded-xl overflow-hidden border-2 transition-all bg-slate-50 dark:bg-slate-900 ${
+                      isCover
+                        ? 'border-psp-cyan ring-2 ring-psp-cyan/20 shadow-md'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                    }`}
+                  >
+                    {/* Badge de Posición / Portada */}
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                      {isCover ? (
+                        <span className="bg-psp-cyan text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" /> PORTADA
+                        </span>
+                      ) : (
+                        <span className="bg-slate-900/70 text-white text-[10px] font-mono px-2 py-0.5 rounded-full shadow">
+                          #{i + 1}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Botón Eliminar */}
                     <button
                       type="button"
-                      onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
-                      className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-600 text-white rounded-full p-1 shadow transition-colors"
-                      title="Quitar foto"
+                      onClick={() => removeImage(i)}
+                      className="absolute top-2 right-2 z-10 bg-red-600/90 hover:bg-red-600 text-white rounded-full p-1.5 shadow transition-colors"
+                      title="Eliminar foto"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
+
+                    {/* Previsualización de Imagen */}
+                    <div className="w-full h-36 overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                      <img
+                        src={item.url}
+                        alt={`Foto ${i + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+
+                    {/* Barra de Acciones de Reordenamiento */}
+                    <div className="p-2 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(i, -1)}
+                          disabled={i === 0}
+                          className="p-1 rounded bg-slate-100 dark:bg-slate-700 disabled:opacity-30 hover:bg-slate-200 transition-colors"
+                          title="Mover a la izquierda"
+                        >
+                          <ChevronLeft className="w-4 h-4 text-slate-700 dark:text-slate-200" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(i, 1)}
+                          disabled={i === galleryItems.length - 1}
+                          className="p-1 rounded bg-slate-100 dark:bg-slate-700 disabled:opacity-30 hover:bg-slate-200 transition-colors"
+                          title="Mover a la derecha"
+                        >
+                          <ChevronRight className="w-4 h-4 text-slate-700 dark:text-slate-200" />
+                        </button>
+                      </div>
+
+                      {!isCover && (
+                        <button
+                          type="button"
+                          onClick={() => makeCover(i)}
+                          className="text-[10px] font-bold text-psp-cyan hover:underline flex items-center gap-0.5"
+                          title="Establecer como Portada principal"
+                        >
+                          <Star className="w-3 h-3" /> Hacer Portada
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
 
+          {/* Zona Dropzone para subir o agregar fotos */}
           <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 cursor-pointer hover:border-psp-cyan transition-colors bg-slate-50/50 dark:bg-slate-900/20">
             <UploadCloud className="w-8 h-8 text-slate-400" />
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              {pendingFiles.length > 0
-                ? `${pendingFiles.length} imagen(es) seleccionada(s)`
-                : 'Haz clic o arrastra fotos para la galería'}
+              Haz clic o arrastra fotos para la galería
             </span>
             <span className="text-xs text-slate-400">JPG, PNG o WebP · Máx. 5 MB por archivo</span>
             <input
@@ -428,29 +644,12 @@ export default function ProductFormPage() {
               accept="image/*"
               multiple
               className="hidden"
-              onChange={e => setPending(Array.from(e.target.files || []))}
+              onChange={e => {
+                handleAddFiles(e.target.files);
+                e.target.value = '';
+              }}
             />
           </label>
-
-          {pendingFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {pendingFiles.map((f, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-full"
-                >
-                  <span className="truncate max-w-[140px] font-medium">{f.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => setPending(pf => pf.filter((_, idx) => idx !== i))}
-                    className="text-slate-400 hover:text-red-500 font-bold ml-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* ── Características ─────────────────────────────────────────── */}
@@ -467,7 +666,7 @@ export default function ProductFormPage() {
               <Plus className="w-3.5 h-3.5" /> Agregar
             </button>
           </div>
-          <p className="text-xs text-slate-400">Puntos clave del producto (ej. "Elaboración artesanal", "Orgánico 100%")</p>
+          <p className="text-xs text-slate-400">Puntos clave del producto (ej. "Elaboración artesanal 100%", "Material ecológico")</p>
           
           <div className="space-y-2">
             {form.caracteristicas.map((c, i) => (
@@ -509,7 +708,7 @@ export default function ProductFormPage() {
               <Plus className="w-3.5 h-3.5" /> Agregar
             </button>
           </div>
-          <p className="text-xs text-slate-400">Pares clave-valor (ej. Peso → 250g, Origen → Urabá, Presentación → Caja)</p>
+          <p className="text-xs text-slate-400">Pares clave-valor (ej. Peso → 250g, Origen → Turbo, Presentación → Pieza única)</p>
           
           <div className="space-y-2">
             {form.especificaciones.map((s, i) => (

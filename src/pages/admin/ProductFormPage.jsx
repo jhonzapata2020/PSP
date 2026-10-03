@@ -42,6 +42,33 @@ const EMPTY = {
   especificaciones: [],
 };
 
+const resolveCategoryCode = (prod, categoryList) => {
+  if (!prod) return '';
+  const allCats = Array.isArray(categoryList) && categoryList.length > 0 
+    ? categoryList 
+    : FALLBACK_CATEGORIES;
+
+  const candidateCode = prod.categoriaCodigo || prod.categoryCode;
+  if (candidateCode) {
+    const found = allCats.find(c => (c.codigo || c.code)?.toLowerCase() === candidateCode.toLowerCase());
+    if (found) return found.codigo || found.code;
+  }
+
+  const raw = prod.categoriaId || prod.categoria || prod.category;
+  if (raw) {
+    const found = allCats.find(c => 
+      c.id?.toString().toLowerCase() === raw.toString().toLowerCase() ||
+      c.codigo?.toLowerCase() === raw.toString().toLowerCase() ||
+      c.code?.toLowerCase() === raw.toString().toLowerCase() ||
+      c.nombre?.toLowerCase() === raw.toString().toLowerCase() ||
+      c.name?.toLowerCase() === raw.toString().toLowerCase()
+    );
+    if (found) return found.codigo || found.code;
+  }
+
+  return candidateCode || prod.categoriaId || '';
+};
+
 export default function ProductFormPage() {
   const navigate = useNavigate();
   const { sku: editSku } = useParams();
@@ -49,6 +76,7 @@ export default function ProductFormPage() {
 
   const [form, setForm]             = useState(EMPTY);
   const [categories, setCategories] = useState([]);
+  const [rawProduct, setRawProduct] = useState(null);
   const [galleryItems, setGallery]  = useState([]); // Unificado: { id, url, file, isPending }
   const [saving, setSaving]         = useState(false);
   const [error, setError]           = useState(null);
@@ -63,13 +91,19 @@ export default function ProductFormPage() {
         if (!isMounted) return;
         if (Array.isArray(list) && list.length > 0) {
           setCategories(list);
+          if (rawProduct) {
+            const matchedCode = resolveCategoryCode(rawProduct, list);
+            if (matchedCode) {
+              setForm(f => ({ ...f, categoriaId: matchedCode }));
+            }
+          }
         }
       })
       .catch(err => {
         console.warn('No se pudieron cargar categorías dinámicas, usando fallback:', err);
       });
     return () => { isMounted = false; };
-  }, []);
+  }, [rawProduct]);
 
   // Si es edición, cargar los datos completos del producto
   useEffect(() => {
@@ -78,6 +112,7 @@ export default function ProductFormPage() {
       setLoadingProd(true);
       try {
         const p = await productsApi.adminGet(editSku);
+        setRawProduct(p);
         
         let specsList = [];
         if (p.especificaciones && typeof p.especificaciones === 'object') {
@@ -88,9 +123,11 @@ export default function ProductFormPage() {
           }
         }
 
+        const selectedCat = resolveCategoryCode(p, categories);
+
         setForm({
           nombre:               p.nombre ?? '',
-          categoriaId:          p.categoriaId ?? '',
+          categoriaId:          selectedCat,
           precio:               p.precio ?? '',
           precioAnterior:       p.precioAnterior ?? '',
           stock:                p.stock ?? '',

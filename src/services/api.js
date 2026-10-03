@@ -109,3 +109,50 @@ export const authService = {
     });
   },
 };
+
+// Products API Service Client for Render Backend (VITE_PRODUCTS_URL)
+const PRODUCTS_BASE_URL = (import.meta.env.VITE_PRODUCTS_URL || 'https://products-psp.onrender.com').replace(/\/$/, '');
+export const PRODUCTS_API_URL = PRODUCTS_BASE_URL.endsWith('/api') ? PRODUCTS_BASE_URL : `${PRODUCTS_BASE_URL}/api`;
+
+export const productService = {
+  getProducts: async () => {
+    try {
+      const response = await fetch(`${PRODUCTS_API_URL}/products`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} al consultar la API de productos`);
+      }
+      const data = await response.json();
+      const rawItems = Array.isArray(data) ? data : (data.items || []);
+
+      return rawItems.map((item) => ({
+        id: item.id || item.sku,
+        nombre: item.nombre || item.name || 'Producto sin nombre',
+        categoria: item.categoria || 'Productos Locales',
+        descripcion: item.descripcion || '',
+        precio: typeof item.precio === 'number' ? item.precio : parseFloat(item.precio || 0),
+        precioAnterior: item.precioAnterior ? parseFloat(item.precioAnterior) : null,
+        imagen: item.imagen || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800',
+        proveedor: item.proveedor || item.municipio || 'Productor Local Urabá',
+        municipio: item.municipio || 'Urabá, Colombia',
+        destacado: Boolean(item.destacado),
+        stock: item.stock || 10,
+        rawItem: item,
+      }));
+    } catch (error) {
+      console.warn('[Products API] Call to /products failed:', error.message);
+      throw error;
+    }
+  },
+
+  getProductById: async (id) => {
+    try {
+      const response = await fetch(`${PRODUCTS_API_URL}/products/${id}`);
+      if (!response.ok) throw new Error(`Error ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.warn(`[Products API] Call to /products/${id} failed:`, error.message);
+      throw error;
+    }
+  },
+};
+

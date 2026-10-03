@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
-import { PRODUCTOS, SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
+import { productService } from '../services/api';
 import { useCart } from '../context/CartContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 import CommerceDetailView from '../components/comercio/CommerceDetailView';
@@ -10,6 +11,27 @@ import PSPExpressHub from '../components/comercio/PSPExpressHub';
 const ComercioPage = () => {
   const location = useLocation();
   const { addToCart } = useCart();
+
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState(null);
+
+  const fetchRealProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      setProductsError(null);
+      const data = await productService.getProducts();
+      setProducts(data);
+    } catch (err) {
+      setProductsError(err.message || 'Error al conectar con la API de productos');
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRealProducts();
+  }, []);
 
   const getTabFromLocation = () => {
     const searchParams = new URLSearchParams(location.search);
@@ -62,12 +84,13 @@ const ComercioPage = () => {
         <ProductDetailView 
           product={selectedProduct} 
           onBack={() => setSelectedProduct(null)} 
-          allProducts={PRODUCTOS}
+          allProducts={products}
           onSelectProduct={(p) => setSelectedProduct(p)}
         />
       </div>
     );
   }
+
 
   // Render Commerce Detail View (with Map & "Cómo Llegar") if a Service, Restaurant, Transport or Tourism item is selected
   if (selectedCommerceItem) {
@@ -134,62 +157,96 @@ const ComercioPage = () => {
         })}
       </div>
 
-      {/* TAB 1: PRODUCTOS */}
+      {/* TAB 1: PRODUCTOS (API Render MySQL en vivo) */}
       {activeTab === 'productos' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTOS.map((prod) => (
-            <div 
-              key={prod.id} 
-              className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
-            >
-              <div 
-                onClick={() => setSelectedProduct(prod)}
-                className="cursor-pointer"
+        <div>
+          {loadingProducts ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+              <Loader2 className="w-10 h-10 text-psp-cyan animate-spin" />
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                Cargando productos en vivo desde la API de Render (MySQL)...
+              </p>
+              <p className="text-xs text-slate-400">
+                Conectando a {import.meta.env.VITE_PRODUCTS_URL || 'https://products-psp.onrender.com'}
+              </p>
+            </div>
+          ) : productsError ? (
+            <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold">No se pudieron obtener los productos reales</h4>
+                  <p className="text-xs opacity-90">{productsError}</p>
+                </div>
+              </div>
+              <button
+                onClick={fetchRealProducts}
+                className="px-4 py-2 rounded-xl bg-rose-500 text-white text-xs font-bold flex items-center gap-2 hover:bg-rose-600 transition-colors shrink-0"
               >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={prod.imagen} 
-                    alt={prod.nombre} 
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5" /> Ver Detalles
-                    </span>
+                <RefreshCw className="w-4 h-4" /> Reintentar
+              </button>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-16 text-slate-500">
+              No hay productos disponibles actualmente en la API.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((prod) => (
+                <div 
+                  key={prod.id} 
+                  className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
+                >
+                  <div 
+                    onClick={() => setSelectedProduct(prod)}
+                    className="cursor-pointer"
+                  >
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={prod.imagen} 
+                        alt={prod.nombre} 
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-5">
+                      <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
+                        {prod.nombre}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
+                        {prod.descripcion}
+                      </p>
+                      <p className="text-[11px] font-semibold text-emerald-500 mt-3">Por: {prod.proveedor}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-5 pt-0 flex items-center justify-between">
+                    <div>
+                      <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
+                      {prod.precioAnterior && (
+                        <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(prod);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                    >
+                      Añadir al carrito
+                    </button>
                   </div>
                 </div>
-
-                <div className="p-5">
-                  <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
-                    {prod.nombre}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
-                    {prod.descripcion}
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-500 mt-3">Por: {prod.proveedor}</p>
-                </div>
-              </div>
-
-              <div className="p-5 pt-0 flex items-center justify-between">
-                <div>
-                  <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
-                  {prod.precioAnterior && (
-                    <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
-                  )}
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(prod);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
-                >
-                  Añadir al carrito
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 

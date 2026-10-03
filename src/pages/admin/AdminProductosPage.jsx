@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { productsApi } from '../../services/productsApi';
-import { FiUploadCloud, FiFileText, FiCheckCircle, FiAlertCircle, FiDownload, FiLayers } from 'react-icons/fi';
+import { UploadCloud, FileText, CheckCircle2, AlertCircle, Download, Layers } from 'lucide-react';
 
 export default function AdminProductosPage() {
   const [zipFile, setZipFile]       = useState(null);
@@ -74,7 +74,7 @@ export default function AdminProductosPage() {
           className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
           title="Descarga la plantilla con formato oficial y ejemplos listos para rellenar"
         >
-          <FiDownload className="text-base" />
+          <Download className="w-4 h-4" />
           {downloadingTpl ? 'Generando plantilla...' : 'Descargar Plantilla Excel (.xlsx)'}
         </button>
       </div>
@@ -91,9 +91,9 @@ export default function AdminProductosPage() {
           status.type === 'error'   ? 'bg-red-100 text-red-800 border border-red-200' :
           'bg-blue-100 text-blue-800 border border-blue-200'
         }`}>
-          {status.type === 'success' && <FiCheckCircle className="text-xl shrink-0 mt-0.5" />}
-          {status.type === 'warning' && <FiAlertCircle className="text-xl shrink-0 mt-0.5 text-amber-600" />}
-          {status.type === 'error'   && <FiAlertCircle className="text-xl shrink-0 mt-0.5 text-red-600" />}
+          {status.type === 'success' && <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />}
+          {status.type === 'warning' && <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />}
+          {status.type === 'error'   && <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />}
           {status.type === 'info'    && <span className="animate-spin h-5 w-5 border-2 border-blue-800 border-t-transparent rounded-full shrink-0 mt-0.5" />}
           <div className="flex-1 font-medium">{status.message}</div>
         </div>
@@ -104,7 +104,7 @@ export default function AdminProductosPage() {
         <div className="mb-8 p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <FiLayers className="text-psp-cyan" /> Resumen del Procesamiento por Lotes
+              <Layers className="w-5 h-5 text-psp-cyan" /> Resumen del Procesamiento por Lotes
             </h3>
             <span className="text-xs font-mono bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
               {importReport.batches} lote(s) procesados
@@ -146,7 +146,7 @@ export default function AdminProductosPage() {
         <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border-t-4 border-psp-cyan">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-cyan-100 text-psp-cyan p-3 rounded-full">
-              <FiUploadCloud className="text-2xl" />
+              <UploadCloud className="w-6 h-6" />
             </div>
             <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 1: Subir Imágenes (Comprimido)</h2>
           </div>
@@ -186,7 +186,7 @@ export default function AdminProductosPage() {
         <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border-t-4 border-emerald-500">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-emerald-100 text-emerald-600 p-3 rounded-full">
-              <FiFileText className="text-2xl" />
+              <FileText className="w-6 h-6" />
             </div>
             <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 2: Subir Catálogo (Excel / CSV)</h2>
           </div>

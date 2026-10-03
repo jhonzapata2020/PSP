@@ -62,22 +62,36 @@ export const productsApi = {
     return request(`/api/products?${params.toString()}`);
   },
 
-  /** Sección destacada de la home. */
-  featured: (limit = 4) => request(`/api/products/featured?limit=${limit}`),
+  /** Sección destacada de la home. Soporta filtro por categoría. */
+  featured: (limit = 4, categoryCode = '') => {
+    const params = new URLSearchParams({ limit });
+    if (categoryCode) params.set('categoryCode', categoryCode);
+    return request(`/api/products/featured?${params.toString()}`);
+  },
 
-  /** Todas las categorías activas con su conteo de publicados. */
-  categories: () => request('/api/categories'),
+  /** Todas las categorías activas con su conteo de publicados. Soporta filtro por texto (?q=). */
+  categories: (q = '') => {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    const queryString = params.toString();
+    return request(`/api/categories${queryString ? `?${queryString}` : ''}`);
+  },
 
   /** Ficha completa pública (imágenes, características, especificaciones). */
   get: (idOrSlug) => request(`/api/products/${encodeURIComponent(idOrSlug)}`),
 
   // ── Admin: lectura ───────────────────────────────────────────────────────
 
-  /** Listado de administración (todos los estados, incluyendo pending/rejected). */
-  adminList: ({ q = '', status = '', page = 1, pageSize = 24 } = {}) => {
+  /** Listado de administración con múltiples filtros y paginación. */
+  adminList: ({ q = '', status = '', categoryCode = '', categoryId = '', municipality = '', minPrice = '', maxPrice = '', page = 1, pageSize = 24 } = {}) => {
     const params = new URLSearchParams({ page, pageSize });
     if (q) params.set('q', q);
     if (status) params.set('status', status);
+    if (categoryCode) params.set('categoryCode', categoryCode);
+    if (categoryId) params.set('categoryId', categoryId);
+    if (municipality) params.set('municipality', municipality);
+    if (minPrice) params.set('minPrice', minPrice);
+    if (maxPrice) params.set('maxPrice', maxPrice);
     return request(`/api/admin/products?${params.toString()}`);
   },
 

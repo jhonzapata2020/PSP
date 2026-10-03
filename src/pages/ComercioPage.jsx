@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike } from 'lucide-react';
+import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
 import productsApi from '../services/productsApi';
 import { useCart } from '../context/CartContext';
@@ -36,23 +36,60 @@ const ComercioPage = () => {
   };
 
   const [activeTab, setActiveTab] = useState(getTabFromLocation);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState('');
+  const [categoriesList, setCategoriesList] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCommerceItem, setSelectedCommerceItem] = useState(null);
 
-  // Catálogo de productos: YA NO sale del mock, sale de psp.products.
+  // Catálogo de productos paginado y filtrable dinámicamente desde la API psp.products
   const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const pageSize = 12;
+
+  // Cargar lista de categorías activas para el filtro
   useEffect(() => {
+    let active = true;
+    productsApi.categories()
+      .then(res => { if (active) setCategoriesList(res || []); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  // Debounce para actualizar debouncedQuery sólo tras 1500ms sin escribir
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchInput.trim());
+      setPage(1);
+    }, 1500);
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  // Cargar catálogo de productos con soporte para búsqueda (SKU, nombre), categoría y paginación
+  useEffect(() => {
+    if (activeTab !== 'productos') return;
+
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        const page = await productsApi.list({ pageSize: 48 });
+        const res = await productsApi.list({
+          q: debouncedQuery,
+          categoryCode: selectedCategoryCode,
+          page,
+          pageSize
+        });
         if (!cancelled) {
-          setProducts(page.items);
+          setProducts(res.items || []);
+          setTotal(res.total || 0);
+          setTotalPages(res.totalPages || 1);
           setError(null);
         }
       } catch (e) {
@@ -61,10 +98,11 @@ const ComercioPage = () => {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeTab, debouncedQuery, selectedCategoryCode, page]);
 
   /**
    * Al pulsar una tarjeta se pide la ficha completa a la API: el listado no trae
@@ -176,10 +214,58 @@ const ComercioPage = () => {
         })}
       </div>
 
-      {/* TAB 1: PRODUCTOS — desde la API psp.products (el mock sólo cubre el resto de pestañas) */}
+      {/* Barra de Filtro y Buscador Dinámico (Sólo visible para la pestaña Productos) */}
+      {activeTab === 'productos' && (
+        <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-psp-dark-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Caja de Búsqueda por Nombre / SKU / Término */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, SKU (ej. CHO-001) o palabra clave... (presiona Enter para buscar)"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setDebouncedQuery(searchInput.trim());
+                  setPage(1);
+                }
+              }}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+            />
+            {searchInput && (
+              <button 
+                onClick={() => { setSearchInput(''); setDebouncedQuery(''); setPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Selector de Categoría Dinámico */}
+          <div className="sm:w-64">
+            <select
+              value={selectedCategoryCode}
+              onChange={(e) => { setSelectedCategoryCode(e.target.value); setPage(1); }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+            >
+              <option value="">Todas las Categorías</option>
+              {categoriesList.map((cat) => (
+                <option key={cat.id} value={cat.codigo}>
+                  {cat.nombre} ({cat.totalProductos})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 1: PRODUCTOS — desde la API psp.products con soporte paginado y filtros */}
       {activeTab === 'productos' && loading && (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
-          Cargando el catálogo desde la API…
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+          <div className="animate-spin h-5 w-5 border-2 border-psp-cyan border-t-transparent rounded-full" />
+          <span>Buscando productos en el catálogo…</span>
         </div>
       )}
 
@@ -190,67 +276,97 @@ const ComercioPage = () => {
       )}
 
       {activeTab === 'productos' && !loading && !error && products.length === 0 && (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-10 text-center text-sm text-slate-500 dark:text-slate-400">
-          Todavía no hay productos publicados en el catálogo.
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-psp-dark-card p-12 text-center text-sm text-slate-500 dark:text-slate-400 space-y-2">
+          <p className="text-base font-bold text-slate-700 dark:text-slate-200">No se encontraron productos</p>
+          <p className="text-xs">Prueba ajustando el término de búsqueda o seleccionando otra categoría.</p>
         </div>
       )}
 
       {activeTab === 'productos' && !loading && !error && products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((prod) => (
-            <div 
-              key={prod.id} 
-              className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
-            >
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map((prod) => (
               <div 
-                onClick={() => setSelectedProduct(prod)}
-                className="cursor-pointer"
+                key={prod.id} 
+                className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
               >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={prod.imagen} 
-                    alt={prod.nombre} 
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5" /> Ver Detalles
-                    </span>
+                <div 
+                  onClick={() => openProduct(prod)}
+                  className="cursor-pointer"
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={prod.imagen} 
+                      alt={prod.nombre} 
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
+                      <span className="text-[10px] font-mono text-slate-400">{prod.sku}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
+                      {prod.nombre}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
+                      {prod.descripcion}
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
-                    {prod.nombre}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
-                    {prod.descripcion}
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-500 mt-3">Por: {prod.proveedor}</p>
+                <div className="p-5 pt-0 flex items-center justify-between">
+                  <div>
+                    <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
+                    {prod.precioAnterior && (
+                      <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(prod);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                  >
+                    Añadir al carrito
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="p-5 pt-0 flex items-center justify-between">
-                <div>
-                  <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
-                  {prod.precioAnterior && (
-                    <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
-                  )}
-                </div>
+          {/* Control de Paginación para Productos */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-psp-dark-card rounded-2xl border border-slate-200 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-medium">
+                Página <strong>{page}</strong> de <strong>{totalPages}</strong> (Mostrando {products.length} de {total} productos)
+              </span>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(prod);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Añadir al carrito
+                  <ChevronLeft className="w-4 h-4" /> Anterior
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Siguiente <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* TAB 2: SERVICIOS */}

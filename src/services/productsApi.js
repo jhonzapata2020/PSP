@@ -151,7 +151,7 @@ export const productsApi = {
       body: formData,
     });
     let data; try { data = await response.json(); } catch { data = null; }
-    if (!response.ok) throw new ProductsApiError(response.status, data?.error || 'Falló la subida del ZIP');
+    if (!response.ok) throw new ProductsApiError(response.status, data?.error || 'Falló la subida del archivo comprimido');
     return data;
   },
 

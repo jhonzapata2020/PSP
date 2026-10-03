@@ -148,18 +148,18 @@ export default function AdminProductosPage() {
             <div className="bg-cyan-100 text-psp-cyan p-3 rounded-full">
               <FiUploadCloud className="text-2xl" />
             </div>
-            <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 1: Subir Imágenes (ZIP)</h2>
+            <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 1: Subir Imágenes (Comprimido)</h2>
           </div>
 
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-            Sube un archivo <strong>.zip</strong> con las carpetas de cada producto nombradas por su SKU (ej. <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">SOMB-001/01.jpg</code>).
+            Sube un archivo comprimido (<strong>.zip, .rar, .7z, .tar, .gz</strong>) con las carpetas de cada producto nombradas por su SKU (ej. <code className="bg-slate-100 dark:bg-slate-700 px-1 rounded">SOMB-001/01.jpg</code>).
           </p>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Archivo ZIP (.zip)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Archivo Comprimido (.zip, .rar, .7z, .tar, .gz)</label>
             <input
               type="file"
-              accept=".zip"
+              accept=".zip,.rar,.7z,.tar,.gz,.tgz"
               onChange={(e) => setZipFile(e.target.files[0])}
               disabled={isLoading}
               className="block w-full text-sm text-slate-500

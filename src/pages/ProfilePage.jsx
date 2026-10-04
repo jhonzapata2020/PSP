@@ -32,7 +32,7 @@ function friendlyError(err, generic) {
 }
 
 const ProfilePage = () => {
-  const { user, updateProfile, uploadAvatar, avatarDefaults, loading, error, setError } = useAuth();
+  const { user, updateProfile, uploadAvatar, avatarDefaults, loading, error, setError, hasPermission } = useAuth();
   
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
@@ -284,7 +284,7 @@ const ProfilePage = () => {
                 <a href="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
                   💬 Mis Temas Publicados en el Foro
                 </a>
-                {user.permissions?.includes('roles.manage') && (
+                {['users.read', 'roles.read', 'products.manage', 'audit.read'].some((code) => hasPermission(code)) && (
                   <a href="/admin" className="block p-3 rounded-xl bg-psp-cyan/10 border border-psp-cyan/30 hover:bg-psp-cyan/20 font-bold text-psp-cyan">
                     🛡 Panel de Administración (Gestor de Identidades)
                   </a>

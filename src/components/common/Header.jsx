@@ -252,6 +252,16 @@ const Header = () => {
                           <Store className="w-4 h-4 text-[#0c4236] dark:text-teal-300" />
                           Mis Publicaciones
                         </Link>
+                        {['users.read', 'roles.read', 'products.manage', 'audit.read'].some((code) => hasPermission(code)) && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#0c4236] dark:text-teal-300 hover:bg-teal-500/10"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-[#0c4236] dark:text-teal-300" />
+                            Panel de Administración
+                          </Link>
+                        )}
                       </div>
 
                       <div className="pt-1 border-t border-slate-100 dark:border-[#203330]">

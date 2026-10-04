@@ -73,7 +73,7 @@ function App() {
                   <Route
                     path="/admin"
                     element={
-                      <ProtectedRoute permissions={['users.read', 'roles.read']}>
+                      <ProtectedRoute permissions={['users.read', 'roles.read', 'products.manage', 'audit.read']}>
                         <AdminLayout />
                       </ProtectedRoute>
                     }
@@ -82,7 +82,7 @@ function App() {
                     <Route
                       path="resumen"
                       element={
-                        <ProtectedRoute permission="users.read">
+                        <ProtectedRoute permission="roles.manage">
                           <AdminResumenPage />
                         </ProtectedRoute>
                       }

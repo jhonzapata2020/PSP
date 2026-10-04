@@ -37,6 +37,7 @@ function mapUser(dto, fallbackAvatar = '') {
     roles: dto.roles ?? [],
     roleDisplayNames: roleDisplay,
     permissions: dto.permissions ?? [],
+
   };
 }
 

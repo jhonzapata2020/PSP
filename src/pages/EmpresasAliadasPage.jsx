@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Building2, ExternalLink, MapPin, Award, Users, Sparkles, Filter, ChevronRight, CheckCircle2, Percent, Tag, Briefcase, Handshake, MessageCircle, X, ShieldCheck, Check } from 'lucide-react';
 import { EMPRESAS_ALIADAS, ENTIDADES_AFILIADAS } from '../data/mockData';
 
@@ -254,7 +255,16 @@ const EmpresasAliadasPage = () => {
                   {entidad.categoria.split(' ')[0]}
                 </span>
                 <div className="flex items-center gap-1">
-                  {entidad.sitioWeb && (
+                  {entidad.rutaInterna || (entidad.sitioWeb && entidad.sitioWeb.startsWith('/')) ? (
+                    <Link
+                      to={entidad.rutaInterna || entidad.sitioWeb}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded-md text-psp-cyan hover:bg-psp-cyan/15 transition-colors"
+                      title="Ver Landing Page Oficial"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+                  ) : entidad.sitioWeb ? (
                     <a
                       href={entidad.sitioWeb}
                       target="_blank"
@@ -265,7 +275,7 @@ const EmpresasAliadasPage = () => {
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
-                  )}
+                  ) : null}
                   <ChevronRight className="w-3.5 h-3.5 text-psp-cyan opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
@@ -443,7 +453,14 @@ const EmpresasAliadasPage = () => {
               >
                 Cerrar
               </button>
-              {selectedAffiliateModal.sitioWeb && (
+              {selectedAffiliateModal.rutaInterna || (selectedAffiliateModal.sitioWeb && selectedAffiliateModal.sitioWeb.startsWith('/')) ? (
+                <Link
+                  to={selectedAffiliateModal.rutaInterna || selectedAffiliateModal.sitioWeb}
+                  className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-extrabold flex items-center gap-1.5 shadow hover:scale-105 transition-transform"
+                >
+                  Ver Landing Page Institucional <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              ) : selectedAffiliateModal.sitioWeb ? (
                 <a
                   href={selectedAffiliateModal.sitioWeb}
                   target="_blank"
@@ -452,7 +469,7 @@ const EmpresasAliadasPage = () => {
                 >
                   Visitar Sitio Web <ExternalLink className="w-3.5 h-3.5" />
                 </a>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

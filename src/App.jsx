@@ -20,6 +20,7 @@ import ForoPage from './pages/ForoPage';
 import AyudaPage from './pages/AyudaPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
+import JovenesMas from './pages/aliados/JovenesMas';
 
 // Panel de administración (Fase 3 - Gestor de Identidades)
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -67,6 +68,7 @@ function App() {
                     <Route path="/registro" element={<AuthPage />} />
                     <Route path="/mi-cuenta" element={<ProfilePage />} />
                     <Route path="/mi-perfil-publico" element={<ProfilePage />} />
+                    <Route path="/aliados/jovenes-mas" element={<JovenesMas />} />
 
 
                   {/* Fase 3: Gestor de Identidades (RBAC) */}

@@ -278,13 +278,18 @@ const ProfilePage = () => {
             <div className="p-6 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft space-y-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accesos Rápidos</h3>
               <div className="space-y-2 text-xs">
+                {(user.personType === 'juridica' || user.companyId || hasPermission('products.manage') || hasRole('empresa_aliada')) && (
+                  <a href="/admin/productos" className="block p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 font-bold text-emerald-600 dark:text-emerald-400">
+                    📦 Mis Productos (Agregar y Gestionar Catálogo)
+                  </a>
+                )}
                 <a href="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
                   🛍 Mis Compras & Listas Guardadas
                 </a>
                 <a href="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
                   💬 Mis Temas Publicados en el Foro
                 </a>
-                {['users.read', 'roles.read', 'products.manage', 'audit.read'].some((code) => hasPermission(code)) && (
+                {['users.read', 'roles.read', 'audit.read'].some((code) => hasPermission(code)) && (
                   <a href="/admin" className="block p-3 rounded-xl bg-psp-cyan/10 border border-psp-cyan/30 hover:bg-psp-cyan/20 font-bold text-psp-cyan">
                     🛡 Panel de Administración (Gestor de Identidades)
                   </a>

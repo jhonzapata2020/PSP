@@ -27,6 +27,8 @@ function mapUser(dto, fallbackAvatar = '') {
     documentNumber: dto.documentNumber ?? '',
     gender: dto.gender ?? null,
     phone: dto.phone ?? null,
+    companyId: dto.companyId ?? null,
+    companyName: dto.companyName ?? null,
     completedProfile: dto.completedProfile ?? 0,
     status: dto.status ?? 'active',
 

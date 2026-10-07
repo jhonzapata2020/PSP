@@ -250,9 +250,19 @@ const Header = () => {
                           className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182422]"
                         >
                           <Store className="w-4 h-4 text-[#0c4236] dark:text-teal-300" />
-                          Mis Publicaciones
+                          Ver Comercio
                         </Link>
-                        {['users.read', 'roles.read', 'products.manage', 'audit.read'].some((code) => hasPermission(code)) && (
+                        {(user.personType === 'juridica' || user.companyId || hasPermission('products.manage') || hasRole('empresa_aliada')) && (
+                          <Link
+                            to="/admin/productos"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                          >
+                            <Store className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            Mis Productos & Catálogo
+                          </Link>
+                        )}
+                        {['users.read', 'roles.read', 'audit.read'].some((code) => hasPermission(code)) && (
                           <Link
                             to="/admin"
                             onClick={() => setUserDropdownOpen(false)}

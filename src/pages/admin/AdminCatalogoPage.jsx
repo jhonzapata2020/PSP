@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, RefreshCw, CheckCircle, XCircle, Archive, Star, StarOff, Trash2, Pencil, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckCircle, XCircle, Archive, Star, StarOff, Trash2, Pencil, Eye, ChevronLeft, ChevronRight, X, Package } from 'lucide-react';
 import productsApi from '../../services/productsApi';
 
 const STATUS_LABELS = {
@@ -329,9 +329,35 @@ export default function AdminCatalogoPage() {
           <div className="animate-spin h-8 w-8 border-4 border-psp-cyan border-t-transparent rounded-full" />
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-24 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 space-y-2">
-          <p className="text-lg font-medium">No se encontraron productos</p>
-          <p className="text-sm">Prueba ajustando los filtros de búsqueda o crea uno nuevo.</p>
+        <div className="text-center py-20 px-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-4 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+            <Package className="w-8 h-8" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Aún no tienes productos en tu catálogo</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              {hasActiveFilters
+                ? 'No hay productos que coincidan con los filtros aplicados. Prueba limpiando la búsqueda.'
+                : '¡Bienvenido a tu panel de gestión! Comienza a subir y publicar tus productos para visibilizarlos en el catálogo oficial.'}
+            </p>
+          </div>
+          <div className="pt-2">
+            {hasActiveFilters ? (
+              <button
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+              >
+                <X className="w-4 h-4" /> Limpiar filtros
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/admin/catalogo/nuevo')}
+                className="inline-flex items-center gap-2 bg-psp-cyan hover:bg-cyan-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all"
+              >
+                <Plus className="w-4 h-4" /> Agregar mi primer producto
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm">

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Search, Plus, Pencil, Trash2, ShieldCheck, Ban, CheckCircle2,
-  ChevronLeft, ChevronRight, RefreshCw, MapPin,
+  ChevronLeft, ChevronRight, RefreshCw, MapPin, Eye, EyeOff,
 } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -568,14 +568,38 @@ export default function AdminUsuariosPage() {
 }
 
 /* ---------- subcomponentes de formulario ---------- */
-function Input({ label, ...props }) {
+function Input({ label, type = 'text', ...props }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const effectiveType = isPassword ? (showPassword ? 'text' : 'password') : type;
+
   return (
     <label className="block">
       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">{label}</span>
-      <input
-        {...props}
-        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:border-psp-cyan"
-      />
+      <div className="relative">
+        <input
+          type={effectiveType}
+          {...props}
+          className={`w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:border-psp-cyan transition-colors ${
+            isPassword ? 'pr-9' : ''
+          }`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowPassword((prev) => !prev);
+            }}
+            tabIndex={-1}
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none"
+            title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        )}
+      </div>
     </label>
   );
 }

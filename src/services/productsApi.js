@@ -7,6 +7,7 @@
 
 const PRODUCTS_URL = import.meta.env.VITE_PRODUCTS_URL || 'http://localhost:5182';
 const TOKEN_KEY = 'psp_token';
+let categoriesCache = null;
 
 export class ProductsApiError extends Error {
   constructor(status, message) {
@@ -16,37 +17,59 @@ export class ProductsApiError extends Error {
   }
 }
 
+const pendingProductsRequests = new Map();
+
 async function request(path, options = {}) {
-  const headers = { Accept: 'application/json', ...options.headers };
+  const method = (options.method || 'GET').toUpperCase();
   const token = localStorage.getItem(TOKEN_KEY);
+  const cacheKey = method === 'GET' ? `${path}::${token || ''}` : null;
+
+  if (cacheKey && pendingProductsRequests.has(cacheKey)) {
+    return pendingProductsRequests.get(cacheKey);
+  }
+
+  const headers = { Accept: 'application/json', ...options.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
     options.body = JSON.stringify(options.body);
   }
 
-  let response;
-  try {
-    response = await fetch(`${PRODUCTS_URL}${path}`, { ...options, headers });
-  } catch {
-    throw new ProductsApiError(0, 'No se pudo conectar con la API de productos. ¿Está arrancada en el puerto 5182?');
-  }
-
-  const text = await response.text();
-  let data = null;
-  if (text) { try { data = JSON.parse(text); } catch { data = null; } }
-
-  if (!response.ok) {
-    let msg = data?.error || data?.message;
-    if (!msg && data?.errors && typeof data.errors === 'object') {
-      const errList = Object.values(data.errors).flat();
-      if (errList.length > 0) msg = errList.join(' ');
+  const fetchPromise = (async () => {
+    let response;
+    try {
+      response = await fetch(`${PRODUCTS_URL}${path}`, { ...options, headers });
+    } catch {
+      throw new ProductsApiError(0, 'No se pudo conectar con la API de productos. ¿Está arrancada en el puerto 5182?');
     }
-    if (!msg) msg = data?.title || `Error ${response.status}`;
-    throw new ProductsApiError(response.status, msg);
+
+    const text = await response.text();
+    let data = null;
+    if (text) { try { data = JSON.parse(text); } catch { data = null; } }
+
+    if (!response.ok) {
+      let msg = data?.error || data?.message;
+      if (!msg && data?.errors && typeof data.errors === 'object') {
+        const errList = Object.values(data.errors).flat();
+        if (errList.length > 0) msg = errList.join(' ');
+      }
+      if (!msg) msg = data?.title || `Error ${response.status}`;
+      throw new ProductsApiError(response.status, msg);
+    }
+
+    return data;
+  })();
+
+  if (cacheKey) {
+    pendingProductsRequests.set(cacheKey, fetchPromise);
+    fetchPromise.finally(() => {
+      setTimeout(() => {
+        pendingProductsRequests.delete(cacheKey);
+      }, 400);
+    });
   }
 
-  return data;
+  return fetchPromise;
 }
 
 export const productsApi = {
@@ -71,10 +94,13 @@ export const productsApi = {
 
   /** Todas las categorías activas con su conteo de publicados. Soporta filtro por texto (?q=). */
   categories: (q = '') => {
+    if (!q && categoriesCache) return categoriesCache;
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     const queryString = params.toString();
-    return request(`/api/categories${queryString ? `?${queryString}` : ''}`);
+    const promise = request(`/api/categories${queryString ? `?${queryString}` : ''}`);
+    if (!q) categoriesCache = promise;
+    return promise;
   },
 
   /** Ficha completa pública (imágenes, características, especificaciones). */

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { User, Camera, ShieldCheck, MapPin, Mail, Phone, Edit3, Save, ZoomIn, Check, Building, Upload, ImagePlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -279,20 +280,20 @@ const ProfilePage = () => {
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accesos Rápidos</h3>
               <div className="space-y-2 text-xs">
                 {(user.personType === 'juridica' || user.companyId || hasPermission('products.manage') || hasRole('empresa_aliada')) && (
-                  <a href="/admin/productos" className="block p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 font-bold text-emerald-600 dark:text-emerald-400">
+                  <Link to="/mi-comercio/catalogo" className="block p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 font-bold text-emerald-600 dark:text-emerald-400">
                     📦 Mis Productos (Agregar y Gestionar Catálogo)
-                  </a>
+                  </Link>
                 )}
-                <a href="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
+                <Link to="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium text-slate-700 dark:text-slate-300">
                   🛍 Mis Compras & Listas Guardadas
-                </a>
-                <a href="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium">
+                </Link>
+                <Link to="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium text-slate-700 dark:text-slate-300">
                   💬 Mis Temas Publicados en el Foro
-                </a>
+                </Link>
                 {['users.read', 'roles.read', 'audit.read'].some((code) => hasPermission(code)) && (
-                  <a href="/admin" className="block p-3 rounded-xl bg-psp-cyan/10 border border-psp-cyan/30 hover:bg-psp-cyan/20 font-bold text-psp-cyan">
+                  <Link to="/admin" className="block p-3 rounded-xl bg-psp-cyan/10 border border-psp-cyan/30 hover:bg-psp-cyan/20 font-bold text-psp-cyan">
                     🛡 Panel de Administración (Gestor de Identidades)
-                  </a>
+                  </Link>
                 )}
               </div>
             </div>

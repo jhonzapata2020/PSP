@@ -10,8 +10,7 @@ import {
   Home,
   LayoutDashboard,
   History,
-  Package,
-  LayoutList,
+  Store,
 } from 'lucide-react';
 
 const NAV = [
@@ -20,8 +19,6 @@ const NAV = [
   { to: '/admin/roles',     label: 'Roles',              icon: ShieldCheck,     perm: 'roles.read'      },
   { to: '/admin/matriz',    label: 'Matriz de permisos', icon: Grid3x3,         perm: 'roles.read'      },
   { to: '/admin/auditoria', label: 'Auditoría',          icon: History,         perm: 'audit.read'      },
-  { to: '/admin/catalogo',  label: 'Catálogo',           icon: LayoutList,      perm: 'products.manage' },
-  { to: '/admin/productos', label: 'Carga Masiva',       icon: Package,         perm: 'products.manage' },
 ];
 
 /**
@@ -98,6 +95,12 @@ export default function AdminLayout() {
           </nav>
 
           <div className="p-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            <NavLink
+              to="/mi-comercio/catalogo"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-600 dark:text-teal-400 hover:bg-emerald-500/10"
+            >
+              <Store className="w-4 h-4" /> Portal Comerciante
+            </NavLink>
             <NavLink
               to="/mi-cuenta"
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"

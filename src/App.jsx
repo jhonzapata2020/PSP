@@ -22,6 +22,9 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import JovenesMas from './pages/aliados/JovenesMas';
 
+// Portal de Comerciantes & Catálogo (Módulo Desacoplado)
+import VendorLayout from './pages/comercio/VendorLayout';
+
 // Panel de administración (Fase 3 - Gestor de Identidades)
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminLayout, { AdminIndexRedirect } from './pages/admin/AdminLayout';
@@ -52,108 +55,100 @@ function App() {
               <main className="flex-grow w-full max-w-full overflow-x-hidden">
                 <ErrorBoundary>
                   <Routes>
+                    {/* Public Routes */}
                     <Route path="/" element={<HomePage />} />
-                    <Route path="/mapa" element={<MapaPage />} />
-                    <Route path="/map" element={<MapaPage />} />
-                    <Route path="/empresas-aliadas" element={<EmpresasAliadasPage />} />
-                    <Route path="/comercio/*" element={<ComercioPage />} />
-                    <Route path="/domicilios" element={<ComercioPage />} />
-                    <Route path="/domicilios-express" element={<ComercioPage />} />
-                    <Route path="/rappi" element={<ComercioPage />} />
-                    <Route path="/express" element={<ComercioPage />} />
-                    <Route path="/movilidad" element={<ComercioPage />} />
-                    <Route path="/foro" element={<ForoPage />} />
-                    <Route path="/ayuda" element={<AyudaPage />} />
                     <Route path="/ingresar" element={<AuthPage />} />
                     <Route path="/registro" element={<AuthPage />} />
-                    <Route path="/mi-cuenta" element={<ProfilePage />} />
-                    <Route path="/mi-perfil-publico" element={<ProfilePage />} />
-                    <Route path="/aliados/jovenes-mas" element={<JovenesMas />} />
+
+                    {/* Gated Protected Services: Require Login */}
+                    <Route path="/mapa" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
+                    <Route path="/map" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
+                    <Route path="/empresas-aliadas" element={<ProtectedRoute><EmpresasAliadasPage /></ProtectedRoute>} />
+                    <Route path="/comercio/*" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/domicilios" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/domicilios-express" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/rappi" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/express" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/movilidad" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    <Route path="/foro" element={<ProtectedRoute><ForoPage /></ProtectedRoute>} />
+                    <Route path="/ayuda" element={<ProtectedRoute><AyudaPage /></ProtectedRoute>} />
+                    <Route path="/mi-cuenta" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/mi-perfil-publico" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/aliados/jovenes-mas" element={<ProtectedRoute><JovenesMas /></ProtectedRoute>} />
 
 
-                  {/* Fase 3: Gestor de Identidades (RBAC) */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute permissions={['users.read', 'roles.read', 'products.manage', 'audit.read']}>
-                        <AdminLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<AdminIndexRedirect />} />
+                    {/* Portal del Comerciante / Gestión de Catálogo (Módulo Independiente) */}
                     <Route
-                      path="resumen"
-                      element={
-                        <ProtectedRoute permission="roles.manage">
-                          <AdminResumenPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="usuarios"
-                      element={
-                        <ProtectedRoute permission="users.read">
-                          <AdminUsuariosPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="roles"
-                      element={
-                        <ProtectedRoute permission="roles.read">
-                          <AdminRolesPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="matriz"
-                      element={
-                        <ProtectedRoute permission="roles.read">
-                          <AdminMatrizPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="auditoria"
-                      element={
-                        <ProtectedRoute permission="audit.read">
-                          <AdminAuditoriaPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="productos"
+                      path="/mi-comercio"
                       element={
                         <ProtectedRoute permission="products.manage">
-                          <AdminProductosPage />
+                          <VendorLayout />
                         </ProtectedRoute>
                       }
-                    />
+                    >
+                      <Route index element={<Navigate to="catalogo" replace />} />
+                      <Route path="catalogo" element={<AdminCatalogoPage />} />
+                      <Route path="catalogo/nuevo" element={<ProductFormPage />} />
+                      <Route path="catalogo/editar/:sku" element={<ProductFormPage />} />
+                      <Route path="productos" element={<AdminProductosPage />} />
+                    </Route>
+
+                    {/* Fase 3: Gestor de Identidades (RBAC Admin Panel) */}
                     <Route
-                      path="catalogo"
+                      path="/admin"
                       element={
-                        <ProtectedRoute permission="products.manage">
-                          <AdminCatalogoPage />
+                        <ProtectedRoute permissions={['users.read', 'roles.read', 'audit.read']}>
+                          <AdminLayout />
                         </ProtectedRoute>
                       }
-                    />
-                    <Route
-                      path="catalogo/nuevo"
-                      element={
-                        <ProtectedRoute permission="products.manage">
-                          <ProductFormPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="catalogo/editar/:sku"
-                      element={
-                        <ProtectedRoute permission="products.manage">
-                          <ProductFormPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
+                    >
+                      <Route index element={<AdminIndexRedirect />} />
+                      <Route
+                        path="resumen"
+                        element={
+                          <ProtectedRoute permission="roles.manage">
+                            <AdminResumenPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="usuarios"
+                        element={
+                          <ProtectedRoute permission="users.read">
+                            <AdminUsuariosPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="roles"
+                        element={
+                          <ProtectedRoute permission="roles.read">
+                            <AdminRolesPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="matriz"
+                        element={
+                          <ProtectedRoute permission="roles.read">
+                            <AdminMatrizPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="auditoria"
+                        element={
+                          <ProtectedRoute permission="audit.read">
+                            <AdminAuditoriaPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      {/* Redirecciones de compatibilidad para URLs antiguas /admin/productos y /admin/catalogo */}
+                      <Route path="productos" element={<Navigate to="/mi-comercio/productos" replace />} />
+                      <Route path="catalogo" element={<Navigate to="/mi-comercio/catalogo" replace />} />
+                      <Route path="catalogo/nuevo" element={<Navigate to="/mi-comercio/catalogo/nuevo" replace />} />
+                      <Route path="catalogo/editar/:sku" element={<Navigate to="/mi-comercio/catalogo" replace />} />
+                    </Route>
 
                   {/* Etapa 1 Legal Routes */}
                   <Route path="/terminos-y-condiciones" element={<TerminosCondicionesPage />} />

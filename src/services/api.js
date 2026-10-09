@@ -44,60 +44,80 @@ export class ApiError extends Error {
   }
 }
 
+const pendingApiRequests = new Map();
+
 async function request(path, { method = 'GET', body, formData, auth = true } = {}) {
-  const headers = { Accept: 'application/json' };
-
-  if (formData === undefined && body !== undefined) headers['Content-Type'] = 'application/json';
-
+  const reqMethod = method.toUpperCase();
   const token = getToken();
+  const cacheKey = reqMethod === 'GET' ? `${path}::${auth ? token || '' : 'public'}` : null;
+
+  if (cacheKey && pendingApiRequests.has(cacheKey)) {
+    return pendingApiRequests.get(cacheKey);
+  }
+
+  const headers = { Accept: 'application/json' };
+  if (formData === undefined && body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
-  let response;
   const fullUrl = path.startsWith('http') ? path : `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 
-  try {
-    response = await fetch(fullUrl, {
-      method,
-      headers,
-      body: formData !== undefined ? formData : body !== undefined ? JSON.stringify(body) : undefined,
-    });
-  } catch (err) {
-    throw new ApiError(0, 'No se pudo conectar con el servidor. Verifica que la API esté activa.');
-  }
-
-  if (response.status === 204) return null;
-
-  const text = await response.text();
-  let data = null;
-  if (text) {
+  const fetchPromise = (async () => {
+    let response;
     try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
-  }
-
-  if (!response.ok) {
-    const message =
-      data?.error ||
-      data?.message ||
-      data?.detail ||
-      (data?.title
-        ? Object.entries(data.errors || {})
-            .map(([field, msgs]) => `${field}: ${[].concat(msgs).join(', ')}`)
-            .join(' | ') || data.title
-        : null) ||
-      `Error ${response.status}`;
-
-    if (response.status === 401 && auth) {
-      setToken(null);
-      localStorage.removeItem('psp_user');
+      response = await fetch(fullUrl, {
+        method,
+        headers,
+        body: formData !== undefined ? formData : body !== undefined ? JSON.stringify(body) : undefined,
+      });
+    } catch (err) {
+      throw new ApiError(0, 'No se pudo conectar con el servidor. Verifica que la API esté activa.');
     }
 
-    throw new ApiError(response.status, message);
+    if (response.status === 204) return null;
+
+    const text = await response.text();
+    let data = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
+      }
+    }
+
+    if (!response.ok) {
+      const message =
+        data?.error ||
+        data?.message ||
+        data?.detail ||
+        (data?.title
+          ? Object.entries(data.errors || {})
+              .map(([field, msgs]) => `${field}: ${[].concat(msgs).join(', ')}`)
+              .join(' | ') || data.title
+          : null) ||
+        `Error ${response.status}`;
+
+      if (response.status === 401 && auth) {
+        setToken(null);
+        localStorage.removeItem('psp_user');
+      }
+
+      throw new ApiError(response.status, message);
+    }
+
+    return data;
+  })();
+
+  if (cacheKey) {
+    pendingApiRequests.set(cacheKey, fetchPromise);
+    fetchPromise.finally(() => {
+      setTimeout(() => {
+        pendingApiRequests.delete(cacheKey);
+      }, 400);
+    });
   }
 
-  return data;
+  return fetchPromise;
 }
 
 export const api = {

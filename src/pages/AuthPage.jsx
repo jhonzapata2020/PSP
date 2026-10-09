@@ -85,7 +85,8 @@ const AuthPage = () => {
         // POST /api/auth/login → devuelve JWT + roles + permisos
         await login(email, password);
       }
-      navigate('/mi-cuenta');
+      const targetPath = location.state?.from || '/mi-cuenta';
+      navigate(targetPath);
     } catch {
       // El mensaje ya quedó en AuthContext.error y se pinta más abajo.
     }
@@ -104,7 +105,8 @@ const AuthPage = () => {
         personType: 'natural',
       });
       setSocialLoading(null);
-      navigate('/mi-cuenta');
+      const targetPath = location.state?.from || '/mi-cuenta';
+      navigate(targetPath);
     }, 600);
   };
 

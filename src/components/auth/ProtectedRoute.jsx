@@ -34,7 +34,10 @@ export default function ProtectedRoute({ permission, permissions, children }) {
   }
 
   // Sesión válida pero sin los permisos requeridos.
-  if (required.length > 0 && !required.some((code) => hasPermission(code))) {
+  const isEmpresaAliada = user.personType === 'juridica' || Boolean(user.companyId) || user.roles?.includes('empresa_aliada');
+  const allowsCompanyAccess = isEmpresaAliada && required.every(code => code === 'products.manage');
+
+  if (required.length > 0 && !allowsCompanyAccess && !required.some((code) => hasPermission(code))) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">

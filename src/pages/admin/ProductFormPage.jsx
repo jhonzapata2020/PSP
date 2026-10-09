@@ -600,7 +600,7 @@ export default function ProductFormPage() {
                     {/* Badge de Posición / Portada */}
                     <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
                       {isCover ? (
-                        <span className="bg-psp-cyan text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                        <span className="bg-[#0c4236] text-white dark:bg-teal-400 dark:text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow flex items-center gap-1">
                           <Star className="w-3 h-3 fill-current" /> PORTADA
                         </span>
                       ) : (
@@ -791,7 +791,7 @@ export default function ProductFormPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-psp-cyan text-white font-semibold text-sm hover:bg-cyan-600 disabled:opacity-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-bold text-sm disabled:opacity-50 transition-all shadow-md"
           >
             {saving ? (
               <>

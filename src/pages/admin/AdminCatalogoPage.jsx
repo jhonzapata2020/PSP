@@ -201,7 +201,7 @@ export default function AdminCatalogoPage() {
         </div>
         <button
           onClick={() => navigate('/admin/catalogo/nuevo')}
-          className="flex items-center gap-2 bg-psp-cyan text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-cyan-700 transition-colors shrink-0 shadow-sm"
+          className="flex items-center gap-2 bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 shadow-sm"
         >
           <Plus className="w-4 h-4" /> Nuevo producto
         </button>
@@ -352,7 +352,7 @@ export default function AdminCatalogoPage() {
             ) : (
               <button
                 onClick={() => navigate('/admin/catalogo/nuevo')}
-                className="inline-flex items-center gap-2 bg-psp-cyan hover:bg-cyan-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all"
+                className="inline-flex items-center gap-2 bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all"
               >
                 <Plus className="w-4 h-4" /> Agregar mi primer producto
               </button>
@@ -542,7 +542,7 @@ export default function AdminCatalogoPage() {
                       onClick={() => setPage(pNum)}
                       className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                         page === pNum
-                          ? 'bg-psp-cyan text-white shadow-sm'
+                          ? 'bg-[#0c4236] text-white dark:bg-teal-400 dark:text-slate-950 font-extrabold shadow-sm'
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}
                     >

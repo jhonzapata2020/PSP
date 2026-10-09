@@ -163,12 +163,12 @@ export default function AdminProductosPage() {
               onChange={(e) => setZipFile(e.target.files[0])}
               disabled={isLoading}
               className="block w-full text-sm text-slate-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-cyan-50 file:text-psp-cyan
-                hover:file:bg-cyan-100
-                dark:file:bg-slate-700 dark:file:text-cyan-400
+                file:mr-4 file:py-2.5 file:px-4
+                file:rounded-xl file:border-0
+                file:text-xs file:font-extrabold
+                file:bg-teal-100 file:text-teal-950
+                hover:file:bg-teal-200
+                dark:file:bg-teal-950 dark:file:text-teal-200
                 cursor-pointer disabled:opacity-50"
             />
           </div>
@@ -176,16 +176,17 @@ export default function AdminProductosPage() {
           <button
             onClick={handleUploadZip}
             disabled={!zipFile || isLoading}
-            className="w-full flex justify-center items-center gap-2 bg-psp-cyan text-white px-4 py-3 rounded-lg shadow-sm hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full flex justify-center items-center gap-2 bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 px-4 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-sm"
           >
-            Subir Imágenes a Cloudflare R2
+            <UploadCloud className="w-4 h-4" />
+            <span>Subir Imágenes a Cloudflare R2</span>
           </button>
         </div>
 
         {/* Paso 2: Excel / CSV */}
         <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border-t-4 border-emerald-500">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-emerald-100 text-emerald-600 p-3 rounded-full">
+            <div className="bg-emerald-100 text-emerald-800 p-3 rounded-full">
               <FileText className="w-6 h-6" />
             </div>
             <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 2: Subir Catálogo (Excel / CSV)</h2>
@@ -234,12 +235,12 @@ export default function AdminProductosPage() {
               onChange={(e) => setDataFile(e.target.files[0])}
               disabled={isLoading}
               className="block w-full text-sm text-slate-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-emerald-50 file:text-emerald-600
-                hover:file:bg-emerald-100
-                dark:file:bg-slate-700 dark:file:text-emerald-400
+                file:mr-4 file:py-2.5 file:px-4
+                file:rounded-xl file:border-0
+                file:text-xs file:font-extrabold
+                file:bg-emerald-100 file:text-emerald-950
+                hover:file:bg-emerald-200
+                dark:file:bg-emerald-950 dark:file:text-emerald-200
                 cursor-pointer disabled:opacity-50"
             />
           </div>
@@ -247,9 +248,9 @@ export default function AdminProductosPage() {
           <button
             onClick={handleUploadDataFile}
             disabled={!dataFile || isLoading}
-            className="w-full flex justify-center items-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full flex justify-center items-center gap-2 bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 px-4 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-sm"
           >
-            Procesar Catálogo en Lotes
+            <FileText className="w-4 h-4" />
           </button>
         </div>
       </div>

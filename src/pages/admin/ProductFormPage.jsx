@@ -280,7 +280,7 @@ export default function ProductFormPage() {
         }
       }
 
-      navigate('/admin/catalogo');
+      navigate('/mi-comercio/catalogo');
     } catch (err) {
       setError(err.message || 'Error al guardar el producto.');
     } finally {
@@ -323,7 +323,7 @@ export default function ProductFormPage() {
       <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
-          onClick={() => navigate('/admin/catalogo')}
+          onClick={() => navigate('/mi-comercio/catalogo')}
           className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -783,7 +783,7 @@ export default function ProductFormPage() {
         <div className="flex justify-end items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
           <button
             type="button"
-            onClick={() => navigate('/admin/catalogo')}
+            onClick={() => navigate('/mi-comercio/catalogo')}
             className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             Cancelar

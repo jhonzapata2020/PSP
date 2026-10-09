@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -41,6 +41,11 @@ import ProductFormPage from './pages/admin/ProductFormPage';
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
 import PoliticaPrivacidadPage from './pages/PoliticaPrivacidadPage';
 import PoliticaCookiesPage from './pages/PoliticaCookiesPage';
+
+function AdminEditRedirect() {
+  const { sku } = useParams();
+  return <Navigate to={`/mi-comercio/catalogo/editar/${sku}`} replace />;
+}
 
 function App() {
   return (
@@ -147,7 +152,7 @@ function App() {
                       <Route path="productos" element={<Navigate to="/mi-comercio/productos" replace />} />
                       <Route path="catalogo" element={<Navigate to="/mi-comercio/catalogo" replace />} />
                       <Route path="catalogo/nuevo" element={<Navigate to="/mi-comercio/catalogo/nuevo" replace />} />
-                      <Route path="catalogo/editar/:sku" element={<Navigate to="/mi-comercio/catalogo" replace />} />
+                      <Route path="catalogo/editar/:sku" element={<AdminEditRedirect />} />
                     </Route>
 
                   {/* Etapa 1 Legal Routes */}

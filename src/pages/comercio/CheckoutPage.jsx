@@ -20,6 +20,7 @@ import {
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import ordersApi from '../../services/ordersApi';
+import MockPaymentModal from '../../components/comercio/MockPaymentModal';
 
 const MUNICIPIOS_URABA = [
   'Apartadó',
@@ -57,8 +58,74 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [completedOrder, setCompletedOrder] = useState(null);
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
   // Clave de idempotencia única para este intento de compra
   const [idempotencyKey] = useState(() => `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+
+  const handleInitiateOrder = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    if (!receiverName.trim()) {
+      setErrorMessage('Por favor ingresa el nombre de la persona que recibe.');
+      return;
+    }
+
+    if (!contactPhone.trim() || contactPhone.trim().length < 7) {
+      setErrorMessage('Por favor ingresa un número de teléfono de contacto válido.');
+      return;
+    }
+
+    if (!address.trim()) {
+      setErrorMessage('Por favor ingresa la dirección de entrega.');
+      return;
+    }
+
+    // Si el usuario eligió Tarjeta o PSE o Transferencia, abrimos la pasarela de pago Wompi Sandbox
+    if (paymentMethod === 'online_gateway' || paymentMethod === 'direct_transfer') {
+      setIsPaymentModalOpen(true);
+      return;
+    }
+
+    // Si es contraentrega, se procesa de inmediato
+    await executeCheckout('cash_on_delivery', null);
+  };
+
+  const executeCheckout = async (chosenPaymentMethod, paymentResult) => {
+    setSubmitting(true);
+    try {
+      const payload = {
+        paymentMethod: chosenPaymentMethod,
+        idempotencyKey,
+        shipping: {
+          receiverName: receiverName.trim(),
+          contactPhone: contactPhone.trim(),
+          department: 'Antioquia',
+          municipality,
+          address: address.trim(),
+          neighborhood: neighborhood.trim() || null,
+          notes: notes.trim() || null
+        }
+      };
+
+      const result = await ordersApi.checkout(payload);
+      if (paymentResult) {
+        result.mockPayment = paymentResult;
+      }
+      setCompletedOrder(result);
+      await clearCart();
+    } catch (err) {
+      setErrorMessage(err.message || 'Ocurrió un error al procesar el pedido. Por favor intenta de nuevo.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePaymentApproved = async (paymentResult) => {
+    setIsPaymentModalOpen(false);
+    await executeCheckout(paymentResult.paymentMethod, paymentResult);
+  };
 
   if (completedOrder) {
     return (
@@ -78,6 +145,34 @@ export default function CheckoutPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
               Tu compra se ha procesado correctamente y ha sido distribuida a los comercios correspondientes.
             </p>
+          </div>
+
+          {/* Tarjeta de Comprobante de Pago Mock Wompi */}
+          <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-teal-950/30 border border-emerald-500/30 flex items-center justify-between text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-teal-300 flex items-center justify-center">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  {completedOrder.mockPayment 
+                    ? `Pago Aprobado con ${completedOrder.mockPayment.cardBrand || 'Tarjeta'} (Wompi Sandbox)`
+                    : completedOrder.paymentMethod === 'cash_on_delivery' 
+                      ? 'Pago Contraentrega (Efectivo)' 
+                      : 'Pago Registrado'}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {completedOrder.mockPayment 
+                    ? `Ref Transacción: ${completedOrder.mockPayment.transactionId} • Terminada en ${completedOrder.mockPayment.lastFour}`
+                    : completedOrder.paymentMethod === 'cash_on_delivery'
+                      ? 'Cancela en efectivo al recibir tu paquete en Urabá'
+                      : 'Procesado en el sistema'}
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-800 dark:text-teal-200 uppercase">
+              {completedOrder.paymentStatus === 'paid' || completedOrder.mockPayment ? 'Pagado' : 'Pendiente'}
+            </span>
           </div>
 
           {/* Desglose de Paquetes por Empresa Aliada (Split-Order) */}
@@ -157,51 +252,6 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleSubmitOrder = async (e) => {
-    e.preventDefault();
-    setErrorMessage('');
-
-    if (!receiverName.trim()) {
-      setErrorMessage('Por favor ingresa el nombre de la persona que recibe.');
-      return;
-    }
-
-    if (!contactPhone.trim() || contactPhone.trim().length < 7) {
-      setErrorMessage('Por favor ingresa un número de teléfono de contacto válido.');
-      return;
-    }
-
-    if (!address.trim()) {
-      setErrorMessage('Por favor ingresa la dirección de entrega.');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const payload = {
-        paymentMethod,
-        idempotencyKey,
-        shipping: {
-          receiverName: receiverName.trim(),
-          contactPhone: contactPhone.trim(),
-          department: 'Antioquia',
-          municipality,
-          address: address.trim(),
-          neighborhood: neighborhood.trim() || null,
-          notes: notes.trim() || null
-        }
-      };
-
-      const result = await ordersApi.checkout(payload);
-      setCompletedOrder(result);
-      await clearCart();
-    } catch (err) {
-      setErrorMessage(err.message || 'Ocurrió un error al procesar el pedido. Por favor intenta de nuevo.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fadeIn">
       
@@ -231,7 +281,7 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <form onSubmit={handleInitiateOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Columna Izquierda: Formulario de Entrega y Pago (Cols 1-7) */}
         <div className="lg:col-span-7 space-y-6">
@@ -501,7 +551,13 @@ export default function CheckoutPage() {
                 <span>Procesando Pedido...</span>
               ) : (
                 <>
-                  <span>Confirmar Pedido Multi-Comercio</span>
+                  <span>
+                    {paymentMethod === 'online_gateway' 
+                      ? 'Pagar con Tarjeta / PSE (Wompi)' 
+                      : paymentMethod === 'direct_transfer'
+                        ? 'Continuar con Nequi / Bancolombia'
+                        : 'Confirmar Pedido Contraentrega'}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -510,6 +566,20 @@ export default function CheckoutPage() {
         </div>
 
       </form>
+
+      {/* Modal Pasarela de Pagos Segura (Sandbox Wompi / Redeban) */}
+      <MockPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        totalAmount={totalAmount}
+        orderReference={idempotencyKey}
+        buyerInfo={{
+          name: receiverName,
+          phone: contactPhone,
+          email: user?.email
+        }}
+        onPaymentSuccess={handlePaymentApproved}
+      />
     </div>
   );
 }

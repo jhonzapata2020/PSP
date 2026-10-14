@@ -24,6 +24,9 @@ import JovenesMas from './pages/aliados/JovenesMas';
 
 // Portal de Comerciantes & Catálogo (Módulo Desacoplado)
 import VendorLayout from './pages/comercio/VendorLayout';
+import CheckoutPage from './pages/comercio/CheckoutPage';
+import MisPedidosPage from './pages/comercio/MisPedidosPage';
+import VendorOrdersPage from './pages/comercio/VendorOrdersPage';
 
 // Panel de administración (Fase 3 - Gestor de Identidades)
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -79,10 +82,12 @@ function App() {
                     <Route path="/ayuda" element={<ProtectedRoute><AyudaPage /></ProtectedRoute>} />
                     <Route path="/mi-cuenta" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/mi-perfil-publico" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/mis-pedidos" element={<ProtectedRoute><MisPedidosPage /></ProtectedRoute>} />
+                    <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
                     <Route path="/aliados/jovenes-mas" element={<ProtectedRoute><JovenesMas /></ProtectedRoute>} />
 
 
-                    {/* Portal del Comerciante / Gestión de Catálogo (Módulo Independiente) */}
+                    {/* Portal del Comerciante / Gestión de Catálogo y Pedidos (Módulo Independiente) */}
                     <Route
                       path="/mi-comercio"
                       element={
@@ -91,7 +96,8 @@ function App() {
                         </ProtectedRoute>
                       }
                     >
-                      <Route index element={<Navigate to="catalogo" replace />} />
+                      <Route index element={<Navigate to="pedidos" replace />} />
+                      <Route path="pedidos" element={<VendorOrdersPage />} />
                       <Route path="catalogo" element={<AdminCatalogoPage />} />
                       <Route path="catalogo/nuevo" element={<ProductFormPage />} />
                       <Route path="catalogo/editar/:sku" element={<ProductFormPage />} />

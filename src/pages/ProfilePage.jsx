@@ -284,8 +284,8 @@ const ProfilePage = () => {
                     📦 Mis Productos (Agregar y Gestionar Catálogo)
                   </Link>
                 )}
-                <Link to="/comercio" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium text-slate-700 dark:text-slate-300">
-                  🛍 Mis Compras & Listas Guardadas
+                <Link to="/mis-pedidos" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-bold text-slate-800 dark:text-slate-200">
+                  🛍️ Mis Compras y Pedidos
                 </Link>
                 <Link to="/foro" className="block p-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-psp-cyan/10 font-medium text-slate-700 dark:text-slate-300">
                   💬 Mis Temas Publicados en el Foro

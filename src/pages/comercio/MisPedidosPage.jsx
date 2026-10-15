@@ -27,6 +27,11 @@ import {
   XCircle
 } from 'lucide-react';
 import ordersApi from '../../services/ordersApi';
+import { 
+  calculateOrderFinancialBreakdown, 
+  getPaymentDisplayInfo, 
+  isItemIvaExempt 
+} from '../../utils/orderTaxUtils';
 
 const STATUS_CONFIG = {
   confirmed: { label: 'Confirmado', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
@@ -126,36 +131,56 @@ export default function MisPedidosPage() {
       minute: '2-digit'
     });
 
-    const itemsRows = (order.items || []).map(item => `
-      <tr>
-        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
-          <strong>${item.productName}</strong><br/>
-          <span style="font-size: 10px; color: #64748b;">SKU: ${item.sku || 'N/A'} • ${item.companyName || 'Comercio Local PSP'}</span>
-        </td>
-        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 11px;">
-          ${item.quantity}
-        </td>
-        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px;">
-          $${(item.unitPrice || 0).toLocaleString('es-CO')}
-        </td>
-        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px; font-weight: bold;">
-          $${(item.lineTotal || 0).toLocaleString('es-CO')}
-        </td>
-      </tr>
-    `).join('');
+    const fin = calculateOrderFinancialBreakdown(order);
+    const payInfo = getPaymentDisplayInfo(order);
 
-    const paymentAuditHtml = order.paymentTransactionId ? `
-      <div style="margin-top: 12px; padding: 10px 14px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; font-size: 10px; color: #115e59;">
-        <p style="margin: 2px 0;"><strong>Pasarela de Pago:</strong> ${order.paymentGateway || 'Wompi Colombia'}</p>
-        <p style="margin: 2px 0; font-family: monospace;"><strong>ID Transacción:</strong> ${order.paymentTransactionId}</p>
-        ${order.authorizationCode ? `<p style="margin: 2px 0; font-family: monospace;"><strong>Cód. Autorización:</strong> ${order.authorizationCode}</p>` : ''}
-        <p style="margin: 2px 0;"><strong>Medio de Pago:</strong> ${order.cardBrand || 'Tarjeta'} ${order.cardLastFour ? `•••• ${order.cardLastFour}` : ''} • ${order.installments || 1} cuota(s)</p>
-      </div>
-    ` : `
-      <div style="margin-top: 12px; padding: 10px 14px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; font-size: 10px; color: #854d0e;">
-        <p style="margin: 2px 0;"><strong>Método de Pago:</strong> Pago Contra Entrega en Domicilio (Efectivo)</p>
-      </div>
-    `;
+    const itemsRows = (order.items || []).map(item => {
+      const isExempt = isItemIvaExempt(item);
+      const taxTag = isExempt ? 'IVA 0% (Excluido Canasta Familiar Art. 424 E.T.)' : 'IVA 19% Incluido';
+      return `
+        <tr>
+          <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+            <strong>${item.productName}</strong><br/>
+            <span style="font-size: 9.5px; color: #64748b;">SKU: ${item.sku || 'N/A'} • ${item.companyName || 'Comercio Local'} • <em style="color: ${isExempt ? '#047857' : '#475569'};">${taxTag}</em></span>
+          </td>
+          <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 11px;">
+            ${item.quantity}
+          </td>
+          <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px;">
+            $${(item.unitPrice || 0).toLocaleString('es-CO')}
+          </td>
+          <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px; font-weight: bold;">
+            $${(item.lineTotal || 0).toLocaleString('es-CO')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    let paymentAuditHtml = '';
+    if (payInfo.isOnline) {
+      paymentAuditHtml = `
+        <div style="margin-top: 10px; padding: 9px 12px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; font-size: 10px; color: #115e59;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <strong style="font-size: 10.5px; color: #0f766e;">${payInfo.title}</strong>
+            <span style="background: #ccfbf1; color: #0f766e; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px;">${payInfo.badge}</span>
+          </div>
+          <p style="margin: 2px 0;"><strong>Pasarela Procesadora:</strong> ${payInfo.gateway}</p>
+          ${payInfo.cardBrand ? `<p style="margin: 2px 0;"><strong>Medio de Pago:</strong> ${payInfo.cardBrand} ${payInfo.lastFour} &bull; ${payInfo.installments} cuota(s)</p>` : ''}
+          <p style="margin: 2px 0; font-family: monospace;"><strong>ID Transacción:</strong> ${payInfo.transactionId}</p>
+          ${payInfo.authorizationCode ? `<p style="margin: 2px 0; font-family: monospace;"><strong>Cód. Autorización Bancaria:</strong> ${payInfo.authorizationCode}</p>` : ''}
+        </div>
+      `;
+    } else {
+      paymentAuditHtml = `
+        <div style="margin-top: 10px; padding: 9px 12px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; font-size: 10px; color: #854d0e;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <strong style="font-size: 10.5px; color: #a16207;">${payInfo.title}</strong>
+            <span style="background: #fef9c3; color: #854d0e; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px;">${payInfo.badge}</span>
+          </div>
+          <p style="margin: 2px 0;">${payInfo.detail}</p>
+        </div>
+      `;
+    }
 
     const receiptHtml = `
       <!DOCTYPE html>
@@ -309,18 +334,52 @@ export default function MisPedidosPage() {
           </tbody>
         </table>
 
-        <div class="totals-section">
+        <div class="totals-section" style="width: 275px; margin-left: auto;">
           <div class="totals-row">
-            <span>Subtotal:</span>
-            <span>$${(order.subtotalAmount || 0).toLocaleString('es-CO')} COP</span>
+            <span>Subtotal Artículos:</span>
+            <span>$${fin.subtotal.toLocaleString('es-CO')} COP</span>
           </div>
+          ${fin.discount > 0 ? `
+          <div class="totals-row" style="color: #059669; font-weight: bold;">
+            <span>Descuento Promocional:</span>
+            <span>-$${fin.discount.toLocaleString('es-CO')} COP</span>
+          </div>
+          <div class="totals-row" style="border-top: 1px dashed #cbd5e1; padding-top: 2px; font-weight: bold;">
+            <span>Subtotal Neto:</span>
+            <span>$${fin.netSubtotal.toLocaleString('es-CO')} COP</span>
+          </div>
+          ` : ''}
+
+          <!-- Discriminación Tributaria según DIAN (IVA Incluido) -->
+          <div style="margin: 6px 0; padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 9.5px; color: #475569;">
+            <div style="font-weight: bold; color: #334155; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; font-size: 8.5px;">
+              Discriminación Tributaria (IVA Incluido):
+            </div>
+            ${fin.baseGravable19 > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin: 1px 0;">
+              <span>&bull; Base Gravable (19%):</span>
+              <span>$${fin.baseGravable19.toLocaleString('es-CO')} COP</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 1px 0;">
+              <span>&bull; IVA 19% Generado:</span>
+              <span>$${fin.iva19.toLocaleString('es-CO')} COP</span>
+            </div>
+            ` : ''}
+            ${fin.totalExempt > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin: 1px 0; color: #047857;">
+              <span>&bull; Excluidos (IVA 0% Art. 424 E.T.):</span>
+              <span>$${fin.totalExempt.toLocaleString('es-CO')} COP</span>
+            </div>
+            ` : ''}
+          </div>
+
           <div class="totals-row">
-            <span>Envío local Urabá:</span>
-            <span style="color: #059669; font-weight: bold;">Gratis / Incluido</span>
+            <span>Costo de Envío (Urabá):</span>
+            <span style="color: #059669; font-weight: bold;">${fin.shipping > 0 ? `$${fin.shipping.toLocaleString('es-CO')} COP` : 'Gratis / Incluido'}</span>
           </div>
           <div class="total-highlight">
-            <span>Total Pagado:</span>
-            <span>$${(order.totalAmount || 0).toLocaleString('es-CO')} COP</span>
+            <span>TOTAL FACTURADO:</span>
+            <span>$${fin.total.toLocaleString('es-CO')} COP</span>
           </div>
         </div>
 
@@ -405,7 +464,9 @@ export default function MisPedidosPage() {
           {orders.map((order) => {
             const masterStatusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
             const canCancel = order.status === 'confirmed' || order.status === 'pending';
-            const isOnlinePayment = order.paymentMethod !== 'cash_on_delivery' && Boolean(order.paymentTransactionId || order.paidAt);
+            const fin = calculateOrderFinancialBreakdown(order);
+            const payInfo = getPaymentDisplayInfo(order);
+            const isOnlinePayment = payInfo.isOnline;
 
             return (
               <div 
@@ -435,6 +496,11 @@ export default function MisPedidosPage() {
                       <p className="text-base sm:text-xl font-black text-[#0c4236] dark:text-teal-400">
                         ${order.totalAmount?.toLocaleString()} COP
                       </p>
+                      {fin.discount > 0 && (
+                        <span className="text-[10px] font-bold text-emerald-600 dark:text-teal-400 block">
+                          Ahorraste ${fin.discount.toLocaleString('es-CO')} COP
+                        </span>
+                      )}
                     </div>
 
                     <button
@@ -480,23 +546,21 @@ export default function MisPedidosPage() {
                   </div>
 
                   {/* Tarjeta de Información Bancaria / Pasarela Wompi */}
-                  <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200/60 dark:border-teal-900/40 space-y-2 text-xs">
+                  <div className={`p-4 rounded-2xl border space-y-2 text-xs ${
+                    isOnlinePayment 
+                      ? 'bg-teal-50/50 dark:bg-teal-950/20 border-teal-200/60 dark:border-teal-900/40' 
+                      : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200/60 dark:border-amber-900/40'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-bold text-teal-900 dark:text-teal-200">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                         {order.paymentMethod === 'cash_on_delivery' ? (
                           <Banknote className="w-4 h-4 text-amber-600" />
-                        ) : order.paymentMethod === 'direct_transfer' ? (
+                        ) : order.paymentMethod === 'direct_transfer' || order.paymentMethod === 'pse' ? (
                           <Building2 className="w-4 h-4 text-teal-600" />
                         ) : (
                           <CreditCard className="w-4 h-4 text-emerald-600 dark:text-teal-400" />
                         )}
-                        <span>
-                          {order.paymentMethod === 'cash_on_delivery' 
-                            ? 'Pago Contra Entrega' 
-                            : order.paymentMethod === 'direct_transfer'
-                            ? 'Transferencia / PSE'
-                            : 'Tarjeta de Crédito / Débito'}
-                        </span>
+                        <span>{payInfo.title}</span>
                       </div>
 
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
@@ -504,43 +568,41 @@ export default function MisPedidosPage() {
                           ? 'bg-emerald-500/15 text-emerald-700 dark:text-teal-300' 
                           : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                       }`}>
-                        {isOnlinePayment ? '✓ Pagado' : '⏱ Pendiente de Cobro'}
+                        {payInfo.badge}
                       </span>
                     </div>
 
                     {isOnlinePayment ? (
                       <div className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Franquicia:</span>
+                          <span className="text-slate-400">Medio / Franquicia:</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200 uppercase">
-                            {order.cardBrand || 'Tarjeta'} {order.cardLastFour && `•••• ${order.cardLastFour}`}
+                            {payInfo.cardBrand || 'Tarjeta'} {payInfo.lastFour}
                           </span>
                         </div>
-                        {order.paymentTransactionId && (
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-slate-400">ID Transacción:</span>
-                            <div className="flex items-center gap-1 font-mono text-[10px] text-teal-800 dark:text-teal-300 truncate max-w-[170px]">
-                              <span>{order.paymentTransactionId}</span>
-                              <button
-                                onClick={() => copyToClipboard(order.paymentTransactionId)}
-                                className="p-0.5 hover:text-teal-500 cursor-pointer"
-                                title="Copiar ID de transacción"
-                              >
-                                {copiedTxId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                              </button>
-                            </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-slate-400">ID Transacción:</span>
+                          <div className="flex items-center gap-1 font-mono text-[10px] text-teal-800 dark:text-teal-300 truncate max-w-[170px]">
+                            <span>{payInfo.transactionId}</span>
+                            <button
+                              onClick={() => copyToClipboard(payInfo.transactionId)}
+                              className="p-0.5 hover:text-teal-500 cursor-pointer"
+                              title="Copiar ID de transacción"
+                            >
+                              {copiedTxId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                            </button>
                           </div>
-                        )}
-                        {order.authorizationCode && (
+                        </div>
+                        {payInfo.authorizationCode && (
                           <div className="flex items-center justify-between">
                             <span className="text-slate-400">Cod. Autorización:</span>
-                            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{order.authorizationCode}</span>
+                            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{payInfo.authorizationCode}</span>
                           </div>
                         )}
                       </div>
                     ) : (
                       <p className="text-[11px] text-slate-500 leading-relaxed">
-                        Pagas en efectivo o transferencia directamente al transportador al momento de recibir el paquete en tu domicilio.
+                        Pagas en efectivo al transportador al momento de recibir el paquete en tu domicilio en Urabá.
                       </p>
                     )}
                   </div>
@@ -684,117 +746,215 @@ export default function MisPedidosPage() {
       )}
 
       {/* MODAL DE RECIBO DIGITAL IMPRIMIBLE */}
-      {selectedReceiptOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            {/* Header del Recibo */}
-            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center font-black text-xs">
-                    PSP
-                  </div>
-                  <h3 className="font-black text-base text-slate-900 dark:text-white">Recibo de Compra Digital</h3>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1">Plataforma Social con Propósito &bull; Urabá, Colombia</p>
-              </div>
+      {selectedReceiptOrder && (() => {
+        const modalFin = calculateOrderFinancialBreakdown(selectedReceiptOrder);
+        const modalPay = getPaymentDisplayInfo(selectedReceiptOrder);
 
-              <button
-                onClick={() => setSelectedReceiptOrder(null)}
-                className="p-1 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Metadatos de la Factura / Recibo */}
-            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl">
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold block">No. de Orden:</span>
-                <span className="font-mono font-extrabold text-slate-900 dark:text-white">{selectedReceiptOrder.orderNumber}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold block">Fecha:</span>
-                <span className="font-medium text-slate-800 dark:text-slate-200">
-                  {new Date(selectedReceiptOrder.createdAt).toLocaleDateString('es-CO')}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold block">Comprador:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.buyerName}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold block">Destino:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.shippingMunicipality}</span>
-              </div>
-            </div>
-
-            {/* Desglose de Productos */}
-            <div className="space-y-2">
-              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Resumen de Artículos</h4>
-              <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-48 overflow-y-auto">
-                {selectedReceiptOrder.items?.map((item) => (
-                  <div key={item.id} className="py-2 flex justify-between items-center text-xs">
-                    <div>
-                      <p className="font-bold text-slate-900 dark:text-white">{item.productName}</p>
-                      <p className="text-[10px] text-slate-400">Cant: {item.quantity} &bull; {item.companyName || 'Comercio Local'}</p>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+              
+              {/* Header del Recibo */}
+              <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center font-black text-xs">
+                      PSP
                     </div>
-                    <span className="font-extrabold text-slate-900 dark:text-white">
-                      ${item.lineTotal?.toLocaleString()} COP
-                    </span>
+                    <h3 className="font-black text-base text-slate-900 dark:text-white">Recibo de Compra Digital</h3>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Plataforma Social con Propósito &bull; Urabá, Colombia</p>
+                </div>
 
-            {/* Totales y Auditoría de Pago */}
-            <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-500">
-                <span>Subtotal:</span>
-                <span className="font-bold text-slate-900 dark:text-white">${selectedReceiptOrder.subtotalAmount?.toLocaleString()} COP</span>
+                <button
+                  onClick={() => setSelectedReceiptOrder(null)}
+                  className="p-1 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <div className="flex justify-between text-slate-500">
-                <span>Costo de Envío:</span>
-                <span className="font-bold text-emerald-600 dark:text-teal-400">Gratis / Incluido</span>
-              </div>
-              <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-800">
-                <span>Total Pagado:</span>
-                <span className="text-[#0c4236] dark:text-teal-400">${selectedReceiptOrder.totalAmount?.toLocaleString()} COP</span>
-              </div>
-            </div>
 
-            {/* Transacción Bancaria */}
-            {selectedReceiptOrder.paymentTransactionId && (
-              <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 text-[10px] text-slate-600 dark:text-slate-300 space-y-0.5">
-                <p><strong>Pasarela de Pago:</strong> {selectedReceiptOrder.paymentGateway || 'Wompi Sandbox'}</p>
-                <p className="font-mono"><strong>Ref Transacción:</strong> {selectedReceiptOrder.paymentTransactionId}</p>
-                {selectedReceiptOrder.authorizationCode && (
-                  <p className="font-mono"><strong>Cod. Autorización:</strong> {selectedReceiptOrder.authorizationCode}</p>
+              {/* Metadatos de la Factura / Recibo */}
+              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl">
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">No. de Orden:</span>
+                  <span className="font-mono font-extrabold text-slate-900 dark:text-white">{selectedReceiptOrder.orderNumber}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Fecha:</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">
+                    {new Date(selectedReceiptOrder.createdAt).toLocaleDateString('es-CO')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Comprador:</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.buyerName}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Destino:</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.shippingMunicipality}</span>
+                </div>
+              </div>
+
+              {/* Desglose de Productos con Indicación Tributaria */}
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Resumen de Artículos</h4>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-48 overflow-y-auto">
+                  {selectedReceiptOrder.items?.map((item) => {
+                    const isExempt = isItemIvaExempt(item);
+                    return (
+                      <div key={item.id} className="py-2 flex justify-between items-center text-xs">
+                        <div>
+                          <p className="font-bold text-slate-900 dark:text-white">{item.productName}</p>
+                          <p className="text-[10px] text-slate-400">
+                            Cant: {item.quantity} &bull; {item.companyName || 'Comercio Local'} &bull;{' '}
+                            <span className={isExempt ? 'text-emerald-600 dark:text-teal-400 font-semibold' : 'text-slate-500'}>
+                              {isExempt ? 'IVA 0% (Excluido Art. 424 E.T.)' : 'IVA 19% Incluido'}
+                            </span>
+                          </p>
+                        </div>
+                        <span className="font-extrabold text-slate-900 dark:text-white">
+                          ${item.lineTotal?.toLocaleString()} COP
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Totales y Discriminación de Impuestos */}
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-500">
+                  <span>Subtotal Artículos:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">${modalFin.subtotal.toLocaleString()} COP</span>
+                </div>
+
+                {modalFin.discount > 0 && (
+                  <>
+                    <div className="flex justify-between text-emerald-600 dark:text-teal-400 font-bold">
+                      <span>Descuento Promocional:</span>
+                      <span>-${modalFin.discount.toLocaleString()} COP</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 dark:text-slate-300 font-semibold border-t border-dashed border-slate-200 dark:border-slate-800 pt-1">
+                      <span>Subtotal Neto:</span>
+                      <span>${modalFin.netSubtotal.toLocaleString()} COP</span>
+                    </div>
+                  </>
+                )}
+
+                {/* Discriminación de Impuestos según DIAN */}
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1 text-[11px] text-slate-500">
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                    Discriminación Tributaria (IVA Incluido):
+                  </p>
+                  {modalFin.baseGravable19 > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span>• Base Gravable (Tarifa 19%):</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300">${modalFin.baseGravable19.toLocaleString()} COP</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>• IVA 19% Discriminado:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${modalFin.iva19.toLocaleString()} COP</span>
+                      </div>
+                    </>
+                  )}
+                  {modalFin.totalExempt > 0 && (
+                    <div className="flex justify-between text-emerald-700 dark:text-teal-300">
+                      <span>• Bienes Excluidos (IVA 0% Canasta Agro Art. 424):</span>
+                      <span className="font-mono font-bold">${modalFin.totalExempt.toLocaleString()} COP</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between text-slate-500">
+                  <span>Costo de Envío (Urabá):</span>
+                  <span className="font-bold text-emerald-600 dark:text-teal-400">
+                    {modalFin.shipping > 0 ? `$${modalFin.shipping.toLocaleString()} COP` : 'Gratis / Incluido'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span>Total Facturado:</span>
+                  <span className="text-[#0c4236] dark:text-teal-400">${modalFin.total.toLocaleString()} COP</span>
+                </div>
+              </div>
+
+              {/* Medio de Pago y Auditoría Bancaria */}
+              <div className={`p-3.5 rounded-2xl border text-xs space-y-1.5 ${
+                modalPay.isOnline 
+                  ? 'bg-teal-50/60 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900/50' 
+                  : 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+                    {modalPay.isOnline ? (
+                      <CreditCard className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    ) : (
+                      <Banknote className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    )}
+                    <span>{modalPay.title}</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    modalPay.isOnline 
+                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-teal-300' 
+                      : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                  }`}>
+                    {modalPay.badge}
+                  </span>
+                </div>
+
+                {modalPay.isOnline ? (
+                  <div className="text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5 pt-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Pasarela:</span>
+                      <strong className="font-mono">{modalPay.gateway}</strong>
+                    </div>
+                    {modalPay.cardBrand && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Franquicia:</span>
+                        <strong>{modalPay.cardBrand} {modalPay.lastFour} &bull; {modalPay.installments} cuota(s)</strong>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Ref Transacción:</span>
+                      <span className="font-mono font-bold text-teal-700 dark:text-teal-300">{modalPay.transactionId}</span>
+                    </div>
+                    {modalPay.authorizationCode && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Cod. Autorización:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{modalPay.authorizationCode}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
+                    {modalPay.detail}
+                  </p>
                 )}
               </div>
-            )}
 
-            {/* Botones de Acción */}
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                onClick={() => handlePrintReceipt(selectedReceiptOrder)}
-                className="flex-1 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Imprimir / Guardar PDF</span>
-              </button>
-              <button
-                onClick={() => setSelectedReceiptOrder(null)}
-                className="py-3 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                Cerrar
-              </button>
+              {/* Botones de Acción */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={() => handlePrintReceipt(selectedReceiptOrder)}
+                  className="flex-1 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir / Guardar PDF</span>
+                </button>
+                <button
+                  onClick={() => setSelectedReceiptOrder(null)}
+                  className="py-3 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Cerrar
+                </button>
+              </div>
+
             </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );

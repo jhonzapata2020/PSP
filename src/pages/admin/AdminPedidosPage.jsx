@@ -24,6 +24,7 @@ import {
   Package
 } from 'lucide-react';
 import ordersApi from '../../services/ordersApi';
+import { calculateOrderFinancialBreakdown, getPaymentDisplayInfo } from '../../utils/orderTaxUtils';
 
 const STATUS_CONFIG = {
   confirmed: { label: 'Confirmado', bg: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30' },
@@ -340,43 +341,96 @@ export default function AdminPedidosPage() {
             </div>
 
             {/* Auditoría Bancaria / Transacción Wompi */}
-            <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 space-y-2 text-xs">
-              <div className="flex items-center justify-between font-bold text-teal-900 dark:text-teal-200">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-teal-600" />
-                  <span>Auditoría de Pago y Pasarela</span>
-                </div>
-                <span className="font-black text-sm text-[#0c4236] dark:text-teal-400">
-                  Total: ${selectedOrder.totalAmount?.toLocaleString()} COP
-                </span>
-              </div>
+            {(() => {
+              const adminFin = calculateOrderFinancialBreakdown(selectedOrder);
+              const adminPay = getPaymentDisplayInfo(selectedOrder);
 
-              <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-teal-200/40 dark:border-teal-900/40 text-slate-600 dark:text-slate-300">
-                <div>
-                  <span className="text-slate-400 block">Pasarela:</span>
-                  <strong>{selectedOrder.paymentGateway || (selectedOrder.paymentMethod === 'cash_on_delivery' ? 'Contraentrega' : 'Wompi')}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block">Franquicia / Tarjeta:</span>
-                  <strong>{selectedOrder.cardBrand || 'N/A'} {selectedOrder.cardLastFour && `•••• ${selectedOrder.cardLastFour}`}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block">ID Transacción:</span>
-                  <div className="flex items-center gap-1 font-mono text-[10px] text-teal-700 dark:text-teal-300 truncate">
-                    <span>{selectedOrder.paymentTransactionId || 'N/A'}</span>
-                    {selectedOrder.paymentTransactionId && (
-                      <button onClick={() => copyToClipboard(selectedOrder.paymentTransactionId)} className="p-0.5 hover:text-teal-500 cursor-pointer">
-                        {copiedTxId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                      </button>
+              return (
+                <div className="space-y-3">
+                  <div className={`p-4 rounded-2xl border space-y-2 text-xs ${
+                    adminPay.isOnline 
+                      ? 'bg-teal-50/60 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900/50' 
+                      : 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50'
+                  }`}>
+                    <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                      <div className="flex items-center gap-2">
+                        {adminPay.isOnline ? (
+                          <CreditCard className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        ) : (
+                          <Banknote className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        )}
+                        <span>{adminPay.title}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        adminPay.isOnline 
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-teal-300' 
+                          : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                      }`}>
+                        {adminPay.badge}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-200/50 dark:border-slate-800/50 text-slate-600 dark:text-slate-300">
+                      <div>
+                        <span className="text-slate-400 block">Pasarela:</span>
+                        <strong>{adminPay.gateway || 'Pago en Efectivo'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block">Franquicia / Medio:</span>
+                        <strong>{adminPay.cardBrand || 'Efectivo'} {adminPay.lastFour}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block">ID Transacción:</span>
+                        <div className="flex items-center gap-1 font-mono text-[10px] text-teal-700 dark:text-teal-300 truncate">
+                          <span>{adminPay.transactionId || 'N/A'}</span>
+                          {adminPay.transactionId && (
+                            <button onClick={() => copyToClipboard(adminPay.transactionId)} className="p-0.5 hover:text-teal-500 cursor-pointer">
+                              {copiedTxId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block">Autorización Bancaria:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{adminPay.authorizationCode || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desglose Financiero y Tributario DIAN */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5">
+                    <div className="flex justify-between text-slate-500">
+                      <span>Subtotal Artículos:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">${adminFin.subtotal.toLocaleString()} COP</span>
+                    </div>
+                    {adminFin.discount > 0 && (
+                      <div className="flex justify-between text-emerald-600 dark:text-teal-400 font-bold">
+                        <span>Descuento Aplicado:</span>
+                        <span>-${adminFin.discount.toLocaleString()} COP</span>
+                      </div>
                     )}
+                    <div className="flex justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
+                      <span>Base Gravable (19%):</span>
+                      <span className="font-mono">${adminFin.baseGravable19.toLocaleString()} COP</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-slate-400">
+                      <span>IVA 19% Discriminado:</span>
+                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">${adminFin.iva19.toLocaleString()} COP</span>
+                    </div>
+                    {adminFin.totalExempt > 0 && (
+                      <div className="flex justify-between text-[11px] text-emerald-700 dark:text-teal-300">
+                        <span>Bienes Excluidos (IVA 0% Canasta Agro):</span>
+                        <span className="font-mono font-semibold">${adminFin.totalExempt.toLocaleString()} COP</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-black text-sm text-[#0c4236] dark:text-teal-400 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                      <span>Total Orden:</span>
+                      <span>${adminFin.total.toLocaleString()} COP</span>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <span className="text-slate-400 block">Autorización Bancaria:</span>
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{selectedOrder.authorizationCode || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Sub-Órdenes Desglosadas por Empresa Aliada */}
             <div className="space-y-3">

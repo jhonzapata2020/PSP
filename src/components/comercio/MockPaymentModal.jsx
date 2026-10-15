@@ -85,6 +85,7 @@ export default function MockPaymentModal({
           const paymentResult = {
             paymentMethod: activeTab === 'card' ? 'online_gateway' : activeTab === 'pse' ? 'pse' : 'direct_transfer',
             transactionId: `WMP-TX-${Date.now().toString().slice(-7)}`,
+            authorizationCode: Math.floor(100000 + Math.random() * 900000).toString(),
             status: 'paid',
             gateway: 'Wompi Sandbox',
             cardBrand: activeTab === 'card' ? cardBrand : 'Débito Bancario',

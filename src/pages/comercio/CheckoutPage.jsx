@@ -115,6 +115,21 @@ export default function CheckoutPage() {
         }
       };
 
+      if (paymentResult) {
+        payload.paymentGateway = paymentResult.gateway || 'wompi';
+        payload.paymentTransactionId = paymentResult.transactionId;
+        payload.cardBrand = paymentResult.cardBrand;
+        payload.cardLastFour = paymentResult.lastFour;
+        payload.authorizationCode = paymentResult.authorizationCode || `AUTH-${Date.now().toString().slice(-6)}`;
+        payload.installments = paymentResult.installments || 1;
+      } else if (chosenPaymentMethod !== 'cash_on_delivery') {
+        payload.paymentGateway = chosenPaymentMethod === 'direct_transfer' ? 'PSE / Bancolombia' : 'wompi';
+        payload.paymentTransactionId = `WMP-TX-${Date.now().toString().slice(-7)}`;
+        payload.cardBrand = chosenPaymentMethod === 'direct_transfer' ? 'Transferencia PSE' : 'Tarjeta';
+        payload.authorizationCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
+        payload.installments = 1;
+      }
+
       const result = await ordersApi.checkout(payload);
       if (paymentResult) {
         result.mockPayment = paymentResult;

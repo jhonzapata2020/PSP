@@ -21,7 +21,13 @@ async function request(path, options = {}) {
   const method = (options.method || 'GET').toUpperCase();
   const token = localStorage.getItem(TOKEN_KEY) || localStorage.getItem('psp_access_token');
 
-  const headers = { Accept: 'application/json', ...options.headers };
+  const headers = { 
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    ...options.headers 
+  };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
@@ -33,7 +39,7 @@ async function request(path, options = {}) {
 
   let response;
   try {
-    response = await fetch(fullUrl, { ...options, headers });
+    response = await fetch(fullUrl, { ...options, headers, cache: 'no-store' });
   } catch {
     throw new OrdersApiError(0, 'No se pudo conectar con el servicio de pedidos. Verifica que Psp.Orders.services esté activo.');
   }

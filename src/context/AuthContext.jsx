@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import api, { getToken, setToken } from '../services/api';
+import api, { getToken, setToken, clearApiCache } from '../services/api';
 import { loadAvatarDefaults } from '../services/avatarDefaults';
 
 const AuthContext = createContext(null);
@@ -44,6 +44,13 @@ function mapUser(dto, fallbackAvatar = '') {
 }
 
 function readStoredUser() {
+  // Si no hay token en almacenamiento, es imposible que exista una sesión válida activa
+  if (!getToken()) {
+    try {
+      localStorage.removeItem(USER_KEY);
+    } catch { }
+    return null;
+  }
   try {
     const saved = localStorage.getItem(USER_KEY);
     return saved ? JSON.parse(saved) : null;
@@ -94,7 +101,10 @@ export const AuthProvider = ({ children }) => {
     let cancelled = false;
 
     async function bootstrap() {
-      if (!getToken()) {
+      const token = getToken();
+      if (!token) {
+        // Garantizar que no quede ningún usuario huérfano en memoria ni storage
+        persist(null);
         setInitializing(false);
         return;
       }
@@ -211,6 +221,30 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     persist(null);
     setError(null);
+    try {
+      // 1. Limpieza explícita de credenciales de usuario
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem('psp_token');
+      localStorage.removeItem('psp_access_token');
+      
+      // 2. Limpieza de carritos locales
+      localStorage.removeItem('psp_local_cart');
+      localStorage.removeItem('psp_cart_guest');
+
+      // 3. Purgar cualquier clave de carrito o sesión de usuario
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('psp_cart_') || key.startsWith('psp_session_'))) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      // 4. Limpieza total de sessionStorage
+      sessionStorage.clear();
+    } catch { }
+
+    // 5. Limpieza de promesas / caché de API en vuelo
+    clearApiCache();
   }, [persist]);
 
   const updateProfile = useCallback(

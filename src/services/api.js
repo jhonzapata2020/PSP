@@ -26,6 +26,10 @@ export const clearSession = () => {
   sessionStorage.clear();
 };
 
+export const clearApiCache = () => {
+  pendingApiRequests.clear();
+};
+
 export const getStoredUser = () => {
   try {
     const data = localStorage.getItem('psp_user');
@@ -55,7 +59,12 @@ async function request(path, { method = 'GET', body, formData, auth = true } = {
     return pendingApiRequests.get(cacheKey);
   }
 
-  const headers = { Accept: 'application/json' };
+  const headers = { 
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  };
   if (formData === undefined && body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
@@ -67,6 +76,7 @@ async function request(path, { method = 'GET', body, formData, auth = true } = {
       response = await fetch(fullUrl, {
         method,
         headers,
+        cache: 'no-store',
         body: formData !== undefined ? formData : body !== undefined ? JSON.stringify(body) : undefined,
       });
     } catch (err) {

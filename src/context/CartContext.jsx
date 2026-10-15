@@ -1,53 +1,88 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ordersApi from '../services/ordersApi';
 import { getToken } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
-const LOCAL_CART_KEY = 'psp_local_cart';
+const getCartStorageKey = (userId) => (userId ? `psp_cart_${userId}` : 'psp_cart_guest');
+
+const readLocalCart = (userId) => {
+  try {
+    const key = getCartStorageKey(userId);
+    const saved = localStorage.getItem(key);
+    if (saved) return JSON.parse(saved);
+    // Legacy fallback only for guest if psp_local_cart exists
+    if (!userId) {
+      const legacy = localStorage.getItem('psp_local_cart');
+      if (legacy) return JSON.parse(legacy);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+// Reconstruir grupos por Empresa Aliada a partir de los ítems locales
+const buildGroupsFromItems = (items) => {
+  if (!items || !items.length) return [];
+  const grouped = {};
+  for (const item of items) {
+    const key = item.companyId || 'psp-global';
+    if (!grouped[key]) {
+      grouped[key] = {
+        companyId: item.companyId || null,
+        companyName: item.empresa || item.companyName || item.proveedor || 'Comercio Local PSP',
+        items: [],
+        subtotal: 0,
+        totalItems: 0
+      };
+    }
+    grouped[key].items.push(item);
+    grouped[key].subtotal += (item.precio || item.unitPrice || 0) * item.quantity;
+    grouped[key].totalItems += item.quantity;
+  }
+  return Object.values(grouped);
+};
 
 export const CartProvider = ({ children }) => {
-  const [cartGroups, setCartGroups] = useState([]);
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_CART_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { user } = useAuth();
+  const userId = user?.id || null;
+  const [prevUserId, setPrevUserId] = useState(userId);
+
+  const [cartItems, setCartItems] = useState(() => readLocalCart(userId));
+  const [cartGroups, setCartGroups] = useState(() => buildGroupsFromItems(readLocalCart(userId)));
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cartError, setCartError] = useState(null);
 
-  // Reconstruir grupos por Empresa Aliada a partir de los ítems locales
-  const buildGroupsFromItems = (items) => {
-    const grouped = {};
-    for (const item of items) {
-      const key = item.companyId || 'psp-global';
-      if (!grouped[key]) {
-        grouped[key] = {
-          companyId: item.companyId || null,
-          companyName: item.empresa || item.companyName || item.proveedor || 'Comercio Local PSP',
-          items: [],
-          subtotal: 0,
-          totalItems: 0
-        };
-      }
-      grouped[key].items.push(item);
-      grouped[key].subtotal += (item.precio || item.unitPrice || 0) * item.quantity;
-      grouped[key].totalItems += item.quantity;
-    }
-    return Object.values(grouped);
-  };
+  // Sincronización instantánea de estado ante cambio de usuario o logout (evita fugas entre sesiones)
+  if (prevUserId !== userId) {
+    setPrevUserId(userId);
+    const freshItems = userId ? readLocalCart(userId) : [];
+    setCartItems(freshItems);
+    setCartGroups(buildGroupsFromItems(freshItems));
+    setCartError(null);
+  }
 
-  // Guardar en localStorage siempre que cambie cartItems
+  // Guardar en localStorage siempre que cambie cartItems o el usuario activo
   useEffect(() => {
     try {
-      localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(cartItems));
+      const key = getCartStorageKey(userId);
+      localStorage.setItem(key, JSON.stringify(cartItems));
       setCartGroups(buildGroupsFromItems(cartItems));
     } catch { }
-  }, [cartItems]);
+  }, [cartItems, userId]);
+
+  // Limpieza estricta de localStorage al cerrar sesión (no dejar rastro en guest)
+  useEffect(() => {
+    if (!userId) {
+      try {
+        localStorage.removeItem('psp_cart_guest');
+        localStorage.removeItem('psp_local_cart');
+      } catch { }
+    }
+  }, [userId]);
 
   // Limpiar mensaje de error tras 6 segundos automáticamente
   useEffect(() => {
@@ -64,31 +99,36 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const serverCart = await ordersApi.getCart();
-      if (serverCart && serverCart.groups) {
-        setCartGroups(serverCart.groups);
-        // Aplanar los grupos para cartItems preservando stock y metadata enriquecida
-        setCartItems(prev => {
-          const flatItems = serverCart.groups.flatMap(g =>
-            g.items.map(i => {
-              const localExisting = prev.find(p => (p.id === i.productId || p.productId === i.productId));
-              return {
-                id: i.productId || i.id,
-                productId: i.productId,
-                nombre: i.productName,
-                sku: i.sku,
-                precio: i.unitPrice,
-                precioAnterior: localExisting?.precioAnterior ?? null,
-                stock: localExisting?.stock ?? 99,
-                imagen: i.productImage || localExisting?.imagen || '',
-                companyId: i.companyId,
-                empresa: i.companyName,
-                proveedor: i.companyName,
-                quantity: i.quantity
-              };
-            })
-          );
-          return flatItems;
-        });
+      if (serverCart) {
+        const groups = serverCart.groups || [];
+        setCartGroups(groups);
+        if (groups.length === 0) {
+          setCartItems([]);
+        } else {
+          // Aplanar los grupos para cartItems preservando stock y metadata enriquecida
+          setCartItems(prev => {
+            const flatItems = groups.flatMap(g =>
+              g.items.map(i => {
+                const localExisting = prev.find(p => (p.id === i.productId || p.productId === i.productId));
+                return {
+                  id: i.productId || i.id,
+                  productId: i.productId,
+                  nombre: i.productName,
+                  sku: i.sku,
+                  precio: i.unitPrice,
+                  precioAnterior: localExisting?.precioAnterior ?? null,
+                  stock: localExisting?.stock ?? 99,
+                  imagen: i.productImage || localExisting?.imagen || '',
+                  companyId: i.companyId,
+                  empresa: i.companyName,
+                  proveedor: i.companyName,
+                  quantity: i.quantity
+                };
+              })
+            );
+            return flatItems;
+          });
+        }
       }
     } catch (err) {
       console.warn('Sincronización de carrito en segundo plano no disponible:', err.message);
@@ -97,9 +137,12 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
+  // Sincronización con backend ante montaje o cambio a un usuario autenticado
   useEffect(() => {
-    syncWithApi();
-  }, [syncWithApi]);
+    if (userId && getToken()) {
+      syncWithApi();
+    }
+  }, [userId, syncWithApi]);
 
   const addToCart = async (product, qty = 1) => {
     setCartError(null);
@@ -237,7 +280,11 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
     setCartItems([]);
     setCartGroups([]);
-    localStorage.removeItem(LOCAL_CART_KEY);
+    try {
+      localStorage.removeItem(getCartStorageKey(userId));
+      localStorage.removeItem('psp_cart_guest');
+      localStorage.removeItem('psp_local_cart');
+    } catch { }
 
     if (getToken()) {
       try {

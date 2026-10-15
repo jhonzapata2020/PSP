@@ -14,10 +14,14 @@ import {
   ExternalLink,
   Edit,
   X,
-  Filter
+  Filter,
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
 import ordersApi from '../../services/ordersApi';
 import { useAuth } from '../../context/AuthContext';
+
+const TERMINAL_STATUSES = ['delivered', 'cancelled'];
 
 const STATUS_CONFIG = {
   confirmed: { label: 'Confirmado', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
@@ -196,13 +200,23 @@ export default function VendorOrdersPage() {
                     <span className="text-base font-black text-[#0c4236] dark:text-teal-400">
                       ${sub.totalAmount?.toLocaleString()} COP
                     </span>
-                    <button
-                      onClick={() => openStatusModal(sub)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-teal-500 dark:hover:bg-teal-400 text-white dark:text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                      <span>Gestionar / Despachar</span>
-                    </button>
+                    {TERMINAL_STATUSES.includes(sub.status) ? (
+                      <button
+                        onClick={() => openStatusModal(sub)}
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 shadow-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                        <span>Ver Información</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => openStatusModal(sub)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-teal-500 dark:hover:bg-teal-400 text-white dark:text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Gestionar / Despachar</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -272,109 +286,249 @@ export default function VendorOrdersPage() {
         </div>
       )}
 
-      {/* Modal de Actualización de Estado */}
-      {selectedSubOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Truck className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-                  Gestionar Paquete #{selectedSubOrder.subOrderNumber}
-                </h3>
-              </div>
-              <button 
-                onClick={() => setSelectedSubOrder(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Modal de Detalle o Actualización de Estado */}
+      {selectedSubOrder && (() => {
+        const isTerminal = TERMINAL_STATUSES.includes(selectedSubOrder.status);
+        const isDelivered = selectedSubOrder.status === 'delivered';
+        const isCancelled = selectedSubOrder.status === 'cancelled';
+        const statusCfg = STATUS_CONFIG[selectedSubOrder.status] || STATUS_CONFIG.pending;
 
-            {modalError && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold">
-                {modalError}
-              </div>
-            )}
-
-            <form onSubmit={handleSaveStatus} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Nuevo Estado del Envío *
-                </label>
-                <select
-                  value={modalStatus}
-                  onChange={(e) => setModalStatus(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
-                >
-                  <option value="confirmed">Confirmado (Recibido)</option>
-                  <option value="preparing">En Preparación (Empacando)</option>
-                  <option value="ready_to_ship">Listo para Despacho</option>
-                  <option value="shipped">En Camino / Despachado</option>
-                  <option value="delivered">Entregado al Cliente</option>
-                  <option value="cancelled">Cancelar Paquete (Libera Stock)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Empresa Transportadora / Domiciliario
-                </label>
-                <input
-                  type="text"
-                  value={modalCarrier}
-                  onChange={(e) => setModalCarrier(e.target.value)}
-                  placeholder="Ej. PSP Express Domicilios / Servientrega"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Número de Guía o Teléfono del Domiciliario
-                </label>
-                <input
-                  type="text"
-                  value={modalTracking}
-                  onChange={(e) => setModalTracking(e.target.value)}
-                  placeholder="Ej. GUIA-983471 / Cel 314 555 1234"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Notas de Seguimiento
-                </label>
-                <input
-                  type="text"
-                  value={modalNotes}
-                  onChange={(e) => setModalNotes(e.target.value)}
-                  placeholder="Ej. Entregado al domiciliario a las 2:30 PM"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+              
+              {/* Header Modal */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  {isDelivered ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
+                  ) : isCancelled ? (
+                    <AlertCircle className="w-5 h-5 text-rose-500" />
+                  ) : (
+                    <Truck className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
+                  )}
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                      {isTerminal ? 'Información del Paquete' : 'Gestionar Paquete'} #{selectedSubOrder.subOrderNumber}
+                    </h3>
+                  </div>
+                </div>
+                <button 
                   onClick={() => setSelectedSubOrder(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                  title="Cerrar ventana"
                 >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={modalSaving}
-                  className="px-5 py-2 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black text-xs shadow-md transition-all disabled:opacity-50"
-                >
-                  {modalSaving ? 'Guardando...' : 'Actualizar Estado'}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
+
+              {modalError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold">
+                  {modalError}
+                </div>
+              )}
+
+              {/* VISTA SOLO LECTURA PARA ESTADOS TERMINALES (Entregado o Cancelado) */}
+              {isTerminal ? (
+                <div className="space-y-4">
+                  
+                  {/* Banner Informativo */}
+                  {isDelivered && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-teal-300 text-xs flex items-start gap-2.5">
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-black">Paquete Entregado al Cliente Final</p>
+                        <p className="text-[11px] text-emerald-700/90 dark:text-teal-400/90 mt-0.5 leading-relaxed">
+                          Este pedido ya fue completado y entregado. Por políticas de trazabilidad y seguridad comercial, la información no admite modificaciones adicionales.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {isCancelled && (
+                    <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-black">Paquete Cancelado</p>
+                        <p className="text-[11px] text-rose-700/90 dark:text-rose-400/90 mt-0.5 leading-relaxed">
+                          Este paquete fue cancelado y las unidades fueron liberadas automáticamente al inventario del catálogo. No admite modificaciones adicionales.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tarjetas de Datos de Envío (Solo Lectura) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Estado Definitivo</span>
+                      <div>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${statusCfg.bg}`}>
+                          {statusCfg.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Fecha del Registro</span>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">
+                        {selectedSubOrder.deliveredAt 
+                          ? new Date(selectedSubOrder.deliveredAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+                          : selectedSubOrder.cancelledAt
+                          ? new Date(selectedSubOrder.cancelledAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+                          : new Date(selectedSubOrder.createdAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+                        }
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Empresa Transportadora</span>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                        <span>{selectedSubOrder.carrierName || 'No especificada'}</span>
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Guía / Contacto Domiciliario</span>
+                      <p className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        {selectedSubOrder.trackingCode || 'Sin número de guía'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {selectedSubOrder.notes && (
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-xs space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Notas de Despacho Registradas</span>
+                      <p className="text-slate-700 dark:text-slate-300 italic">
+                        "{selectedSubOrder.notes}"
+                      </p>
+                    </div>
+                  )}
+
+                  {isCancelled && selectedSubOrder.cancellationReason && (
+                    <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 text-xs space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-rose-500">Motivo de Cancelación</span>
+                      <p className="text-rose-700 dark:text-rose-300 font-semibold">
+                        {selectedSubOrder.cancellationReason}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Resumen de Artículos en el Paquete */}
+                  <div className="space-y-2 pt-1">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                      Artículos incluidos ({selectedSubOrder.items?.length || 0})
+                    </span>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-48 overflow-y-auto">
+                      {selectedSubOrder.items?.map((item) => (
+                        <div key={item.id} className="py-2 flex items-center justify-between text-xs gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{item.productName}</p>
+                            <p className="text-[10px] text-slate-400">SKU: {item.sku} &bull; {item.quantity} unidad(es)</p>
+                          </div>
+                          <span className="font-bold text-slate-900 dark:text-white shrink-0">
+                            ${item.lineTotal?.toLocaleString()} COP
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botón único de cierre */}
+                  <div className="pt-3 flex justify-end border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSubOrder(null)}
+                      className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      Cerrar Información
+                    </button>
+                  </div>
+
+                </div>
+              ) : (
+                /* FORMULARIO EDITABLE PARA ESTADOS ACTIVOS (confirmed, preparing, ready_to_ship, shipped) */
+                <form onSubmit={handleSaveStatus} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Nuevo Estado del Envío *
+                    </label>
+                    <select
+                      value={modalStatus}
+                      onChange={(e) => setModalStatus(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    >
+                      <option value="confirmed">Confirmado (Recibido)</option>
+                      <option value="preparing">En Preparación (Empacando)</option>
+                      <option value="ready_to_ship">Listo para Despacho</option>
+                      <option value="shipped">En Camino / Despachado</option>
+                      <option value="delivered">Entregado al Cliente (Definitivo)</option>
+                      <option value="cancelled">Cancelar Paquete (Libera Stock)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Empresa Transportadora / Domiciliario
+                    </label>
+                    <input
+                      type="text"
+                      value={modalCarrier}
+                      onChange={(e) => setModalCarrier(e.target.value)}
+                      placeholder="Ej. PSP Express Domicilios / Servientrega"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Número de Guía o Teléfono del Domiciliario
+                    </label>
+                    <input
+                      type="text"
+                      value={modalTracking}
+                      onChange={(e) => setModalTracking(e.target.value)}
+                      placeholder="Ej. GUIA-983471 / Cel 314 555 1234"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Notas de Seguimiento
+                    </label>
+                    <input
+                      type="text"
+                      value={modalNotes}
+                      onChange={(e) => setModalNotes(e.target.value)}
+                      placeholder="Ej. Entregado al domiciliario a las 2:30 PM"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSubOrder(null)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={modalSaving}
+                      className="px-5 py-2 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black text-xs shadow-md transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {modalSaving ? 'Guardando...' : 'Actualizar Estado'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );

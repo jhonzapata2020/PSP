@@ -7,24 +7,55 @@
 /**
  * Determina si un producto es un bien agrícola primario no procesado
  * excluido de IVA según el Artículo 424 del Estatuto Tributario
- * (Canasta familiar agropecuaria: frutas frescas, banano, plátano, etc.)
+ * (Bienes agropecuarios de consumo primario / canasta familiar en fresco).
+ * 
+ * NOTA LEGAL & TRIBUTARIA:
+ * Las manufacturas, artesanías, accesorios o productos procesados elaborados
+ * a base de fibras naturales (ej: un bolso playero o sombrero en fibra de plátano,
+ * caña flecha, palma o fique, o snacks procesados) NO son alimentos ni canasta familiar,
+ * por lo que están sujetos a la tarifa general del 19% de IVA.
  */
 export const isItemIvaExempt = (item) => {
   if (!item) return false;
   const sku = (item.sku || '').toUpperCase();
   const name = (item.productName || item.name || '').toLowerCase();
 
-  return (
-    sku.startsWith('BAN-') ||
-    sku.startsWith('AGRO-') ||
-    name.includes('banano') ||
-    name.includes('platano') ||
-    name.includes('plátano') ||
-    name.includes('fresco') ||
-    name.includes('cacao en grano') ||
-    name.includes('maracuyá') ||
-    name.includes('yuca')
-  );
+  // 1. Si es artesanía, accesorio, bolso, textil, manufactura, snack procesado o servicio -> SIEMPRE IVA 19%
+  const nonExemptPatterns = [
+    'bolso', 'mochila', 'cartera', 'sombrero', 'artesanal', 'artesanía', 'artesania',
+    'fibra', 'tejido', 'madera', 'máscara', 'mascara', 'decorativ', 'collar', 'aretes',
+    'snack', 'chips', 'frito', 'mofongo', 'cazuela', 'restaurante', 'almuerzo',
+    'tour', 'transporte', 'servicio', 'consultor', 'capacitac'
+  ];
+
+  if (nonExemptPatterns.some(pattern => name.includes(pattern))) {
+    return false;
+  }
+
+  // 2. Si tiene SKU o código explícito de fruta o vegetal primario en fresco
+  if (sku.startsWith('BAN-EXP-') || sku.startsWith('AGRO-FRESCO-')) {
+    return true;
+  }
+
+  // 3. Debe ser explícitamente un fruto agrícola primario en fresco (alimento sin procesar)
+  const freshAgroKeywords = [
+    'banano fresco',
+    'banano criollo',
+    'banano de exportación',
+    'caja de banano',
+    'racimo de plátano',
+    'racimo de platano',
+    'plátano verde fresco',
+    'platano verde fresco',
+    'plátano hartón fresco',
+    'platano harton fresco',
+    'cacao en grano crudo',
+    'yuca fresca',
+    'fruta fresca',
+    'maracuyá fresca'
+  ];
+
+  return freshAgroKeywords.some(keyword => name.includes(keyword));
 };
 
 /**

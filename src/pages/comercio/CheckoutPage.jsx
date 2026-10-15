@@ -21,6 +21,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import ordersApi from '../../services/ordersApi';
 import MockPaymentModal from '../../components/comercio/MockPaymentModal';
+import { MIN_PURCHASE_AMOUNT } from '../../constants/commerce';
 
 const MUNICIPIOS_URABA = [
   'Apartadó',
@@ -66,6 +67,11 @@ export default function CheckoutPage() {
   const handleInitiateOrder = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+
+    if (totalAmount < MIN_PURCHASE_AMOUNT) {
+      setErrorMessage(`El monto mínimo de compra en la plataforma es de $${MIN_PURCHASE_AMOUNT.toLocaleString()} COP. Tu carrito suma $${totalAmount.toLocaleString()} COP. Agrega más productos para continuar.`);
+      return;
+    }
 
     if (!receiverName.trim()) {
       setErrorMessage('Por favor ingresa el nombre de la persona que recibe.');

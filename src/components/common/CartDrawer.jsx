@@ -13,9 +13,11 @@ import {
   Flame, 
   ShieldCheck, 
   Package, 
-  Truck 
+  Truck,
+  CheckCircle 
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { MIN_PURCHASE_AMOUNT } from '../../constants/commerce';
 
 const CartDrawer = () => {
   const {
@@ -46,6 +48,9 @@ const CartDrawer = () => {
   };
 
   const isMultiVendor = cartGroups.length > 1;
+  const isMinimumReached = totalAmount >= MIN_PURCHASE_AMOUNT;
+  const progressPercent = Math.min(100, Math.round((totalAmount / MIN_PURCHASE_AMOUNT) * 100));
+  const remainingForMin = Math.max(0, MIN_PURCHASE_AMOUNT - totalAmount);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -279,11 +284,47 @@ const CartDrawer = () => {
                 </p>
               </div>
 
+              {/* Barra de Progreso - Compra Mínima (Estilo E-Commerce Moderno) */}
+              <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <ShoppingBag className="w-3.5 h-3.5 text-teal-500" />
+                    Compra mínima: ${MIN_PURCHASE_AMOUNT.toLocaleString()} COP
+                  </span>
+                  {isMinimumReached ? (
+                    <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" /> ¡Alcanzada!
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                      Faltan ${remainingForMin.toLocaleString()} COP
+                    </span>
+                  )}
+                </div>
+
+                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      isMinimumReached 
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-400' 
+                        : 'bg-gradient-to-r from-amber-400 to-teal-500'
+                    }`}
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+
               <button
                 onClick={handleGoToCheckout}
-                className="w-full py-3.5 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-gradient-to-r dark:from-teal-400 dark:to-emerald-400 dark:hover:from-teal-300 dark:hover:to-emerald-300 text-white dark:text-slate-950 font-black text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={!isMinimumReached}
+                className={`w-full py-3.5 rounded-xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 ${
+                  isMinimumReached
+                    ? 'bg-[#0c4236] hover:bg-[#0f5144] dark:bg-gradient-to-r dark:from-teal-400 dark:to-emerald-400 dark:hover:from-teal-300 dark:hover:to-emerald-300 text-white dark:text-slate-950 hover:shadow-lg cursor-pointer'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                }`}
+                title={!isMinimumReached ? `Agrega al menos $${remainingForMin.toLocaleString()} COP más para ordenar.` : 'Continuar al Checkout'}
               >
-                <span>Continuar al Checkout</span>
+                <span>{isMinimumReached ? 'Continuar al Checkout' : `Monto Mínimo: $${MIN_PURCHASE_AMOUNT.toLocaleString()} COP`}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 

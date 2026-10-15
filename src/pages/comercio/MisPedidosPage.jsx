@@ -8,11 +8,23 @@ import {
   Truck, 
   MapPin, 
   ArrowLeft, 
-  XCircle, 
-  ChevronRight, 
   RefreshCw,
   ShoppingBag,
-  AlertCircle
+  AlertCircle,
+  CreditCard,
+  Banknote,
+  Building2,
+  Copy,
+  Check,
+  Printer,
+  X,
+  ShieldCheck,
+  PackageCheck,
+  Calendar,
+  Phone,
+  User,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import ordersApi from '../../services/ordersApi';
 
@@ -26,11 +38,31 @@ const STATUS_CONFIG = {
   pending: { label: 'Pendiente', bg: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20' },
 };
 
+const STEPS = [
+  { key: 'confirmed', label: 'Confirmado', icon: CheckCircle },
+  { key: 'preparing', label: 'En Preparación', icon: Clock },
+  { key: 'ready_to_ship', label: 'Empacado', icon: PackageCheck },
+  { key: 'shipped', label: 'En Camino', icon: Truck },
+  { key: 'delivered', label: 'Entregado', icon: MapPin },
+];
+
+const STEP_ORDER = {
+  confirmed: 1,
+  preparing: 2,
+  ready_to_ship: 3,
+  shipped: 4,
+  delivered: 5,
+};
+
 export default function MisPedidosPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
+  
+  // Recibo digital modal
+  const [selectedReceiptOrder, setSelectedReceiptOrder] = useState(null);
+  const [copiedTxId, setCopiedTxId] = useState(false);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -50,7 +82,7 @@ export default function MisPedidosPage() {
   }, []);
 
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm('¿Seguro que deseas cancelar este pedido? Se liberará el inventario reservado.'))
+    if (!window.confirm('¿Seguro que deseas cancelar este pedido? Se liberará el inventario reservado en bodega.'))
       return;
 
     setCancellingId(orderId);
@@ -64,24 +96,30 @@ export default function MisPedidosPage() {
     }
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTxId(true);
+    setTimeout(() => setCopiedTxId(false), 2000);
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fadeIn">
       
-      {/* Top Breadcrumb */}
+      {/* Top Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <Link
           to="/comercio"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Volver al Directorio Comercial</span>
         </Link>
         <button
           onClick={loadOrders}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Actualizar</span>
+          <span>Actualizar Pedidos</span>
         </button>
       </div>
 
@@ -90,33 +128,34 @@ export default function MisPedidosPage() {
           Mis Compras y Pedidos
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Seguimiento de entregas y paquetes organizados por cada Empresa Aliada de Urabá.
+          Seguimiento en tiempo real de entregas, comprobantes bancarios y paquetes por Empresa Aliada de Urabá.
         </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2 font-semibold">
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2 font-semibold shadow-xs">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 font-bold text-sm">
-          Cargando el historial de tus pedidos...
+        <div className="p-16 text-center text-slate-400 font-bold text-sm flex flex-col items-center justify-center gap-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-teal-500" />
+          <span>Cargando el historial de tus pedidos...</span>
         </div>
       ) : orders.length === 0 ? (
-        <div className="p-12 text-center bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl space-y-4">
-          <ShoppingBag className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
+        <div className="p-12 text-center bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl space-y-4 shadow-sm">
+          <ShoppingBag className="w-14 h-14 text-slate-300 dark:text-slate-700 mx-auto" />
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Aún no has realizado compras</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Explora los productos locales, agrégalos a tu carrito y haz tu primer pedido.
+            Explora los productos locales de Urabá, agrégalos a tu carrito y disfruta de entregas seguras.
           </p>
           <Link
             to="/comercio"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-psp-cyan text-slate-950 font-bold text-xs"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer"
           >
-            <span>Ir a la Tienda</span>
+            <span>Ir al Catálogo de Productos</span>
           </Link>
         </div>
       ) : (
@@ -124,59 +163,150 @@ export default function MisPedidosPage() {
           {orders.map((order) => {
             const masterStatusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
             const canCancel = order.status === 'confirmed' || order.status === 'pending';
+            const isOnlinePayment = order.paymentMethod !== 'cash_on_delivery' && Boolean(order.paymentTransactionId || order.paidAt);
 
             return (
               <div 
                 key={order.id}
-                className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl p-5 sm:p-7 shadow-sm space-y-5"
+                className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl p-5 sm:p-7 shadow-sm space-y-6"
               >
                 {/* Cabecera de la Orden Maestra */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
+                      <span className="font-mono font-black text-sm sm:text-base text-slate-900 dark:text-white">
                         {order.orderNumber}
                       </span>
                       <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${masterStatusCfg.bg}`}>
                         {masterStatusCfg.label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
-                      Fecha: {new Date(order.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{new Date(order.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Total Pagado / Estimado</p>
-                      <p className="text-base sm:text-lg font-black text-[#0c4236] dark:text-teal-400">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Total de la Orden</p>
+                      <p className="text-base sm:text-xl font-black text-[#0c4236] dark:text-teal-400">
                         ${order.totalAmount?.toLocaleString()} COP
                       </p>
                     </div>
+
+                    <button
+                      onClick={() => setSelectedReceiptOrder(order)}
+                      className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                      title="Ver e imprimir comprobante digital"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                      <span>Recibo</span>
+                    </button>
 
                     {canCancel && (
                       <button
                         onClick={() => handleCancelOrder(order.id)}
                         disabled={cancellingId === order.id}
-                        className="px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs font-bold transition-colors disabled:opacity-50"
+                        className="px-3 py-2 rounded-xl border border-rose-500/30 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        {cancellingId === order.id ? 'Cancelando...' : 'Cancelar Pedido'}
+                        {cancellingId === order.id ? 'Cancelando...' : 'Cancelar'}
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Datos de Entrega */}
-                <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl">
-                  <MapPin className="w-4 h-4 text-emerald-600 dark:text-teal-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-white">Entrega en: </span>
-                    {order.shippingAddress}, {order.shippingMunicipality} &bull; Recibe: <span className="font-semibold">{order.buyerName}</span> ({order.buyerPhone})
+                {/* Grid: Información de Entrega & Auditoría de Pago */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Tarjeta de Envío y Destino */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2 text-xs">
+                    <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                      <MapPin className="w-4 h-4 text-emerald-600 dark:text-teal-400" />
+                      <span>Datos de Destino (Urabá)</span>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-300">
+                      <strong className="text-slate-900 dark:text-white">{order.shippingAddress}</strong>
+                      {order.shippingNeighborhood && `, Barrio ${order.shippingNeighborhood}`}
+                      <br />
+                      <span className="text-slate-500">{order.shippingMunicipality}, {order.shippingDepartment || 'Antioquia'}</span>
+                    </p>
+                    <div className="pt-1 border-t border-slate-200/50 dark:border-slate-800/50 text-[11px] text-slate-500 flex items-center justify-between">
+                      <span>Recibe: <strong>{order.buyerName}</strong></span>
+                      <span>Tel: <strong>{order.buyerPhone}</strong></span>
+                    </div>
                   </div>
+
+                  {/* Tarjeta de Información Bancaria / Pasarela Wompi */}
+                  <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200/60 dark:border-teal-900/40 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-bold text-teal-900 dark:text-teal-200">
+                        {order.paymentMethod === 'cash_on_delivery' ? (
+                          <Banknote className="w-4 h-4 text-amber-600" />
+                        ) : order.paymentMethod === 'direct_transfer' ? (
+                          <Building2 className="w-4 h-4 text-teal-600" />
+                        ) : (
+                          <CreditCard className="w-4 h-4 text-emerald-600 dark:text-teal-400" />
+                        )}
+                        <span>
+                          {order.paymentMethod === 'cash_on_delivery' 
+                            ? 'Pago Contra Entrega' 
+                            : order.paymentMethod === 'direct_transfer'
+                            ? 'Transferencia / PSE'
+                            : 'Tarjeta de Crédito / Débito'}
+                        </span>
+                      </div>
+
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        isOnlinePayment 
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-teal-300' 
+                          : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                      }`}>
+                        {isOnlinePayment ? '✓ Pagado' : '⏱ Pendiente de Cobro'}
+                      </span>
+                    </div>
+
+                    {isOnlinePayment ? (
+                      <div className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Franquicia:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 uppercase">
+                            {order.cardBrand || 'Tarjeta'} {order.cardLastFour && `•••• ${order.cardLastFour}`}
+                          </span>
+                        </div>
+                        {order.paymentTransactionId && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-slate-400">ID Transacción:</span>
+                            <div className="flex items-center gap-1 font-mono text-[10px] text-teal-800 dark:text-teal-300 truncate max-w-[170px]">
+                              <span>{order.paymentTransactionId}</span>
+                              <button
+                                onClick={() => copyToClipboard(order.paymentTransactionId)}
+                                className="p-0.5 hover:text-teal-500 cursor-pointer"
+                                title="Copiar ID de transacción"
+                              >
+                                {copiedTxId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {order.authorizationCode && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">Cod. Autorización:</span>
+                            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{order.authorizationCode}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Pagas en efectivo o transferencia directamente al transportador al momento de recibir el paquete en tu domicilio.
+                      </p>
+                    )}
+                  </div>
+
                 </div>
 
-                {/* Sub-Órdenes por Empresa Aliada (Split-Marketplace) */}
-                <div className="space-y-4">
+                {/* Sub-Órdenes por Empresa Aliada con Línea de Tiempo de Despacho */}
+                <div className="space-y-4 pt-2">
                   <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                     Paquetes de Envío ({order.subOrders?.length || 1})
                   </h4>
@@ -184,49 +314,109 @@ export default function MisPedidosPage() {
                   <div className="grid grid-cols-1 gap-4">
                     {order.subOrders?.map((sub, sIdx) => {
                       const subStatusCfg = STATUS_CONFIG[sub.status] || STATUS_CONFIG.pending;
+                      const currentStepNum = STEP_ORDER[sub.status] || 1;
+                      const isCancelled = sub.status === 'cancelled';
+
                       return (
                         <div 
                           key={sub.id}
-                          className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#182422]/40 space-y-3"
+                          className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#182422]/40 space-y-4 shadow-xs"
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+                          {/* Header del paquete */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80 dark:border-slate-800">
                             <div className="flex items-center gap-2">
-                              <Store className="w-4 h-4 text-emerald-600 dark:text-teal-400" />
+                              <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                                <Store className="w-4 h-4" />
+                              </div>
                               <span className="text-xs font-bold text-slate-900 dark:text-white">
-                                {sub.companyName || 'Comercio Local'}
+                                {sub.companyName || 'Comercio Local PSP'}
                               </span>
-                              <span className="font-mono text-[10px] text-slate-400 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                              <span className="font-mono text-[10px] text-slate-400 px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                                 {sub.subOrderNumber}
                               </span>
                             </div>
 
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold border ${subStatusCfg.bg}`}>
+                            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold border ${subStatusCfg.bg}`}>
                               {subStatusCfg.label}
                             </span>
                           </div>
 
-                          {/* Info de Despacho si está en camino */}
+                          {/* Línea de Tiempo Visual del Paquete (Timeline Stepper) */}
+                          {!isCancelled ? (
+                            <div className="py-2 px-1">
+                              <div className="grid grid-cols-5 gap-1 items-center relative">
+                                {STEPS.map((step, idx) => {
+                                  const stepNum = idx + 1;
+                                  const isCompleted = currentStepNum >= stepNum;
+                                  const isCurrent = currentStepNum === stepNum;
+                                  const Icon = step.icon;
+
+                                  return (
+                                    <div key={step.key} className="flex flex-col items-center text-center relative z-10">
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                                        isCompleted
+                                          ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                                          : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
+                                      } ${isCurrent ? 'ring-4 ring-teal-500/20 scale-110' : ''}`}>
+                                        <Icon className="w-4 h-4" />
+                                      </div>
+                                      <span className={`text-[10px] font-bold mt-1.5 truncate max-w-full ${
+                                        isCurrent 
+                                          ? 'text-teal-600 dark:text-teal-400' 
+                                          : isCompleted 
+                                          ? 'text-slate-800 dark:text-slate-200' 
+                                          : 'text-slate-400'
+                                      }`}>
+                                        {step.label}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+
+                                {/* Línea conectora de fondo */}
+                                <div className="absolute top-4 left-6 right-6 h-0.5 bg-slate-200 dark:bg-slate-800 -z-0">
+                                  <div 
+                                    className="h-full bg-teal-500 transition-all duration-500"
+                                    style={{ width: `${Math.max(0, ((currentStepNum - 1) / 4) * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                              <XCircle className="w-4 h-4 shrink-0" />
+                              <span>Este paquete ha sido cancelado. Inventario devuelto a bodega.</span>
+                            </div>
+                          )}
+
+                          {/* Info de Despacho si ya está en camino */}
                           {sub.carrierName && (
-                            <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                              <Truck className="w-3.5 h-3.5 text-purple-500" />
-                              <span>Transportador / Domicilio: <strong className="text-slate-800 dark:text-slate-200">{sub.carrierName}</strong></span>
-                              {sub.trackingCode && <span>&bull; Guía/Tel: <strong>{sub.trackingCode}</strong></span>}
+                            <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4 text-purple-500 shrink-0" />
+                                <span>Operador: <strong>{sub.carrierName}</strong></span>
+                              </div>
+                              {sub.trackingCode && (
+                                <span className="font-mono text-[11px] font-bold text-slate-900 dark:text-white">
+                                  Guía: {sub.trackingCode}
+                                </span>
+                              )}
                             </div>
                           )}
 
                           {/* Ítems del paquete */}
                           <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
                             {sub.items?.map((item) => (
-                              <div key={item.id} className="py-2 flex items-center justify-between gap-3 text-xs">
-                                <div className="flex items-center gap-2.5 min-w-0">
+                              <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                                <div className="flex items-center gap-3 min-w-0">
                                   <img 
                                     src={item.productImage || '/icon.png'} 
                                     alt={item.productName} 
-                                    className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"
+                                    className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"
                                   />
                                   <div className="min-w-0">
                                     <p className="font-bold text-slate-900 dark:text-white truncate">{item.productName}</p>
-                                    <p className="text-[10px] text-slate-400">SKU: {item.sku} &bull; Cantidad: {item.quantity}</p>
+                                    <p className="text-[10px] text-slate-400">SKU: {item.sku} &bull; Cantidad: <strong>{item.quantity}</strong></p>
                                   </div>
                                 </div>
                                 <span className="font-extrabold text-slate-900 dark:text-white shrink-0">
@@ -234,6 +424,10 @@ export default function MisPedidosPage() {
                                 </span>
                               </div>
                             ))}
+                          </div>
+
+                          <div className="pt-2 text-right text-xs font-semibold text-slate-500">
+                            Subtotal paquete: <strong className="font-black text-slate-900 dark:text-white">${sub.subtotalAmount?.toLocaleString()} COP</strong>
                           </div>
                         </div>
                       );
@@ -244,6 +438,119 @@ export default function MisPedidosPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* MODAL DE RECIBO DIGITAL IMPRIMIBLE */}
+      {selectedReceiptOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Header del Recibo */}
+            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center font-black text-xs">
+                    PSP
+                  </div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">Recibo de Compra Digital</h3>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">Plataforma Social con Propósito &bull; Urabá, Colombia</p>
+              </div>
+
+              <button
+                onClick={() => setSelectedReceiptOrder(null)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Metadatos de la Factura / Recibo */}
+            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl">
+              <div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">No. de Orden:</span>
+                <span className="font-mono font-extrabold text-slate-900 dark:text-white">{selectedReceiptOrder.orderNumber}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">Fecha:</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">
+                  {new Date(selectedReceiptOrder.createdAt).toLocaleDateString('es-CO')}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">Comprador:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.buyerName}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">Destino:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedReceiptOrder.shippingMunicipality}</span>
+              </div>
+            </div>
+
+            {/* Desglose de Productos */}
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Resumen de Artículos</h4>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-48 overflow-y-auto">
+                {selectedReceiptOrder.items?.map((item) => (
+                  <div key={item.id} className="py-2 flex justify-between items-center text-xs">
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-white">{item.productName}</p>
+                      <p className="text-[10px] text-slate-400">Cant: {item.quantity} &bull; {item.companyName || 'Comercio Local'}</p>
+                    </div>
+                    <span className="font-extrabold text-slate-900 dark:text-white">
+                      ${item.lineTotal?.toLocaleString()} COP
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Totales y Auditoría de Pago */}
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-500">
+                <span>Subtotal:</span>
+                <span className="font-bold text-slate-900 dark:text-white">${selectedReceiptOrder.subtotalAmount?.toLocaleString()} COP</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>Costo de Envío:</span>
+                <span className="font-bold text-emerald-600 dark:text-teal-400">Gratis / Incluido</span>
+              </div>
+              <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-800">
+                <span>Total Pagado:</span>
+                <span className="text-[#0c4236] dark:text-teal-400">${selectedReceiptOrder.totalAmount?.toLocaleString()} COP</span>
+              </div>
+            </div>
+
+            {/* Transacción Bancaria */}
+            {selectedReceiptOrder.paymentTransactionId && (
+              <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 text-[10px] text-slate-600 dark:text-slate-300 space-y-0.5">
+                <p><strong>Pasarela de Pago:</strong> {selectedReceiptOrder.paymentGateway || 'Wompi Sandbox'}</p>
+                <p className="font-mono"><strong>Ref Transacción:</strong> {selectedReceiptOrder.paymentTransactionId}</p>
+                {selectedReceiptOrder.authorizationCode && (
+                  <p className="font-mono"><strong>Cod. Autorización:</strong> {selectedReceiptOrder.authorizationCode}</p>
+                )}
+              </div>
+            )}
+
+            {/* Botones de Acción */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimir / Guardar PDF</span>
+              </button>
+              <button
+                onClick={() => setSelectedReceiptOrder(null)}
+                className="py-3 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 

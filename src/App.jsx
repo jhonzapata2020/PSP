@@ -36,6 +36,7 @@ import AdminRolesPage from './pages/admin/AdminRolesPage';
 import AdminMatrizPage from './pages/admin/AdminMatrizPage';
 import AdminResumenPage from './pages/admin/AdminResumenPage';
 import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
+import AdminPedidosPage from './pages/admin/AdminPedidosPage';
 import AdminProductosPage from './pages/admin/AdminProductosPage';
 import AdminCatalogoPage from './pages/admin/AdminCatalogoPage';
 import ProductFormPage from './pages/admin/ProductFormPage';
@@ -131,6 +132,14 @@ function App() {
                         element={
                           <ProtectedRoute permission="roles.manage">
                             <AdminResumenPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="pedidos"
+                        element={
+                          <ProtectedRoute permission="orders.manage">
+                            <AdminPedidosPage />
                           </ProtectedRoute>
                         }
                       />

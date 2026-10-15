@@ -102,6 +102,248 @@ export default function MisPedidosPage() {
     setTimeout(() => setCopiedTxId(false), 2000);
   };
 
+  const handlePrintReceipt = (order) => {
+    if (!order) return;
+
+    const existingFrame = document.getElementById('psp-receipt-print-frame');
+    if (existingFrame) existingFrame.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'psp-receipt-print-frame';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const dateFormatted = new Date(order.createdAt).toLocaleDateString('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const itemsRows = (order.items || []).map(item => `
+      <tr>
+        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+          <strong>${item.productName}</strong><br/>
+          <span style="font-size: 10px; color: #64748b;">SKU: ${item.sku || 'N/A'} • ${item.companyName || 'Comercio Local PSP'}</span>
+        </td>
+        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 11px;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px;">
+          $${(item.unitPrice || 0).toLocaleString('es-CO')}
+        </td>
+        <td style="padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px; font-weight: bold;">
+          $${(item.lineTotal || 0).toLocaleString('es-CO')}
+        </td>
+      </tr>
+    `).join('');
+
+    const paymentAuditHtml = order.paymentTransactionId ? `
+      <div style="margin-top: 12px; padding: 10px 14px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; font-size: 10px; color: #115e59;">
+        <p style="margin: 2px 0;"><strong>Pasarela de Pago:</strong> ${order.paymentGateway || 'Wompi Colombia'}</p>
+        <p style="margin: 2px 0; font-family: monospace;"><strong>ID Transacción:</strong> ${order.paymentTransactionId}</p>
+        ${order.authorizationCode ? `<p style="margin: 2px 0; font-family: monospace;"><strong>Cód. Autorización:</strong> ${order.authorizationCode}</p>` : ''}
+        <p style="margin: 2px 0;"><strong>Medio de Pago:</strong> ${order.cardBrand || 'Tarjeta'} ${order.cardLastFour ? `•••• ${order.cardLastFour}` : ''} • ${order.installments || 1} cuota(s)</p>
+      </div>
+    ` : `
+      <div style="margin-top: 12px; padding: 10px 14px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; font-size: 10px; color: #854d0e;">
+        <p style="margin: 2px 0;"><strong>Método de Pago:</strong> Pago Contra Entrega en Domicilio (Efectivo)</p>
+      </div>
+    `;
+
+    const receiptHtml = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>Recibo - ${order.orderNumber}</title>
+        <style>
+          @page {
+            size: letter portrait;
+            margin: 12mm;
+          }
+          * {
+            box-sizing: border-box;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            font-size: 11px;
+            line-height: 1.4;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #0c4236;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+          }
+          .logo-badge {
+            background: #0c4236;
+            color: #fff;
+            font-weight: 900;
+            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 6px;
+            display: inline-block;
+          }
+          .title {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0;
+            color: #0c4236;
+          }
+          .subtitle {
+            font-size: 10px;
+            color: #64748b;
+            margin: 1px 0 0 0;
+          }
+          .info-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+          }
+          .info-box p {
+            margin: 2px 0;
+            font-size: 11px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+          }
+          th {
+            background: #f1f5f9;
+            padding: 6px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #cbd5e1;
+          }
+          .totals-section {
+            width: 240px;
+            margin-left: auto;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 6px;
+          }
+          .totals-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+            font-size: 11px;
+          }
+          .total-highlight {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 2px solid #0c4236;
+            font-size: 13px;
+            font-weight: 900;
+            color: #0c4236;
+          }
+          .footer {
+            margin-top: 20px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+            text-align: center;
+            font-size: 9px;
+            color: #94a3b8;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="logo-badge">PSP</div>
+            <div>
+              <h1 class="title">Recibo de Compra Digital</h1>
+              <p class="subtitle">Plataforma Social con Propósito • Urabá, Colombia</p>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <strong style="font-family: monospace; font-size: 12px;">${order.orderNumber}</strong><br/>
+            <span style="font-size: 9px; color: #64748b;">${dateFormatted}</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div>
+            <p><strong>Comprador:</strong> ${order.buyerName}</p>
+            <p><strong>Email:</strong> ${order.buyerEmail}</p>
+            <p><strong>Teléfono:</strong> ${order.buyerPhone || 'N/A'}</p>
+          </div>
+          <div>
+            <p><strong>Destino de Entrega:</strong> ${order.shippingAddress}</p>
+            ${order.shippingNeighborhood ? `<p><strong>Barrio:</strong> ${order.shippingNeighborhood}</p>` : ''}
+            <p><strong>Municipio:</strong> ${order.shippingMunicipality}, Antioquia</p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left;">Artículo</th>
+              <th style="text-align: center; width: 45px;">Cant.</th>
+              <th style="text-align: right; width: 85px;">Precio</th>
+              <th style="text-align: right; width: 95px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+
+        <div class="totals-section">
+          <div class="totals-row">
+            <span>Subtotal:</span>
+            <span>$${(order.subtotalAmount || 0).toLocaleString('es-CO')} COP</span>
+          </div>
+          <div class="totals-row">
+            <span>Envío local Urabá:</span>
+            <span style="color: #059669; font-weight: bold;">Gratis / Incluido</span>
+          </div>
+          <div class="total-highlight">
+            <span>Total Pagado:</span>
+            <span>$${(order.totalAmount || 0).toLocaleString('es-CO')} COP</span>
+          </div>
+        </div>
+
+        ${paymentAuditHtml}
+
+        <div class="footer">
+          <p>Comprobante oficial generado por Plataforma Social con Propósito (PSP) • Apoyando el comercio local de Urabá.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(receiptHtml);
+    doc.close();
+
+    iframe.contentWindow.focus();
+    setTimeout(() => {
+      iframe.contentWindow.print();
+    }, 200);
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fadeIn">
       
@@ -536,7 +778,7 @@ export default function MisPedidosPage() {
             {/* Botones de Acción */}
             <div className="flex items-center gap-3 pt-2">
               <button
-                onClick={() => window.print()}
+                onClick={() => handlePrintReceipt(selectedReceiptOrder)}
                 className="flex-1 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />

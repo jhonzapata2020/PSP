@@ -30,11 +30,13 @@ export const CartProvider = ({ children }) => {
           companyId: item.companyId || null,
           companyName: item.empresa || item.companyName || item.proveedor || 'Comercio Local PSP',
           items: [],
-          subtotal: 0
+          subtotal: 0,
+          totalItems: 0
         };
       }
       grouped[key].items.push(item);
       grouped[key].subtotal += (item.precio || item.unitPrice || 0) * item.quantity;
+      grouped[key].totalItems += item.quantity;
     }
     return Object.values(grouped);
   };
@@ -47,6 +49,13 @@ export const CartProvider = ({ children }) => {
     } catch { }
   }, [cartItems]);
 
+  // Limpiar mensaje de error tras 6 segundos automáticamente
+  useEffect(() => {
+    if (!cartError) return;
+    const timer = setTimeout(() => setCartError(null), 6000);
+    return () => clearTimeout(timer);
+  }, [cartError]);
+
   // Sincronizar con la API si hay sesión iniciada
   const syncWithApi = useCallback(async () => {
     const token = getToken();
@@ -57,25 +66,31 @@ export const CartProvider = ({ children }) => {
       const serverCart = await ordersApi.getCart();
       if (serverCart && serverCart.groups) {
         setCartGroups(serverCart.groups);
-        // Aplanar los grupos para cartItems retrocompatible
-        const flatItems = serverCart.groups.flatMap(g =>
-          g.items.map(i => ({
-            id: i.productId || i.id,
-            productId: i.productId,
-            nombre: i.productName,
-            sku: i.sku,
-            precio: i.unitPrice,
-            imagen: i.productImage,
-            companyId: i.companyId,
-            empresa: i.companyName,
-            proveedor: i.companyName,
-            quantity: i.quantity
-          }))
-        );
-        setCartItems(flatItems);
+        // Aplanar los grupos para cartItems preservando stock y metadata enriquecida
+        setCartItems(prev => {
+          const flatItems = serverCart.groups.flatMap(g =>
+            g.items.map(i => {
+              const localExisting = prev.find(p => (p.id === i.productId || p.productId === i.productId));
+              return {
+                id: i.productId || i.id,
+                productId: i.productId,
+                nombre: i.productName,
+                sku: i.sku,
+                precio: i.unitPrice,
+                precioAnterior: localExisting?.precioAnterior ?? null,
+                stock: localExisting?.stock ?? 99,
+                imagen: i.productImage || localExisting?.imagen || '',
+                companyId: i.companyId,
+                empresa: i.companyName,
+                proveedor: i.companyName,
+                quantity: i.quantity
+              };
+            })
+          );
+          return flatItems;
+        });
       }
     } catch (err) {
-      // Degrada elegantemente a local sin bloquear al usuario
       console.warn('Sincronización de carrito en segundo plano no disponible:', err.message);
     } finally {
       setLoading(false);
@@ -93,14 +108,49 @@ export const CartProvider = ({ children }) => {
     const companyId = product.companyId || product.CompanyId || null;
     const companyName = product.empresa || product.companyName || product.proveedor || 'Comercio Local PSP';
     const mainImg = product.imagen || (product.imagenes && product.imagenes[0]) || '';
+    const availableStock = typeof product.stock === 'number' ? product.stock : 99;
+
+    // Validación 1: Producto agotado en inventario
+    if (availableStock <= 0) {
+      setCartError(`Lo sentimos, '${product.nombre || 'el producto'}' se encuentra agotado temporalmente.`);
+      setIsCartOpen(true);
+      return;
+    }
+
+    // Validación 2: Control de cantidades según stock disponible
+    let finalQtyToAdd = qty;
+    const existing = cartItems.find(item => item.id === productId || item.productId === productId);
+
+    if (existing) {
+      const maxAllowed = typeof existing.stock === 'number' ? existing.stock : availableStock;
+      const currentInCart = existing.quantity;
+
+      if (currentInCart >= maxAllowed) {
+        setCartError(`Ya tienes en el carrito el límite de ${maxAllowed} unidades disponibles de '${product.nombre}'.`);
+        setIsCartOpen(true);
+        return;
+      }
+
+      if (currentInCart + qty > maxAllowed) {
+        finalQtyToAdd = maxAllowed - currentInCart;
+        setCartError(`Solo se agregaron ${finalQtyToAdd} unidad(es) adicional(es). Alcanzaste el límite de stock (${maxAllowed}) de '${product.nombre}'.`);
+      }
+    } else {
+      if (qty > availableStock) {
+        finalQtyToAdd = availableStock;
+        setCartError(`Solo hay ${availableStock} unidad(es) disponible(s) de '${product.nombre}'. Se ajustó la cantidad agregada.`);
+      }
+    }
+
+    if (finalQtyToAdd <= 0) return;
 
     // 1. Actualización optimista local
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === productId || item.productId === productId);
-      if (existing) {
+      const prevExisting = prev.find(item => item.id === productId || item.productId === productId);
+      if (prevExisting) {
         return prev.map(item =>
           (item.id === productId || item.productId === productId)
-            ? { ...item, quantity: item.quantity + qty }
+            ? { ...item, quantity: item.quantity + finalQtyToAdd, stock: availableStock }
             : item
         );
       }
@@ -110,11 +160,13 @@ export const CartProvider = ({ children }) => {
         nombre: product.nombre || product.name || 'Producto',
         sku: product.sku || '',
         precio: unitPrice,
+        precioAnterior: product.precioAnterior || null,
+        stock: availableStock,
         imagen: mainImg,
         companyId,
         empresa: companyName,
         proveedor: companyName,
-        quantity: qty
+        quantity: finalQtyToAdd
       }];
     });
 
@@ -123,7 +175,7 @@ export const CartProvider = ({ children }) => {
     // 2. Si hay token, sincronizar con la API de pedidos
     if (getToken()) {
       try {
-        await ordersApi.addToCart(productId, qty);
+        await ordersApi.addToCart(productId, finalQtyToAdd);
         await syncWithApi();
       } catch (err) {
         setCartError(err.message);
@@ -147,6 +199,14 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (id, delta) => {
     const currentItem = cartItems.find(item => item.id === id || item.productId === id);
     if (!currentItem) return;
+
+    const maxStock = typeof currentItem.stock === 'number' ? currentItem.stock : 99;
+
+    // Control de límite superior por stock
+    if (delta > 0 && currentItem.quantity + delta > maxStock) {
+      setCartError(`No puedes agregar más unidades de '${currentItem.nombre}'. Límite máximo en bodega: ${maxStock}.`);
+      return;
+    }
 
     const newQty = currentItem.quantity + delta;
 
@@ -211,7 +271,8 @@ export const CartProvider = ({ children }) => {
       syncWithApi,
       loading,
       cartError,
-      setCartError
+      setCartError,
+      clearCartError: () => setCartError(null)
     }}>
       {children}
     </CartContext.Provider>

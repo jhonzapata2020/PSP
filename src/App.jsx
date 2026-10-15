@@ -1,8 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext';
 
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
@@ -50,6 +50,16 @@ function AdminEditRedirect() {
   return <Navigate to={`/mi-comercio/catalogo/editar/${sku}`} replace />;
 }
 
+function CarritoRedirect() {
+  const { setIsCartOpen } = useCart();
+  const navigate = useNavigate();
+  useEffect(() => {
+    setIsCartOpen(true);
+    navigate('/comercio?tab=productos', { replace: true });
+  }, [setIsCartOpen, navigate]);
+  return null;
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -84,6 +94,8 @@ function App() {
                     <Route path="/mi-perfil-publico" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/mis-pedidos" element={<ProtectedRoute><MisPedidosPage /></ProtectedRoute>} />
                     <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                    <Route path="/carrito" element={<CarritoRedirect />} />
+                    <Route path="/cart" element={<CarritoRedirect />} />
                     <Route path="/aliados/jovenes-mas" element={<ProtectedRoute><JovenesMas /></ProtectedRoute>} />
 
 

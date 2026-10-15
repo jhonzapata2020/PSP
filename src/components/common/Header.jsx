@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Building2, 
   Store, 
@@ -29,6 +29,7 @@ const Header = () => {
   const { user, logout, hasPermission, hasRole } = useAuth();
   const { totalItemsCount, setIsCartOpen } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -242,6 +243,7 @@ const Header = () => {
                           onClick={() => {
                             logout();
                             setUserDropdownOpen(false);
+                            navigate('/ingresar');
                           }}
                           className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 font-bold"
                         >
@@ -339,6 +341,19 @@ const Header = () => {
             >
               Registrar Empresa
             </Link>
+            {user && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                  navigate('/ingresar');
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 mt-2 border-t border-slate-100 dark:border-[#203330]"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+            )}
           </nav>
         </div>
       )}

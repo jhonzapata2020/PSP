@@ -333,15 +333,21 @@ const ComercioPage = () => {
                       <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(prod);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
-                  >
-                    Añadir al carrito
-                  </button>
+                  {prod.stock !== undefined && prod.stock <= 0 ? (
+                    <span className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-bold">
+                      Agotado
+                    </span>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(prod);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
+                    >
+                      Añadir al carrito
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

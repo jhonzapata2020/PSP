@@ -10,9 +10,11 @@ import {
   Home,
   LogOut,
   ShoppingBag,
+  Truck,
 } from 'lucide-react';
 
 const VENDOR_NAV = [
+  { to: '/mi-comercio/pedidos',        label: 'Pedidos Recibidos',     icon: Truck },
   { to: '/mi-comercio/catalogo',       label: 'Catálogo de Productos', icon: LayoutList },
   { to: '/mi-comercio/catalogo/nuevo', label: 'Nuevo Producto',        icon: PackagePlus },
   { to: '/mi-comercio/productos',      label: 'Carga Masiva (CSV)',    icon: Package },

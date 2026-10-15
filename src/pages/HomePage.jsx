@@ -391,12 +391,18 @@ const HomePage = () => {
                   <span className="text-sm font-black text-slate-900 dark:text-slate-100">
                     ${prod.precio.toLocaleString()} COP
                   </span>
-                  <button
-                    onClick={() => addToCart(prod)}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 text-white dark:text-slate-950 text-xs font-black transition-colors"
-                  >
-                    Añadir
-                  </button>
+                  {prod.stock !== undefined && prod.stock <= 0 ? (
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 text-[11px] font-bold">
+                      Agotado
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => addToCart(prod)}
+                      className="px-3.5 py-1.5 rounded-lg bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 text-white dark:text-slate-950 text-xs font-black transition-colors cursor-pointer"
+                    >
+                      Añadir
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

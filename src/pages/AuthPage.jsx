@@ -157,7 +157,7 @@ const AuthPage = () => {
           <div className="space-y-4">
             <h2
               className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.08] tracking-tight"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
             >
               Elige Tu Membresía <br className="hidden sm:block" />
               Con Propósito.
@@ -168,7 +168,7 @@ const AuthPage = () => {
               <div className="h-[1.5px] w-full bg-slate-300/80 dark:bg-slate-700/80 mb-3" />
               <p
                 className="text-lg sm:text-xl italic text-slate-700 dark:text-slate-200"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
               >
                 Tu ahorro inteligente{' '}
                 <span className="font-bold text-amber-600 dark:text-amber-400">
@@ -214,7 +214,7 @@ const AuthPage = () => {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3
                           className="text-base sm:text-lg font-bold text-[#0f1f2e] dark:text-white"
-                          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                          style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
                         >
                           {item.title}
                         </h3>

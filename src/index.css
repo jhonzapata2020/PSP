@@ -3,15 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --andes-font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', Arial, sans-serif;
+  }
+
   html, body {
     @apply font-sans antialiased max-w-full overflow-x-hidden;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--andes-font-family);
     width: 100%;
   }
 
-  h1, h2, h3 {
-    font-family: 'Playfair Display', Georgia, serif;
-    letter-spacing: -0.015em;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--andes-font-family);
+    letter-spacing: -0.01em;
   }
 
   #root {

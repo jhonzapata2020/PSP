@@ -463,7 +463,7 @@ const LeidyMarulanda = () => {
                 className="w-8 h-8 rounded-lg object-contain"
               />
               <span
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
                 className="text-lg sm:text-xl font-bold tracking-wider uppercase text-[#111111]"
               >
                 LEIDY MARULANDA

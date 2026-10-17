@@ -155,7 +155,7 @@ const MapaPage = () => {
           {/* Location Title & Municipality */}
           <h2
             className="text-2xl sm:text-[1.75rem] font-bold tracking-tight text-[#0f1f2e] dark:text-white leading-tight"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
           >
             {selectedLugar.nombre}
           </h2>

@@ -104,7 +104,7 @@ const EmpresasAliadasPage = () => {
               </p>
               <h2
                 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.1] tracking-tight"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
               >
                 Entidades Afiliadas a la Corporación.
               </h2>
@@ -112,7 +112,7 @@ const EmpresasAliadasPage = () => {
                 <div className="h-[1.5px] w-48 bg-slate-300/80 dark:bg-slate-700/80 mb-2" />
                 <p
                   className="text-base sm:text-lg italic text-slate-700 dark:text-slate-200"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
                 >
                   Alianzas que transforman{' '}
                   <span className="font-bold text-amber-600 dark:text-amber-400">
@@ -332,7 +332,7 @@ const EmpresasAliadasPage = () => {
             </p>
             <h2
               className="text-3xl sm:text-4xl lg:text-[2.5rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.1] tracking-tight"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
             >
               Socios e Instituciones Estratégicas.
             </h2>

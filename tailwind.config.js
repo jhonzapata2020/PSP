@@ -8,9 +8,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        display: ['"Playfair Display"', 'Georgia', 'serif'],
+        sans: ['"Figtree"', '-apple-system', 'BlinkMacSystemFont', '"Roboto"', 'Arial', 'sans-serif'],
+        serif: ['"Figtree"', '-apple-system', 'BlinkMacSystemFont', '"Roboto"', 'Arial', 'sans-serif'],
+        display: ['"Figtree"', '-apple-system', 'BlinkMacSystemFont', '"Roboto"', 'Arial', 'sans-serif'],
       },
       colors: {
         brand: {

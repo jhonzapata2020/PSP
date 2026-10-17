@@ -183,9 +183,9 @@ const HomePage = () => {
       <div className="absolute top-1/4 right-0 w-[24rem] sm:w-[32rem] h-[24rem] sm:h-[32rem] bg-emerald-100/40 dark:bg-emerald-500/10 rounded-full soft-blur-glow pointer-events-none -z-10"></div>
 
       {/* 1. MAIN HERO CAROUSEL BANNER SHOWCASE AT THE VERY BEGINNING */}
-      <section className="pt-6 pb-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="pt-2.5 sm:pt-3 pb-3 max-w-[1360px] mx-auto px-3 sm:px-5 lg:px-6">
         <div
-          className="relative w-full aspect-[16/7.8] overflow-hidden rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group select-none"
+          className="relative w-full aspect-[1480/580] max-h-[calc(100vh-136px)] overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group select-none"
           onMouseEnter={() => setIsCarouselPaused(true)}
           onMouseLeave={() => setIsCarouselPaused(false)}
         >
@@ -196,10 +196,10 @@ const HomePage = () => {
                 key={slide.id}
                 src={slide.src}
                 alt={slide.alt}
-                className={`absolute inset-0 w-full h-full object-cover object-top brightness-[1.01] contrast-[1.03] transition-all duration-700 ease-out ${
+                className={`absolute inset-0 w-full h-full object-cover object-center brightness-[1.01] contrast-[1.03] transition-all duration-700 ease-out ${
                   isActive
                     ? 'opacity-100 scale-100 z-10'
-                    : 'opacity-0 scale-[1.02] z-0 pointer-events-none'
+                    : 'opacity-0 scale-[1.01] z-0 pointer-events-none'
                 }`}
               />
             );
@@ -394,7 +394,7 @@ const HomePage = () => {
                 return (
                   <div
                     key={prod.id}
-                    style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                    style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
                     className="group rounded-2xl bg-white dark:bg-[#131c1a] border border-slate-200/90 dark:border-[#203330] overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                   >
                     <div

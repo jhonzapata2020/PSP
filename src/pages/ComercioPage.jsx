@@ -308,7 +308,7 @@ const ComercioPage = () => {
               return (
                 <div
                   key={prod.id}
-                  style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                  style={{ fontFamily: "'Figtree', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif" }}
                   className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-xs flex flex-col justify-between hover:shadow-xl transition-all duration-300 group relative"
                 >
                   <div

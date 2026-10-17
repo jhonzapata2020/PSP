@@ -183,6 +183,35 @@ const ComercioPage = () => {
     );
   }
 
+  // Render PSPGo • Urabá Express (Parclgo-style platform) directly in a clean full-screen layout without repeated Comercio headers
+  if (activeTab === 'transporte') {
+    return (
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6">
+        <PSPExpressHub
+          transportRoutes={
+            products.length > 0
+              ? products.map((p) => ({
+                  id: p.id,
+                  origen: 'Apartadó',
+                  destino: p.nombre,
+                  empresa: p.municipio || 'Cootransuroeste',
+                  categoria: p.categoria,
+                  municipio: p.municipio,
+                  tiempoEstimado: '45 min',
+                  precio: p.precio,
+                  calificacion: 4.8,
+                  imagen: p.imagen,
+                  descripcion: p.descripcion,
+                  ...p
+                }))
+              : TRANSPORTE_RUTAS
+          }
+          onSelectRoute={(ruta) => openProduct(ruta)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-6 sm:space-y-8">
       
@@ -209,6 +238,10 @@ const ComercioPage = () => {
             <button
               key={t.id}
               onClick={() => {
+                if (t.id === 'transporte') {
+                  navigate('/domicilios');
+                  return;
+                }
                 setActiveTab(t.id);
                 setSelectedProduct(null);
                 setSelectedCommerceItem(null);

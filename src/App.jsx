@@ -86,11 +86,12 @@ function App() {
                     <Route path="/map" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
                     <Route path="/empresas-aliadas" element={<ProtectedRoute><EmpresasAliadasPage /></ProtectedRoute>} />
                     <Route path="/comercio/*" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
-                    <Route path="/domicilios" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
-                    <Route path="/domicilios-express" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
-                    <Route path="/rappi" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
-                    <Route path="/express" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
-                    <Route path="/movilidad" element={<ProtectedRoute><ComercioPage /></ProtectedRoute>} />
+                    {/* Vitrina pública en vivo para Domicilios Urabá (bloquea en el momento de pagar/despachar si no tiene membresía) */}
+                    <Route path="/domicilios" element={<ComercioPage />} />
+                    <Route path="/domicilios-express" element={<ComercioPage />} />
+                    <Route path="/rappi" element={<ComercioPage />} />
+                    <Route path="/express" element={<ComercioPage />} />
+                    <Route path="/movilidad" element={<ComercioPage />} />
                     <Route path="/foro" element={<ProtectedRoute><ForoPage /></ProtectedRoute>} />
                     <Route path="/ayuda" element={<ProtectedRoute><AyudaPage /></ProtectedRoute>} />
                     <Route path="/mi-cuenta" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

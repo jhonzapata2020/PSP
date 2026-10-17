@@ -40,6 +40,7 @@ import AdminPedidosPage from './pages/admin/AdminPedidosPage';
 import AdminProductosPage from './pages/admin/AdminProductosPage';
 import AdminCatalogoPage from './pages/admin/AdminCatalogoPage';
 import ProductFormPage from './pages/admin/ProductFormPage';
+import AdminEmpresasPage from './pages/admin/AdminEmpresasPage';
 
 // Legal & Policy Pages (Etapa 1)
 import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
@@ -127,6 +128,14 @@ function App() {
                       }
                     >
                       <Route index element={<AdminIndexRedirect />} />
+                      <Route
+                        path="empresas"
+                        element={
+                          <ProtectedRoute permission="users.read">
+                            <AdminEmpresasPage />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route
                         path="resumen"
                         element={

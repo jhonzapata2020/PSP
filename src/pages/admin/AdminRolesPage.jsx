@@ -6,7 +6,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/ui/Modal';
 
-const EMPTY = { name: '', displayName: '', description: '' };
+const EMPTY = { name: '', displayName: '', description: '', discountPercentage: 0 };
 
 export default function AdminRolesPage() {
   const { hasPermission } = useAuth();
@@ -59,7 +59,12 @@ export default function AdminRolesPage() {
   const openCreate = () => { setEditingId(null); setForm(EMPTY); setFormError(''); setFormOpen(true); };
   const openEdit = (r) => {
     setEditingId(r.id);
-    setForm({ name: r.name, displayName: r.displayName, description: r.description ?? '' });
+    setForm({
+      name: r.name,
+      displayName: r.displayName,
+      description: r.description ?? '',
+      discountPercentage: Number(r.discountPercentage ?? r.discount_percentage ?? 0),
+    });
     setFormError('');
     setFormOpen(true);
   };
@@ -273,6 +278,18 @@ export default function AdminRolesPage() {
               placeholder="ej. Coordinador"
               required
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:border-psp-cyan"
+            />
+          </Field>
+          <Field label="Porcentaje de Descuento en Carrito (%)">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              step={0.5}
+              value={form.discountPercentage ?? 0}
+              onChange={(e) => setForm((f) => ({ ...f, discountPercentage: Number(e.target.value) }))}
+              placeholder="Ej. 5"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-psp-cyan"
             />
           </Field>
           <Field label="Descripción">

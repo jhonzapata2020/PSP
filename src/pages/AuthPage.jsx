@@ -1,18 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
-  User, 
   Lock, 
   Mail, 
-  Building, 
   ArrowRight, 
   Eye, 
   EyeOff, 
-  CheckCircle2, 
-  AlertCircle 
+  AlertCircle,
+  ChevronDown,
+  Crown,
+  ShieldCheck,
+  HeartHandshake,
+  Ticket
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { loadAvatarDefaults, pickDefaultAvatar } from '../services/avatarDefaults';
+
+// Opciones limpias de Membresía con Membresía Gold de primera
+const ROLE_OPTIONS = [
+  { code: 'membresia_gold', label: 'Membresía Gold' },
+  { code: 'membresia_plata', label: 'Membresía Plata' },
+  { code: 'emprendedor_social', label: 'Emprendedor Social' },
+];
+
+const MEMBERSHIP_BENEFITS = [
+  {
+    code: 'membresia_gold',
+    title: 'Membresía Gold',
+    price: '$100.000 / año',
+    desc: 'Máximo porcentaje de descuento en todas tus compras del carrito y acceso preferencial a comercios aliados.',
+    icon: Crown,
+  },
+  {
+    code: 'membresia_plata',
+    title: 'Membresía Plata',
+    price: '$50.000 / año',
+    desc: 'Descuento especial automático durante todo el año en productos y supermercados de la plataforma.',
+    icon: ShieldCheck,
+  },
+  {
+    code: 'emprendedor_social',
+    title: 'Emprendedor Social',
+    price: '3% Beneficio + Código Promotor',
+    desc: 'Diseñado para entidades, colectivos y promotores que agrupan comunidades de personas e impulsan compras con su código de recomendación.',
+    icon: HeartHandshake,
+  }
+];
 
 const AuthPage = () => {
 
@@ -21,7 +54,7 @@ const AuthPage = () => {
 
   // Determine initial tab based on route (/registro vs /ingresar)
   const [isRegister, setIsRegister] = useState(() => location.pathname === '/registro');
-  const [personType, setPersonType] = useState('natural'); // 'natural' | 'juridica'
+  const [selectedRolePlan, setSelectedRolePlan] = useState('membresia_gold');
   const { login, register, loading, error, setError } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +65,15 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [docType, setDocType] = useState('CC');
   const [docNum, setDocNum] = useState('');
-  const [nit, setNit] = useState('');
-  const [gender, setGender] = useState('femenino');
+  const [referralCode, setReferralCode] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return (params.get('ref') || params.get('cupon') || params.get('codigo') || '').toUpperCase();
+  });
+  const [gender] = useState('femenino');
 
   // Legal Habeas Data Consent Checkbox (Colombia Ley 1581 de 2012)
   const [habeasDataConsent, setHabeasDataConsent] = useState(false);
   const [formError, setFormError] = useState('');
-  const [socialLoading, setSocialLoading] = useState(null);
 
   // Sync tab if URL changes
   useEffect(() => {
@@ -61,28 +96,24 @@ const AuthPage = () => {
 
     try {
       if (isRegister) {
-        // Foto de fábrica (bucket R2) según tipo de persona y género. El
-        // backend descarta las URLs de otras web, así que aquí sólo puede
-        // entrar una foto nuestra: si no hay ninguna, queda sin avatar y el
-        // front muestra la primera de la lista.
         const defaults = await loadAvatarDefaults();
-        const defaultAvatar = pickDefaultAvatar(defaults, { personType, gender });
+        const defaultAvatar = pickDefaultAvatar(defaults, { personType: 'natural', gender });
 
-        // POST /api/auth/register → el backend asigna el rol por defecto
-        // (emprendedor_social | empresa_aliada) según personType.
         await register({
           email,
           password,
           name,
-          personType,
-          documentType: personType === 'juridica' ? 'NIT' : docType,
-          documentNumber: personType === 'juridica' ? nit : docNum,
-          gender: personType === 'natural' ? gender : null,
+          personType: 'natural',
+          requestedRole: selectedRolePlan,
+          membershipPlan: selectedRolePlan,
+          referralCode: referralCode.trim() ? referralCode.trim().toUpperCase() : undefined,
+          documentType: docType,
+          documentNumber: docNum,
+          gender,
           avatar: defaultAvatar,
           habeasDataConsent: true,
         });
       } else {
-        // POST /api/auth/login → devuelve JWT + roles + permisos
         await login(email, password);
       }
       const targetPath = location.state?.from || '/mi-cuenta';
@@ -92,128 +123,222 @@ const AuthPage = () => {
     }
   };
 
-  const handleSocialLogin = (provider) => {
-    setSocialLoading(provider);
-    setTimeout(() => {
-      login({
-        name: `Usuario ${provider}`,
-        email: `usuario.${provider.toLowerCase()}@plataformasocial.co`,
-        avatar: provider === 'Google' 
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-        role: 'Usuario Verificado',
-        personType: 'natural',
-      });
-      setSocialLoading(null);
-      const targetPath = location.state?.from || '/mi-cuenta';
-      navigate(targetPath);
-    }, 600);
-  };
-
-
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-[#0b1311] relative overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+    <div className="min-h-screen w-full bg-[#F8FAFC] dark:bg-[#0b1311] relative overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-12 transition-colors duration-300">
       
-      {/* Mesh Gradient Ambient Light Glows */}
+      {/* Ambient Light Glows */}
       <div 
-        className="absolute -top-32 left-1/2 -translate-x-1/2 w-[36rem] h-[36rem] bg-gradient-to-tr from-teal-300/30 via-emerald-200/40 to-cyan-300/20 dark:from-emerald-600/15 dark:via-teal-500/10 dark:to-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-0"
+        className="absolute -top-32 left-1/4 -translate-x-1/2 w-[42rem] h-[42rem] bg-gradient-to-tr from-teal-200/35 via-emerald-100/30 to-cyan-200/20 dark:from-emerald-600/15 dark:via-teal-500/10 dark:to-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-0"
         aria-hidden="true"
       />
       <div 
-        className="absolute -bottom-24 right-10 w-96 h-96 bg-gradient-to-br from-emerald-200/30 to-teal-300/20 dark:from-teal-500/10 dark:to-emerald-600/10 rounded-full blur-3xl pointer-events-none -z-0"
+        className="absolute -bottom-24 right-10 w-96 h-96 bg-gradient-to-br from-emerald-200/25 to-teal-300/20 dark:from-teal-500/10 dark:to-emerald-600/10 rounded-full blur-3xl pointer-events-none -z-0"
         aria-hidden="true"
       />
 
-      {/* Main Floating Glassmorphic Modal Container */}
-      <div className="max-w-md w-full bg-white/90 dark:bg-[#131c1a]/95 backdrop-blur-xl border border-slate-200/80 dark:border-teal-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-emerald-500/5 dark:shadow-emerald-950/40 relative z-10 transition-all duration-300">
+      {/* Contenedor Principal Dividido: Izquierda Editorial Elegante | Derecha Login/Registro */}
+      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
         
-        {/* Pill-Switcher Navigation */}
-        <div className="bg-slate-100/90 dark:bg-slate-800/80 p-1.5 rounded-full flex items-center mb-6 border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
-          <button
-            type="button"
-            onClick={() => { setIsRegister(false); setFormError(''); }}
-            className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
-              !isRegister
-                ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium'
-            }`}
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            type="button"
-            onClick={() => { setIsRegister(true); setFormError(''); }}
-            className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
-              isRegister
-                ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium'
-            }`}
-          >
-            Registrarse
-          </button>
-        </div>
-
-        {/* Header & Typography */}
-        <div className="text-center space-y-1 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {isRegister ? 'Crea tu Cuenta' : 'Bienvenido de Nuevo'}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
-            {isRegister 
-              ? 'Únete a la plataforma social y productiva de Colombia' 
-              : 'Ingresa para acceder a tus servicios e iniciativas'}
-          </p>
-        </div>
-
-        {/* Interactive Auth Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* LADO IZQUIERDO: Tipografía Editorial (Playfair Display + Plus Jakarta Sans) */}
+        <div className="lg:col-span-7 space-y-7 text-left order-2 lg:order-1 pr-0 lg:pr-6">
           
-          {/* Persona Natural / Jurídica Type Selector (Visible on Register) */}
-          {isRegister && (
-            <div className="space-y-2 mb-2 animate-fadeIn">
-              <label className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                Tipo de Persona
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPersonType('natural')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                    personType === 'natural'
-                      ? 'border-teal-500 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-extrabold shadow-sm'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-slate-300'
+          {/* Kicker superior espaciado como "EXPLORE. DREAM. DISCOVER." */}
+          <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-[#0d5c4b] dark:text-teal-400">
+            AHORRA. CONECTA. TRANSFORMA.
+          </p>
+
+          {/* Título Principal en Serif Editorial como "Find Your Perfect Escape." */}
+          <div className="space-y-4">
+            <h2
+              className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.08] tracking-tight"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Elige Tu Membresía <br className="hidden sm:block" />
+              Con Propósito.
+            </h2>
+
+            {/* Línea divisoria + subtítulo en cursiva editorial como "Your adventure start here" */}
+            <div className="pt-1 max-w-md">
+              <div className="h-[1.5px] w-full bg-slate-300/80 dark:bg-slate-700/80 mb-3" />
+              <p
+                className="text-lg sm:text-xl italic text-slate-700 dark:text-slate-200"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Tu ahorro inteligente{' '}
+                <span className="font-bold text-amber-600 dark:text-amber-400">
+                  empieza aquí
+                </span>
+              </p>
+            </div>
+
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg font-normal">
+              Precios especiales todo el año, comercios aliados verificados y compras seguras en un solo lugar.
+            </p>
+          </div>
+
+          {/* Lista limpia y elegante de las 3 Membresías */}
+          <div className="space-y-3 max-w-xl">
+            {MEMBERSHIP_BENEFITS.map((item) => {
+              const IconComponent = item.icon;
+              const isSelected = selectedRolePlan === item.code;
+              return (
+                <div
+                  key={item.code}
+                  onClick={() => {
+                    setSelectedRolePlan(item.code);
+                    setIsRegister(true);
+                  }}
+                  className={`cursor-pointer group rounded-2xl px-5 py-4 border transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-white dark:bg-[#131c1a] border-[#0f1f2e] dark:border-teal-400 shadow-md'
+                      : 'bg-white/60 dark:bg-[#131c1a]/50 border-slate-200/80 dark:border-slate-800/80 hover:bg-white dark:hover:bg-[#131c1a]'
                   }`}
                 >
-                  <User className="w-3.5 h-3.5" /> Persona Natural
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPersonType('juridica')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                    personType === 'juridica'
-                      ? 'border-teal-500 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-extrabold shadow-sm'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-slate-300'
-                  }`}
-                >
-                  <Building className="w-3.5 h-3.5" /> Empresa / NIT
-                </button>
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                        isSelected
+                          ? 'bg-[#0f1f2e] text-white dark:bg-teal-400 dark:text-slate-950'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3
+                          className="text-base sm:text-lg font-bold text-[#0f1f2e] dark:text-white"
+                          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                        >
+                          {item.title}
+                        </h3>
+                        <span className="text-xs font-bold tracking-wide text-[#0d5c4b] dark:text-teal-400">
+                          {item.price}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Fila inferior de garantías minimalistas (estilo "Best Price Guarantee / Flexible Bookings / 24/7 Support") */}
+          <div className="pt-2 grid grid-cols-3 gap-4 max-w-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-900/50 flex items-center justify-center text-[#0d5c4b] dark:text-teal-400 shrink-0">
+                <Crown className="w-4 h-4" />
+              </div>
+              <div className="text-xs leading-tight">
+                <p className="font-bold text-[#0f1f2e] dark:text-white">Mejor Precio</p>
+                <p className="text-slate-500 dark:text-slate-400">Garantizado</p>
               </div>
             </div>
-          )}
 
-          {/* Registration Specific Fields */}
-          {isRegister && (
-            <div className="space-y-3.5 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-900/50 flex items-center justify-center text-[#0d5c4b] dark:text-teal-400 shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="text-xs leading-tight">
+                <p className="font-bold text-[#0f1f2e] dark:text-white">Pago Seguro</p>
+                <p className="text-slate-500 dark:text-slate-400">Vía Wompi</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-900/50 flex items-center justify-center text-[#0d5c4b] dark:text-teal-400 shrink-0">
+                <HeartHandshake className="w-4 h-4" />
+              </div>
+              <div className="text-xs leading-tight">
+                <p className="font-bold text-[#0f1f2e] dark:text-white">Impacto Real</p>
+                <p className="text-slate-500 dark:text-slate-400">100% Social</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* LADO DERECHO: Tarjeta de Login / Registro */}
+        <div className="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto order-1 lg:order-2 bg-white/90 dark:bg-[#131c1a]/95 backdrop-blur-xl border border-slate-200/80 dark:border-teal-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-emerald-500/5 dark:shadow-emerald-950/40 transition-all duration-300">
+          
+          {/* Pill-Switcher Navigation */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/80 p-1.5 rounded-full flex items-center mb-6 border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
+            <button
+              type="button"
+              onClick={() => { setIsRegister(false); setFormError(''); }}
+              className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
+                !isRegister
+                  ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium'
+              }`}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsRegister(true); setFormError(''); }}
+              className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
+                isRegister
+                  ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium'
+              }`}
+            >
+              Registrarse
+            </button>
+          </div>
+
+          {/* Header & Typography */}
+          <div className="text-center space-y-1 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {isRegister ? 'Crea tu Cuenta' : 'Bienvenido de Nuevo'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
+              {isRegister 
+                ? 'Únete a la plataforma social y productiva de Colombia' 
+                : 'Ingresa para acceder a tus servicios e iniciativas'}
+            </p>
+          </div>
+
+          {/* Interactive Auth Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Registration Specific Fields */}
+            {isRegister && (
+              <div className="space-y-3.5 animate-fadeIn">
+                <div>
+                  <label htmlFor="auth-role-plan" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Elija su membresía *
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="auth-role-plan"
+                      value={selectedRolePlan}
+                      onChange={(e) => setSelectedRolePlan(e.target.value)}
+                      className="w-full appearance-none px-4 pr-10 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                    >
+                      {ROLE_OPTIONS.map((plan) => (
+                        <option key={plan.code} value={plan.code}>
+                          {plan.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
               <div>
                 <label htmlFor="auth-name" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  {personType === 'juridica' ? 'Razón Social / Nombre Empresa *' : 'Nombre Completo *'}
+                  Nombre Completo *
                 </label>
                 <div className="relative group">
                   <input
                     id="auth-name"
                     type="text"
                     required
-                    placeholder={personType === 'juridica' ? 'Ej. Agrobanano S.A.S.' : 'Ej. María Fernanda Gómez'}
+                    placeholder="Ej. María Fernanda Gómez"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
@@ -221,54 +346,55 @@ const AuthPage = () => {
                 </div>
               </div>
 
-              {personType === 'natural' ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="auth-doctype" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Tipo Doc. *
-                    </label>
-                    <select
-                      id="auth-doctype"
-                      value={docType}
-                      onChange={(e) => setDocType(e.target.value)}
-                      className="w-full px-3 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                    >
-                      <option value="CC">Cédula (CC)</option>
-                      <option value="CE">Cédula Ext. (CE)</option>
-                      <option value="PAS">Pasaporte</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="auth-docnum" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Nro. Documento *
-                    </label>
-                    <input
-                      id="auth-docnum"
-                      type="text"
-                      required
-                      placeholder="1017123456"
-                      value={docNum}
-                      onChange={(e) => setDocNum(e.target.value)}
-                      className="w-full px-3 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
-                    />
-                  </div>
-                </div>
-              ) : (
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="auth-nit" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    NIT de la Empresa *
+                  <label htmlFor="auth-doctype" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Tipo Doc. *
+                  </label>
+                  <select
+                    id="auth-doctype"
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    className="w-full px-3 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                  >
+                    <option value="CC">Cédula (CC)</option>
+                    <option value="CE">Cédula Ext. (CE)</option>
+                    <option value="PAS">Pasaporte</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="auth-docnum" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Nro. Documento *
                   </label>
                   <input
-                    id="auth-nit"
+                    id="auth-docnum"
                     type="text"
                     required
-                    placeholder="901.234.567-8"
-                    value={nit}
-                    onChange={(e) => setNit(e.target.value)}
-                    className="w-full px-4 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+                    placeholder="1017123456"
+                    value={docNum}
+                    onChange={(e) => setDocNum(e.target.value)}
+                    className="w-full px-3 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                   />
                 </div>
-              )}
+              </div>
+
+              {/* Código de Recomendación / Cupón de Entidad Promotora (Opcional) */}
+              <div>
+                <label htmlFor="auth-referral" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Código de Recomendación / Cupón <span className="font-normal text-slate-400">(Opcional)</span>
+                </label>
+                <div className="relative group">
+                  <Ticket className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-teal-500" />
+                  <input
+                    id="auth-referral"
+                    type="text"
+                    placeholder="Ej. PROMO-2026"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white placeholder:normal-case placeholder:tracking-normal placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -390,47 +516,9 @@ const AuthPage = () => {
             {!loading && <ArrowRight className="w-4 h-4" />}
 
           </button>
-        </form>
+          </form>
 
-        {/* Social Login Separator & Buttons */}
-        <div className="relative flex py-5 items-center justify-center">
-          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-          <span className="flex-shrink mx-3 text-xs text-slate-400 font-medium bg-transparent px-1">
-            o continúa con
-          </span>
-          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
         </div>
-
-        {/* Social Authentication Grid */}
-        <div className="flex items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => handleSocialLogin('Google')}
-            disabled={socialLoading !== null}
-            aria-label="Continuar con Google"
-            className="w-12 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSocialLogin('Apple')}
-            disabled={socialLoading !== null}
-            aria-label="Continuar con Apple"
-            className="w-12 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
-          >
-            <svg className="w-5 h-5 fill-current text-slate-900 dark:text-white" viewBox="0 0 24 24">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.67-.82 1.13-1.96.99-3.1-.97.04-2.17.65-2.86 1.46-.62.72-1.16 1.88-1.01 3 .1.01 2.2.14 2.88-.64" />
-            </svg>
-          </button>
-        </div>
-
       </div>
     </div>
   );

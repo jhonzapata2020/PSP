@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Building2, 
@@ -9,16 +9,20 @@ import {
   BookOpen, 
   Globe2, 
   Users, 
-  ChevronRight,
   Search,
-  Sparkles,
   ShoppingBag,
   PlusCircle,
-  LogIn
+  LogIn,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  X
 } from 'lucide-react';
-import { EMPRESAS_ALIADAS, PRODUCTOS } from '../data/mockData';
+import { PRODUCTOS } from '../data/mockData';
+import productsApi from '../services/productsApi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import ProductDetailView from '../components/comercio/ProductDetailView';
 
 const HomePage = () => {
   const { addToCart } = useCart();
@@ -28,10 +32,114 @@ const HomePage = () => {
   const [selectedMunicipio, setSelectedMunicipio] = useState('Todos los municipios');
   const [selectedSector, setSelectedSector] = useState('Todos los sectores');
 
+  // Estado de la Tienda en la Home conectado al Backend (productsApi)
+  const [products, setProducts] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const pageSize = 8;
+
+  // Cargar categorías activas para el filtro rápido en la Home
+  useEffect(() => {
+    let active = true;
+    productsApi.categories()
+      .then((res) => {
+        if (active) setCategoriesList(res || []);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Debounce para el buscador de productos en la Home
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchInput.trim());
+      setPage(1);
+    }, 600);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  // Cargar productos reales desde la API psp.products (con fallback a PRODUCTOS locales si falla la red)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoadingProducts(true);
+      try {
+        const res = await productsApi.list({
+          q: debouncedQuery,
+          categoryCode: selectedCategoryCode,
+          page,
+          pageSize
+        });
+        if (!cancelled) {
+          setProducts(res.items || []);
+          setTotal(res.total || 0);
+          setTotalPages(res.totalPages || 1);
+        }
+      } catch {
+        if (!cancelled) {
+          setProducts(PRODUCTOS);
+          setTotal(PRODUCTOS.length);
+          setTotalPages(1);
+        }
+      } finally {
+        if (!cancelled) setLoadingProducts(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, selectedCategoryCode, page]);
+
+  const openProduct = (prod) => {
+    if (!user) {
+      navigate('/registro', { state: { from: '/' } });
+      return;
+    }
+    setSelectedProduct(prod);
+    productsApi
+      .get(prod.id)
+      .then((full) => setSelectedProduct(full))
+      .catch(() => {});
+  };
+
+  const handleAddProductToCart = (e, prod) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/registro', { state: { from: '/' } });
+      return;
+    }
+    addToCart(prod);
+  };
+
   const handleConsultar = (e) => {
     e.preventDefault();
     navigate('/comercio');
   };
+
+  // Si el usuario selecciona un producto en la Home, muestra su ficha completa sin salir de la experiencia
+  if (selectedProduct) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <ProductDetailView
+          product={selectedProduct}
+          onBack={() => setSelectedProduct(null)}
+          allProducts={products}
+          onSelectProduct={openProduct}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-grow w-full max-w-full overflow-hidden relative">
@@ -40,7 +148,7 @@ const HomePage = () => {
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-brand-mint/60 dark:bg-teal-500/10 rounded-full soft-blur-glow pointer-events-none -z-10"></div>
       <div className="absolute top-1/4 right-0 w-[24rem] sm:w-[32rem] h-[24rem] sm:h-[32rem] bg-emerald-100/40 dark:bg-emerald-500/10 rounded-full soft-blur-glow pointer-events-none -z-10"></div>
 
-      {/* MAIN HERO BANNER IMAGE SHOWCASE AT THE VERY BEGINNING */}
+      {/* 1. MAIN HERO BANNER IMAGE SHOWCASE AT THE VERY BEGINNING */}
       <section className="pt-6 pb-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group transition-all duration-300">
           <img
@@ -51,65 +159,264 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* HERO SECTION */}
-      <section className="relative pt-4 pb-20 lg:pt-8 lg:pb-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Prominent E-Commerce Marketplace Hub Banner with High Contrast Buttons */}
-          <div className="mb-10 p-6 rounded-3xl bg-white dark:bg-[#131c1a] border-2 border-emerald-500/30 dark:border-teal-500/40 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#0c4236] text-white dark:bg-teal-400 dark:text-slate-950 flex items-center justify-center font-extrabold shadow-lg shadow-[#0c4236]/20 shrink-0">
-                <Store className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0c4236] dark:text-teal-300">
-                    Marketplace & Comercio Urabá
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-teal-950 text-[#0c4236] dark:text-teal-300 text-[10px] font-black border border-emerald-300 dark:border-teal-500/40">
-                    Núcleo del Proyecto
-                  </span>
-                </div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100">
-                  Compra y Vende Productos Locales sin Intermediarios
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                  Plataforma directa para que emprendedores y agricultores suban sus productos y comercien en Urabá.
-                </p>
-              </div>
+      {/* 2. TIENDA PRINCIPAL JUSTO DEBAJO DE LA IMAGEN HERO */}
+      <section id="tienda-home" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-14">
+        
+        {/* Cabecera Destacada del Marketplace + Acciones Rápidas */}
+        <div className="mb-6 p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#131c1a] border-2 border-emerald-500/30 dark:border-teal-500/40 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#0c4236] text-white dark:bg-teal-400 dark:text-slate-950 flex items-center justify-center font-extrabold shadow-lg shadow-[#0c4236]/20 shrink-0">
+              <Store className="w-6 h-6" />
             </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
-              <Link
-                to="/comercio"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-black shadow-md flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
-              >
-                <Store className="w-4 h-4 text-white dark:text-slate-950" />
-                <span>Explorar Tienda</span>
-              </Link>
-              
-              {/* Conditional Button: Active only when user is logged in */}
-              {user ? (
-                <Link
-                  to="/mi-cuenta"
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#182422] dark:hover:bg-teal-950 text-[#0c4236] dark:text-teal-300 text-xs font-extrabold border border-emerald-300 dark:border-[#203330] flex items-center justify-center gap-2 whitespace-nowrap transition-colors shadow-sm"
-                >
-                  <PlusCircle className="w-4 h-4 text-[#0c4236] dark:text-teal-400" />
-                  <span>Subir Producto</span>
-                </Link>
-              ) : (
-                <Link
-                  to="/ingresar"
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 dark:bg-[#182422] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-300 dark:border-[#203330] flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
-                  title="Inicia sesión para subir tus productos"
-                >
-                  <LogIn className="w-4 h-4 text-slate-500" />
-                  <span>Inicia sesión para publicar</span>
-                </Link>
-              )}
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0c4236] dark:text-teal-300">
+                  Tienda Oficial • Marketplace Urabá
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-teal-950 text-[#0c4236] dark:text-teal-300 text-[10px] font-black border border-emerald-300 dark:border-teal-500/40">
+                  Compra Directa
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100">
+                Productos y Servicios de Urabá sin Intermediarios
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+                Explora el catálogo, filtra por categoría y añade productos directamente a tu carrito de compras.
+              </p>
             </div>
           </div>
 
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
+            <Link
+              to="/comercio"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-black shadow-md flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
+            >
+              <ShoppingBag className="w-4 h-4 text-white dark:text-slate-950" />
+              <span>Ver Tienda Completa</span>
+            </Link>
+            
+            {user ? (
+              <Link
+                to="/mi-cuenta"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#182422] dark:hover:bg-teal-950 text-[#0c4236] dark:text-teal-300 text-xs font-extrabold border border-emerald-300 dark:border-[#203330] flex items-center justify-center gap-2 whitespace-nowrap transition-colors shadow-sm"
+              >
+                <PlusCircle className="w-4 h-4 text-[#0c4236] dark:text-teal-400" />
+                <span>Subir Producto</span>
+              </Link>
+            ) : (
+              <Link
+                to="/ingresar"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 dark:bg-[#182422] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-300 dark:border-[#203330] flex items-center justify-center gap-2 whitespace-nowrap transition-colors"
+                title="Inicia sesión para subir tus productos"
+              >
+                <LogIn className="w-4 h-4 text-slate-500" />
+                <span>Inicia sesión para publicar</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Barra de Búsqueda Rápida y Filtro por Categorías en la Home */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-3 bg-white dark:bg-[#131c1a] p-4 rounded-2xl border border-slate-200 dark:border-[#203330] shadow-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar producto por nombre, marca o código SKU..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setDebouncedQuery(searchInput.trim());
+                  setPage(1);
+                }
+              }}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-[#203330] bg-slate-50 dark:bg-[#0e1514] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0c4236] dark:focus:ring-teal-400"
+            />
+            {searchInput && (
+              <button
+                onClick={() => {
+                  setSearchInput('');
+                  setDebouncedQuery('');
+                  setPage(1);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="sm:w-64">
+            <select
+              value={selectedCategoryCode}
+              onChange={(e) => {
+                setSelectedCategoryCode(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#203330] bg-slate-50 dark:bg-[#0e1514] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0c4236] dark:focus:ring-teal-400"
+            >
+              <option value="">Todas las Categorías</option>
+              {categoriesList.map((cat) => (
+                <option key={cat.id} value={cat.codigo}>
+                  {cat.nombre} ({cat.totalProductos})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Estado de Carga */}
+        {loadingProducts && (
+          <div className="rounded-2xl border border-slate-200 dark:border-[#203330] bg-white dark:bg-[#131c1a] p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+            <div className="animate-spin h-5 w-5 border-2 border-[#0c4236] dark:border-teal-400 border-t-transparent rounded-full" />
+            <span>Cargando productos de la tienda…</span>
+          </div>
+        )}
+
+        {/* Sin Resultados */}
+        {!loadingProducts && products.length === 0 && (
+          <div className="rounded-2xl border border-slate-200 dark:border-[#203330] bg-white dark:bg-[#131c1a] p-10 text-center space-y-3">
+            <p className="text-base font-bold text-slate-700 dark:text-slate-200">No se encontraron productos con ese filtro</p>
+            <button
+              onClick={() => {
+                setSearchInput('');
+                setDebouncedQuery('');
+                setSelectedCategoryCode('');
+                setPage(1);
+              }}
+              className="px-4 py-2 rounded-xl bg-[#0c4236] dark:bg-teal-400 text-white dark:text-slate-950 text-xs font-extrabold cursor-pointer"
+            >
+              Ver todos los productos
+            </button>
+          </div>
+        )}
+
+        {/* Grilla de Productos Conectada al Carrito y Vista de Detalle */}
+        {!loadingProducts && products.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((prod) => (
+                <div
+                  key={prod.id}
+                  className="group rounded-2xl bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
+                >
+                  <div
+                    onClick={() => openProduct(prod)}
+                    className="cursor-pointer"
+                  >
+                    <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-[#0e1514]">
+                      <img
+                        src={prod.imagen}
+                        alt={prod.nombre}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {prod.calificacion && (
+                        <span className="absolute top-2.5 right-2.5 px-2 py-1 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-extrabold rounded-lg">
+                          ★ {prod.calificacion}
+                        </span>
+                      )}
+                      <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="px-3 py-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 pb-2">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-black text-[#0c4236] dark:text-teal-400 uppercase tracking-wider truncate">
+                          {prod.categoria}
+                        </span>
+                        {prod.sku && (
+                          <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                            {prod.sku}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 line-clamp-1 mt-1 group-hover:text-[#0c4236] dark:group-hover:text-teal-400 transition-colors">
+                        {prod.nombre}
+                      </h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 font-medium leading-relaxed">
+                        {prod.descripcion}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-2">
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-[#203330]">
+                      <div>
+                        <span className="text-base font-black text-slate-900 dark:text-slate-100">
+                          ${Number(prod.precio || 0).toLocaleString()} COP
+                        </span>
+                        {prod.precioAnterior && (
+                          <span className="block text-[10px] text-slate-400 line-through">
+                            ${Number(prod.precioAnterior).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {prod.stock !== undefined && prod.stock <= 0 ? (
+                        <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold">
+                          Agotado
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => handleAddProductToCart(e, prod)}
+                          className="px-4 py-2 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-black transition-colors shadow-sm cursor-pointer"
+                        >
+                          Añadir al carrito
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Paginación y Enlace a Tienda Completa */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-[#131c1a] rounded-2xl border border-slate-200 dark:border-[#203330]">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                Mostrando <strong>{products.length}</strong> de <strong>{total}</strong> productos disponibles
+              </span>
+
+              <div className="flex items-center gap-3">
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#203330] disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" /> Anterior
+                    </button>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {page} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#203330] disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                    >
+                      Siguiente <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                <Link
+                  to="/comercio"
+                  className="text-xs font-black text-[#0c4236] dark:text-teal-400 hover:underline flex items-center gap-1 ml-2"
+                >
+                  Ir al catálogo completo <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* 3. SECCIÓN INSTITUCIONAL Y MÉTRICAS REGIONALES */}
+      <section className="relative pt-4 pb-20 lg:pt-8 lg:pb-24 overflow-hidden border-t border-slate-200/60 dark:border-[#203330]/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Left Column: Institutional Pitch & CTAs */}
@@ -238,7 +545,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* STRATEGIC PILLARS SECTION */}
+      {/* 4. STRATEGIC PILLARS SECTION */}
       <section className="py-16 bg-white dark:bg-[#0e1514] border-y border-slate-200 dark:border-[#203330] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -304,7 +611,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* QUICK DIRECTORY SECTION */}
+      {/* 5. QUICK DIRECTORY SECTION */}
       <section className="py-14 bg-slate-50 dark:bg-[#0c1312] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-[#131c1a] rounded-2xl border border-slate-200 dark:border-[#203330] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm dark:shadow-xl">
@@ -357,56 +664,6 @@ const HomePage = () => {
             </form>
 
           </div>
-        </div>
-      </section>
-
-      {/* FEATURED PRODUCTS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Productos y Servicios de Urabá</h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Apoya directamente el comercio de productores agrícolas y artesanos locales.</p>
-          </div>
-          <Link to="/comercio" className="text-xs font-black text-[#0c4236] dark:text-teal-400 hover:underline flex items-center gap-1">
-            Ver tienda completa <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTOS.map(prod => (
-            <div key={prod.id} className="group rounded-2xl bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] overflow-hidden shadow-sm hover:shadow-lg transition-all">
-              <div className="relative h-44 overflow-hidden">
-                <img src={prod.imagen} alt={prod.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                <span className="absolute top-2 right-2 px-2 py-1 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-extrabold rounded-lg">
-                  ★ {prod.calificacion}
-                </span>
-              </div>
-              <div className="p-4 flex flex-col justify-between h-40">
-                <div>
-                  <span className="text-[10px] font-black text-[#0c4236] dark:text-teal-400 uppercase">{prod.categoria}</span>
-                  <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 line-clamp-1 mt-0.5">{prod.nombre}</h4>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 font-medium">{prod.descripcion}</p>
-                </div>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-[#203330]">
-                  <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                    ${prod.precio.toLocaleString()} COP
-                  </span>
-                  {prod.stock !== undefined && prod.stock <= 0 ? (
-                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 text-[11px] font-bold">
-                      Agotado
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => addToCart(prod)}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 text-white dark:text-slate-950 text-xs font-black transition-colors cursor-pointer"
-                    >
-                      Añadir
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 

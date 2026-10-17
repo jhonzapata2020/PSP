@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Store, ShoppingBag, Wrench, Utensils, Bus, Compass, Search, Plus, PhoneCall, Eye, MapPin, Navigation, ArrowRight, Bike, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { SERVICIOS, RESTAURANTES, TRANSPORTE_RUTAS, TURISMO_DESTINOS } from '../data/mockData';
 import productsApi from '../services/productsApi';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 import CommerceDetailView from '../components/comercio/CommerceDetailView';
 import PSPExpressHub from '../components/comercio/PSPExpressHub';
 
 const ComercioPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   const getTabFromLocation = () => {
     const searchParams = new URLSearchParams(location.search);
@@ -115,6 +118,10 @@ const ComercioPage = () => {
    * primero la tarjeta para no dejar una pantalla en blanco mientras carga.
    */
   const openProduct = (prod) => {
+    if (!user) {
+      navigate('/registro', { state: { from: '/comercio' } });
+      return;
+    }
     setSelectedProduct(prod);
     productsApi
       .get(prod.id)
@@ -341,6 +348,10 @@ const ComercioPage = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!user) {
+                          navigate('/registro', { state: { from: '/comercio' } });
+                          return;
+                        }
                         addToCart(prod);
                       }}
                       className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"

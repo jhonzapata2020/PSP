@@ -131,58 +131,19 @@ export const AuthProvider = ({ children }) => {
   }, [persist]);
 
   const login = useCallback(
-    async (emailOrData, password) => {
+    async (email, password) => {
       setLoading(true);
       setError(null);
       try {
-        // Direct credentials login
-        if (typeof emailOrData === 'string' && password) {
-          try {
-            const [res, defaults] = await Promise.all([
-              api.login(emailOrData, password),
-              loadAvatarDefaults(),
-            ]);
-            setToken(res.token);
-            setAvatarDefaults(defaults);
-            const mapped = mapUser(res.user, defaults[0]);
-            persist(mapped);
-            return mapped;
-          } catch (apiErr) {
-            // Fallback para modo demo / cuando la API en Render esté en reposo o inalcanzable
-            if (apiErr.status === 0 || apiErr.message?.includes('No se pudo conectar')) {
-              const demoUser = {
-                id: 'usr-101',
-                name: emailOrData.split('@')[0] || 'Jhon Zapata',
-                email: emailOrData,
-                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-                role: 'Emprendedor Social',
-                roles: ['admin'],
-                permissions: ['users.read', 'roles.read', 'products.manage', 'audit.read'],
-                municipio: 'Apartadó, Urabá',
-                completedProfile: 1,
-              };
-              setToken('demo-token-local');
-              persist(demoUser);
-              return demoUser;
-            }
-            throw apiErr;
-          }
-        } else if (typeof emailOrData === 'object') {
-          // Client object login
-          const mapped = {
-            id: emailOrData.id || 'usr-101',
-            name: emailOrData.name || 'Jhon Zapata',
-            email: emailOrData.email || 'jhon.zapata@ejemplo.com',
-            avatar: emailOrData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-            role: emailOrData.role || 'Emprendedor Social',
-            roles: ['admin'],
-            permissions: ['users.read', 'roles.read', 'products.manage'],
-            municipio: emailOrData.municipio || 'Apartadó, Urabá',
-            completedProfile: emailOrData.completedProfile ?? 1,
-          };
-          persist(mapped);
-          return mapped;
-        }
+        const [res, defaults] = await Promise.all([
+          api.login(email, password),
+          loadAvatarDefaults(),
+        ]);
+        setToken(res.token);
+        setAvatarDefaults(defaults);
+        const mapped = mapUser(res.user, defaults[0]);
+        persist(mapped);
+        return mapped;
       } catch (err) {
         setError(err.message);
         throw err;

@@ -121,15 +121,6 @@ const Header = () => {
                   </Link>
                 );
               })}
-
-              {/* Botón CTA "Registrar Empresa" - Resaltado sutil en desktop */}
-              <Link
-                to="/registro"
-                className="hidden xl:inline-flex items-center gap-1.5 ml-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold text-[#0c4236] dark:text-teal-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-teal-950/60 dark:hover:bg-teal-900/60 border border-emerald-300 dark:border-teal-500/30 transition-all shadow-sm"
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Registrar Empresa</span>
-              </Link>
             </div>
 
             {/* Header Action Buttons (Cart, Profile, Hamburguer) - Always fully visible & anchored */}
@@ -333,13 +324,6 @@ const Header = () => {
               className="px-4 py-3 rounded-xl text-sm font-semibold bg-emerald-100 text-[#0c4236] dark:bg-teal-950/80 dark:text-teal-300 flex items-center gap-2 font-bold"
             >
               <Store className="w-4 h-4" /> Comercio & Servicios (E-Commerce)
-            </Link>
-            <Link
-              to="/registro"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182422]"
-            >
-              Registrar Empresa
             </Link>
             {user && (
               <button

@@ -12,7 +12,7 @@ import { ENTIDADES_AFILIADAS, EMPRESAS_ALIADAS } from '../data/mockData';
 const BASE_API_URL = (import.meta.env.VITE_API_URL || 'https://identity-hub-psp.onrender.com').replace(/\/$/, '');
 const API_URL = BASE_API_URL.endsWith('/api') ? BASE_API_URL : `${BASE_API_URL}/api`;
 
-const STORAGE_KEY = 'psp_companies_store_v1';
+const STORAGE_KEY = 'psp_companies_store_v4';
 
 /**
  * Normaliza las empresas iniciales desde mockData.js incluyendo el campo

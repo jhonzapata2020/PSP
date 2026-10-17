@@ -296,72 +296,92 @@ const ComercioPage = () => {
 
       {activeTab === 'productos' && !loading && !error && products.length > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((prod) => (
-              <div 
-                key={prod.id} 
-                className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 overflow-hidden shadow-psp-soft flex flex-col justify-between hover:shadow-xl transition-all group relative"
-              >
-                <div 
-                  onClick={() => openProduct(prod)}
-                  className="cursor-pointer"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {products.map((prod) => {
+              const price = Number(prod.precio || 0);
+              const oldPrice = prod.precioAnterior
+                ? Number(prod.precioAnterior)
+                : Math.round(price * 1.12);
+              const discountPct =
+                oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 10;
+
+              return (
+                <div
+                  key={prod.id}
+                  style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                  className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-xs flex flex-col justify-between hover:shadow-xl transition-all duration-300 group relative"
                 >
-                  <div className="relative overflow-hidden">
-                    <img 
-                      src={prod.imagen} 
-                      alt={prod.nombre} 
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
-                    />
-                    <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                        <Eye className="w-3.5 h-3.5" /> Ver Detalles
+                  <div
+                    onClick={() => openProduct(prod)}
+                    className="cursor-pointer flex-1 flex flex-col"
+                  >
+                    <div className="relative h-52 overflow-hidden bg-slate-50 dark:bg-[#0e1514] border-b border-slate-100 dark:border-slate-800">
+                      <img
+                        src={prod.imagen}
+                        alt={prod.nombre}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+
+                    <div className="p-4 pb-3 flex-1 flex flex-col justify-between">
+                      {/* Título estilo Mercado Libre: 14px, peso regular (400), 2 líneas limpias */}
+                      <p className="text-[14px] leading-[1.35] font-normal text-[#333333] dark:text-slate-200 line-clamp-2 group-hover:text-[#0c4236] dark:group-hover:text-teal-300 transition-colors">
+                        {prod.nombre}
+                      </p>
+
+                      {/* Bloque de Precio estilo Mercado Libre */}
+                      <div className="mt-3 space-y-0.5">
+                        <span className="block text-[12px] font-normal text-slate-400 line-through">
+                          $ {oldPrice.toLocaleString('es-CO')}
+                        </span>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[22px] leading-tight font-normal tracking-tight text-slate-900 dark:text-white">
+                            $ {price.toLocaleString('es-CO')}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-[#00a650] text-white text-[11px] font-bold leading-none">
+                            {discountPct}% OFF
+                          </span>
+                        </div>
+
+                        <p className="text-[12px] font-medium text-[#00a650] dark:text-emerald-400 pt-0.5">
+                          Beneficio Membresía PSP activo
+                        </p>
+
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 pt-1">
+                          <span className="font-bold text-[#00a650] dark:text-emerald-400">
+                            Envío directo ⚡
+                          </span>{' '}
+                          {prod.municipio || prod.categoria || 'Urabá'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 pb-4 pt-1">
+                    {prod.stock !== undefined && prod.stock <= 0 ? (
+                      <span className="block w-full text-center py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-semibold">
+                        Agotado
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-[10px] font-bold text-psp-cyan uppercase tracking-wider">{prod.categoria}</span>
-                      <span className="text-[10px] font-mono text-slate-400">{prod.sku}</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-teal-500 transition-colors">
-                      {prod.nombre}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed line-clamp-2">
-                      {prod.descripcion}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0 flex items-center justify-between">
-                  <div>
-                    <span className="text-base font-extrabold text-slate-900 dark:text-white">${prod.precio.toLocaleString()} COP</span>
-                    {prod.precioAnterior && (
-                      <span className="block text-[10px] text-slate-400 line-through">${prod.precioAnterior.toLocaleString()}</span>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!user) {
+                            navigate('/registro', { state: { from: '/comercio' } });
+                            return;
+                          }
+                          addToCart(prod);
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-psp-cyan dark:hover:bg-psp-cyan-hover text-white dark:text-slate-950 text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        Añadir al carrito
+                      </button>
                     )}
                   </div>
-                  {prod.stock !== undefined && prod.stock <= 0 ? (
-                    <span className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-bold">
-                      Agotado
-                    </span>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!user) {
-                          navigate('/registro', { state: { from: '/comercio' } });
-                          return;
-                        }
-                        addToCart(prod);
-                      }}
-                      className="px-4 py-2 rounded-xl bg-psp-cyan text-slate-950 text-xs font-bold hover:bg-psp-cyan-hover transition-colors shadow-md cursor-pointer"
-                    >
-                      Añadir al carrito
-                    </button>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Control de Paginación para Productos */}

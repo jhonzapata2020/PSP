@@ -21,6 +21,7 @@ import AyudaPage from './pages/AyudaPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import JovenesMas from './pages/aliados/JovenesMas';
+import LeidyMarulanda from './pages/aliados/LeidyMarulanda';
 
 // Portal de Comerciantes & Catálogo (Módulo Desacoplado)
 import VendorLayout from './pages/comercio/VendorLayout';
@@ -99,6 +100,7 @@ function App() {
                     <Route path="/carrito" element={<CarritoRedirect />} />
                     <Route path="/cart" element={<CarritoRedirect />} />
                     <Route path="/aliados/jovenes-mas" element={<ProtectedRoute><JovenesMas /></ProtectedRoute>} />
+                    <Route path="/aliados/leidy-marulanda" element={<ProtectedRoute><LeidyMarulanda /></ProtectedRoute>} />
 
 
                     {/* Portal del Comerciante / Gestión de Catálogo y Pedidos (Módulo Independiente) */}

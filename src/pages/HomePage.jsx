@@ -24,10 +24,44 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import ProductDetailView from '../components/comercio/ProductDetailView';
 
+const HERO_SLIDES = [
+  {
+    id: 'psp-comunidad',
+    src: '/hero-banner-psp.png',
+    alt: 'Plataforma Social con Propósito - Conectamos empresas y sociedad civil',
+  },
+  {
+    id: 'psp-ecommerce',
+    src: '/hero-slide-ecommerce.png',
+    alt: 'Tienda Online y Pagos Seguros - Pasarela de pago rápida y protegida PSP',
+  },
+  {
+    id: 'psp-aliadas',
+    src: '/hero-slide-aliadas.png',
+    alt: 'Empresas y Fundaciones Aliadas - Directorio de Entidades Afiliadas a la Corporación',
+  },
+  {
+    id: 'psp-comercio',
+    src: '/hero-slide-comercio.png',
+    alt: 'Comercio Justo y Sin Intermediarios - Emprendedores de Urabá',
+  },
+];
+
 const HomePage = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+
+  useEffect(() => {
+    if (isCarouselPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [isCarouselPaused]);
 
   const [selectedMunicipio, setSelectedMunicipio] = useState('Todos los municipios');
   const [selectedSector, setSelectedSector] = useState('Todos los sectores');
@@ -148,14 +182,67 @@ const HomePage = () => {
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-brand-mint/60 dark:bg-teal-500/10 rounded-full soft-blur-glow pointer-events-none -z-10"></div>
       <div className="absolute top-1/4 right-0 w-[24rem] sm:w-[32rem] h-[24rem] sm:h-[32rem] bg-emerald-100/40 dark:bg-emerald-500/10 rounded-full soft-blur-glow pointer-events-none -z-10"></div>
 
-      {/* 1. MAIN HERO BANNER IMAGE SHOWCASE AT THE VERY BEGINNING */}
+      {/* 1. MAIN HERO CAROUSEL BANNER SHOWCASE AT THE VERY BEGINNING */}
       <section className="pt-6 pb-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group transition-all duration-300">
-          <img
-            src="/hero-banner-psp.png"
-            alt="Plataforma Social con Propósito - Urabá & Colombia"
-            className="w-full h-auto object-cover brightness-[1.02] contrast-[1.04] transition-transform duration-700 hover:scale-[1.01]"
-          />
+        <div
+          className="relative w-full aspect-[16/7.8] overflow-hidden rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group select-none"
+          onMouseEnter={() => setIsCarouselPaused(true)}
+          onMouseLeave={() => setIsCarouselPaused(false)}
+        >
+          {HERO_SLIDES.map((slide, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <img
+                key={slide.id}
+                src={slide.src}
+                alt={slide.alt}
+                className={`absolute inset-0 w-full h-full object-cover object-top brightness-[1.01] contrast-[1.03] transition-all duration-700 ease-out ${
+                  isActive
+                    ? 'opacity-100 scale-100 z-10'
+                    : 'opacity-0 scale-[1.02] z-0 pointer-events-none'
+                }`}
+              />
+            );
+          })}
+
+          {/* Botón Anterior */}
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
+            }
+            aria-label="Banner anterior"
+            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/85 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-900 text-[#0c4236] dark:text-teal-300 shadow-lg border border-slate-200/80 dark:border-slate-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          {/* Botón Siguiente */}
+          <button
+            type="button"
+            onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
+            aria-label="Siguiente banner"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/85 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-900 text-[#0c4236] dark:text-teal-300 shadow-lg border border-slate-200/80 dark:border-slate-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Indicadores inferiores (Píldoras) */}
+          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/35 backdrop-blur-md border border-white/20">
+            {HERO_SLIDES.map((slide, idx) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Ir al banner ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  idx === currentSlide
+                    ? 'w-7 bg-teal-400 shadow-sm'
+                    : 'w-2 bg-white/70 hover:bg-white'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -295,82 +382,90 @@ const HomePage = () => {
         {/* Grilla de Productos Conectada al Carrito y Vista de Detalle */}
         {!loadingProducts && products.length > 0 && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((prod) => (
-                <div
-                  key={prod.id}
-                  className="group rounded-2xl bg-white dark:bg-[#131c1a] border border-slate-200 dark:border-[#203330] overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
-                >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {products.map((prod) => {
+                const price = Number(prod.precio || 0);
+                const oldPrice = prod.precioAnterior
+                  ? Number(prod.precioAnterior)
+                  : Math.round(price * 1.12);
+                const discountPct =
+                  oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 10;
+
+                return (
                   <div
-                    onClick={() => openProduct(prod)}
-                    className="cursor-pointer"
+                    key={prod.id}
+                    style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                    className="group rounded-2xl bg-white dark:bg-[#131c1a] border border-slate-200/90 dark:border-[#203330] overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                   >
-                    <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-[#0e1514]">
-                      <img
-                        src={prod.imagen}
-                        alt={prod.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      {prod.calificacion && (
-                        <span className="absolute top-2.5 right-2.5 px-2 py-1 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-extrabold rounded-lg">
-                          ★ {prod.calificacion}
-                        </span>
-                      )}
-                      <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="px-3 py-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-teal-300 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                          <Eye className="w-3.5 h-3.5" /> Ver Detalles
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-4 pb-2">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-[10px] font-black text-[#0c4236] dark:text-teal-400 uppercase tracking-wider truncate">
-                          {prod.categoria}
-                        </span>
-                        {prod.sku && (
-                          <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                            {prod.sku}
+                    <div
+                      onClick={() => openProduct(prod)}
+                      className="cursor-pointer flex-1 flex flex-col"
+                    >
+                      <div className="relative h-52 overflow-hidden bg-slate-50 dark:bg-[#0e1514] border-b border-slate-100 dark:border-[#203330]">
+                        <img
+                          src={prod.imagen}
+                          alt={prod.nombre}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {prod.calificacion && (
+                          <span className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-white text-[11px] font-semibold rounded-md shadow-xs">
+                            ★ {prod.calificacion}
                           </span>
                         )}
                       </div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 line-clamp-1 mt-1 group-hover:text-[#0c4236] dark:group-hover:text-teal-400 transition-colors">
-                        {prod.nombre}
-                      </h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 font-medium leading-relaxed">
-                        {prod.descripcion}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="p-4 pt-2">
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-[#203330]">
-                      <div>
-                        <span className="text-base font-black text-slate-900 dark:text-slate-100">
-                          ${Number(prod.precio || 0).toLocaleString()} COP
-                        </span>
-                        {prod.precioAnterior && (
-                          <span className="block text-[10px] text-slate-400 line-through">
-                            ${Number(prod.precioAnterior).toLocaleString()}
+                      <div className="p-4 pb-3 flex-1 flex flex-col justify-between">
+                        {/* Título estilo Mercado Libre: 14px, peso regular (400), 2 líneas limpias */}
+                        <p className="text-[14px] leading-[1.35] font-normal text-[#333333] dark:text-slate-200 line-clamp-2 group-hover:text-[#0c4236] dark:group-hover:text-teal-300 transition-colors">
+                          {prod.nombre}
+                        </p>
+
+                        {/* Bloque de Precio estilo Mercado Libre */}
+                        <div className="mt-3 space-y-0.5">
+                          <span className="block text-[12px] font-normal text-slate-400 line-through">
+                            $ {oldPrice.toLocaleString('es-CO')}
                           </span>
-                        )}
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[22px] leading-tight font-normal tracking-tight text-slate-900 dark:text-white">
+                              $ {price.toLocaleString('es-CO')}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-[#00a650] text-white text-[11px] font-bold leading-none">
+                              {discountPct}% OFF
+                            </span>
+                          </div>
+
+                          <p className="text-[12px] font-medium text-[#00a650] dark:text-emerald-400 pt-0.5">
+                            Beneficio Membresía PSP activo
+                          </p>
+
+                          <p className="text-[12px] text-slate-500 dark:text-slate-400 pt-1">
+                            <span className="font-bold text-[#00a650] dark:text-emerald-400">
+                              Envío directo ⚡
+                            </span>{' '}
+                            {prod.municipio || prod.categoria || 'Urabá'}
+                          </p>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="px-4 pb-4 pt-1">
                       {prod.stock !== undefined && prod.stock <= 0 ? (
-                        <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold">
+                        <span className="block w-full text-center py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-semibold">
                           Agotado
                         </span>
                       ) : (
                         <button
                           onClick={(e) => handleAddProductToCart(e, prod)}
-                          className="px-4 py-2 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-black transition-colors shadow-sm cursor-pointer"
+                          className="w-full py-2.5 rounded-xl bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-bold transition-colors shadow-xs cursor-pointer"
                         >
                           Añadir al carrito
                         </button>
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Paginación y Enlace a Tienda Completa */}

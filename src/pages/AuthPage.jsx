@@ -124,7 +124,10 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] dark:bg-[#0b1311] relative overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-12 transition-colors duration-300">
+    <div
+      className="min-h-screen w-full bg-[#F8FAFC] dark:bg-[#0b1311] relative flex items-start justify-center px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 lg:pt-14 pb-16 transition-colors duration-300"
+      style={{ alignItems: 'flex-start' }}
+    >
       
       {/* Ambient Light Glows */}
       <div 
@@ -137,10 +140,13 @@ const AuthPage = () => {
       />
 
       {/* Contenedor Principal Dividido: Izquierda Editorial Elegante | Derecha Login/Registro */}
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
+      <div
+        className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start relative z-10"
+        style={{ alignItems: 'start' }}
+      >
         
-        {/* LADO IZQUIERDO: Tipografía Editorial (Playfair Display + Plus Jakarta Sans) */}
-        <div className="lg:col-span-7 space-y-7 text-left order-2 lg:order-1 pr-0 lg:pr-6">
+        {/* LADO IZQUIERDO: Tipografía Editorial Inmovilizada en el tope superior */}
+        <div className="lg:col-span-7 space-y-7 text-left order-2 lg:order-1 pr-0 lg:pr-6 pt-1 self-start">
           
           {/* Kicker superior espaciado como "EXPLORE. DREAM. DISCOVER." */}
           <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-[#0d5c4b] dark:text-teal-400">
@@ -262,13 +268,20 @@ const AuthPage = () => {
         </div>
 
         {/* LADO DERECHO: Tarjeta de Login / Registro */}
-        <div className="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto order-1 lg:order-2 bg-white/90 dark:bg-[#131c1a]/95 backdrop-blur-xl border border-slate-200/80 dark:border-teal-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-emerald-500/5 dark:shadow-emerald-950/40 transition-all duration-300">
+        <div
+          className="lg:col-span-5 self-start w-full max-w-md mx-auto lg:ml-auto order-1 lg:order-2 bg-white/90 dark:bg-[#131c1a]/95 backdrop-blur-xl border border-slate-200/80 dark:border-teal-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-emerald-500/5 dark:shadow-emerald-950/40 transition-all duration-300"
+          style={{ alignSelf: 'start' }}
+        >
           
           {/* Pill-Switcher Navigation */}
           <div className="bg-slate-100/90 dark:bg-slate-800/80 p-1.5 rounded-full flex items-center mb-6 border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
             <button
               type="button"
-              onClick={() => { setIsRegister(false); setFormError(''); }}
+              onClick={() => {
+                setIsRegister(false);
+                setFormError('');
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
               className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
                 !isRegister
                   ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'
@@ -279,7 +292,11 @@ const AuthPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => { setIsRegister(true); setFormError(''); }}
+              onClick={() => {
+                setIsRegister(true);
+                setFormError('');
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
               className={`flex-1 py-2.5 px-4 rounded-full text-xs font-bold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${
                 isRegister
                   ? 'bg-gradient-to-r from-[#0c4236] via-[#0d5c4b] to-teal-400 text-white shadow-md shadow-emerald-950/20'

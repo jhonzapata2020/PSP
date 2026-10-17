@@ -88,19 +88,12 @@ const Header = () => {
           <nav className="h-16 sm:h-20 flex items-center justify-between gap-3 w-full">
             
             {/* Brand Logo & Tagline */}
-            <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0c4236] dark:bg-gradient-to-br dark:from-teal-400 dark:to-emerald-600 flex items-center justify-center text-white dark:text-slate-950 font-black text-base sm:text-lg tracking-wider shadow-md shadow-[#0c4236]/20 dark:shadow-teal-500/20 group-hover:scale-105 transition">
-                PSP
-              </div>
-              <div className="flex flex-col">
-                <span className="text-slate-900 dark:text-slate-100 font-extrabold tracking-tight text-xs sm:text-base leading-tight group-hover:text-brand-emerald dark:group-hover:text-teal-300 transition whitespace-nowrap">
-                  Plataforma Social
-                </span>
-                {/* Subtitle visible on screens >= 1440px */}
-                <span className="hidden min-[1440px]:block text-[10px] font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase whitespace-nowrap">
-                  Con Propósito • Urabá
-                </span>
-              </div>
+            <Link to="/" className="flex items-center group shrink-0 py-1">
+              <img
+                src="/images/logos/psp-logo-navbar.png"
+                alt="PSP - Plataforma Social con Propósito"
+                className="h-9 sm:h-11 lg:h-10 xl:h-11 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.03] drop-shadow-sm"
+              />
             </Link>
 
             {/* Navigation Links: Clean Single-Row Navbar (Desktop >= 1024px) */}

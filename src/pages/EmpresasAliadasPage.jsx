@@ -71,126 +71,7 @@ const EmpresasAliadasPage = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pb-28 sm:pb-32 space-y-12 sm:space-y-16">
-      {/* Header Banner */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-psp-green via-[#0f5144] to-[#0c4236] p-8 sm:p-12 text-white shadow-2xl overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-psp-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-psp-cyan text-xs font-extrabold border border-white/20">
-            <Building2 className="w-3.5 h-3.5" />
-            Red Institucional Corporativa PSP
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Empresas, Aliados y Entidades Afiliadas
-          </h1>
-          <p className="text-xs sm:text-base text-emerald-100/90 leading-relaxed">
-            Plataforma Social con Propósito agrupa a más de 34 empresas, instituciones, colectivos gremiales y organizaciones sin ánimo de lucro dedicadas al desarrollo socioeconómico, ecoturístico y sostenible de Urabá y Colombia.
-          </p>
-          <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-200">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-psp-cyan" /> 34+ Aliados Registrados</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-psp-cyan" /> Cobertura Subregional</span>
-            <span className="flex items-center gap-1.5"><Percent className="w-4 h-4 text-psp-cyan" /> 10% Descuento Cruzado</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 🌟 SECCIÓN ESPECIAL: BENEFICIOS EXCLUSIVOS DE LA RED SOCIAL EMPRESARIAL PSP */}
-      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-[#0e1716] to-[#0c4236] p-6 sm:p-10 border border-teal-500/30 text-white shadow-2xl space-y-8 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-extrabold border border-teal-500/30">
-              <Percent className="w-3.5 h-3.5 text-teal-300" />
-              Red de Beneficios Ecosistémica Urabá
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-              ¿Por qué pertenecer a la Red Social Empresarial PSP?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Conectamos comunidades, empresas, emprendimientos e instituciones de toda la subregión de Urabá para generar sinergias económicas, <strong>10% de descuento preferencial cruzado</strong> e impacto social directo.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setIsAffiliationModalOpen(true)}
-            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-teal-500/20 transition-all transform active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Handshake className="w-4 h-4 text-slate-950" />
-            <span>Afiliar mi Empresa / Entidad (Obtener 10% Desc.)</span>
-          </button>
-        </div>
-
-        {/* Grid de 4 Pilares de Beneficios Exclusivos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10 pt-2">
-          
-          {/* Beneficio 1: 10% Descuento Cruzado */}
-          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-teal-500/40 hover:border-teal-400 transition-all space-y-3 group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
-              <Tag className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="space-y-1">
-              <span className="inline-block px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">
-                10% Descuento Preferencial
-              </span>
-              <h3 className="text-sm font-extrabold text-white">Convenio Cruzado Red PSP</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Si perteneces a una entidad de la red, recibes automáticamente un <strong>10% de descuento</strong> al comprar productos, servicios, inscripciones o consultorías en cualquier otra empresa afiliada.
-            </p>
-          </div>
-
-          {/* Beneficio 2: Encadenamiento B2B */}
-          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
-              <Briefcase className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="space-y-1">
-              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
-                Sinergias & Compras B2B
-              </span>
-              <h3 className="text-sm font-extrabold text-white">Alianzas Comerciales</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Intercambio preferencial de servicios entre afiliados (tecnología Corplex, mensajería D&D, salud ocupacional BP, publicidad Colonia Stereo, etc.).
-            </p>
-          </div>
-
-          {/* Beneficio 3: Vitrina Regional */}
-          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
-              <Sparkles className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="space-y-1">
-              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
-                Visibilidad en 11 Municipios
-              </span>
-              <h3 className="text-sm font-extrabold text-white">Posicionamiento Subregional</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Presencia institucional ante la comunidad y tejido empresarial de Apartadó, Turbo, Necoclí, Carepa, Chigorodó, Mutatá y todo Urabá.
-            </p>
-          </div>
-
-          {/* Beneficio 4: Impacto ODS & Respaldo */}
-          <div className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-slate-700/80 hover:border-teal-400 transition-all space-y-3 group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-extrabold">
-              <ShieldCheck className="w-5 h-5 text-teal-300 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="space-y-1">
-              <span className="inline-block px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">
-                Sello PSP Verificado
-              </span>
-              <h3 className="text-sm font-extrabold text-white">Sostenibilidad ODS</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Respaldo de la Corporación, insignia de Aliado Verificado, cumplimiento Ley 1581 (Habeas Data) y articulación social comunitaria.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-28 sm:pb-32 space-y-8 sm:space-y-10">
       {/* Global Search Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white dark:bg-psp-dark-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-psp-soft">
         <div className="relative flex-1 w-full">
@@ -215,47 +96,31 @@ const EmpresasAliadasPage = () => {
 
       {/* 1. SECCIÓN ENTIDADES Y ALIADOS AFILIADOS (34 LOGO MATRIX) */}
       <div className="space-y-6">
-        
-        {/* 🌟 BANNER DE PROPÓSITO SOCIAL Y COMPRAS CON IMPACTO EN URABÁ */}
-        <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200/90 dark:bg-emerald-950/40 dark:border-emerald-800/60 p-6 sm:p-7 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-              <HeartHandshake className="w-6 h-6" />
-            </div>
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                <Heart className="w-3 h-3 fill-emerald-500 text-emerald-500" />
-                Impacto Social Ecosistémico
-              </div>
-              <h3 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white">
-                Compras con Propósito en Urabá
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
-                Un porcentaje de cada compra o servicio contratado en la plataforma se destina automáticamente a financiar las iniciativas y fundaciones sociales de nuestra región.
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setIsSolidarityModalOpen(true)}
-            className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-xs font-black transition-all shadow-md shadow-emerald-500/20 flex items-center gap-2 shrink-0 cursor-pointer self-start md:self-center"
-          >
-            <span>Ver proyectos beneficiados</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
         <div className="border-b border-slate-200 dark:border-slate-800 pb-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-psp-cyan uppercase tracking-wider mb-1">
-                <Sparkles className="w-4 h-4" />
-                Red Social y Empresarial
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-                Entidades Afiliadas a la Corporación
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-2">
+              <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-[#0d5c4b] dark:text-teal-400">
+                RED SOCIAL. EMPRESARIAL. CON PROPÓSITO.
+              </p>
+              <h2
+                className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.1] tracking-tight"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Entidades Afiliadas a la Corporación.
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+              <div className="pt-0.5 max-w-xl">
+                <div className="h-[1.5px] w-48 bg-slate-300/80 dark:bg-slate-700/80 mb-2" />
+                <p
+                  className="text-base sm:text-lg italic text-slate-700 dark:text-slate-200"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                >
+                  Alianzas que transforman{' '}
+                  <span className="font-bold text-amber-600 dark:text-amber-400">
+                    nuestra región
+                  </span>
+                </p>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 Organizaciones, empresas locales y fundaciones activas en la Plataforma Social con Propósito.
               </p>
             </div>
@@ -461,15 +326,17 @@ const EmpresasAliadasPage = () => {
       {/* 2. SECCIÓN SOCIOS Y EMPRESAS ESTRATÉGICAS */}
       <div className="space-y-6 pt-6">
         <div className="border-b border-slate-200 dark:border-slate-800 pb-4 space-y-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-wider mb-1">
-              <Award className="w-4 h-4" />
-              Alianzas de Gran Envergadura
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Socios e Instituciones Estratégicas
+          <div className="space-y-2">
+            <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-[#0d5c4b] dark:text-teal-400">
+              ALIANZAS DE GRAN ENVERGADURA.
+            </p>
+            <h2
+              className="text-3xl sm:text-4xl lg:text-[2.5rem] font-bold text-[#0f1f2e] dark:text-white leading-[1.1] tracking-tight"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Socios e Instituciones Estratégicas.
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Grandes proyectos de infraestructura, entes gubernamentales y gremios líderes en la región.
             </p>
           </div>

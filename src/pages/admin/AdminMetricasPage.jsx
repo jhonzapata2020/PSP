@@ -1,743 +1,854 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Activity,
-  BarChart3,
   TrendingUp,
-  Flame,
-  MousePointerClick,
-  Users,
-  Eye,
-  Clock,
-  Globe,
-  MapPin,
-  Smartphone,
-  Monitor,
-  RefreshCw,
-  ExternalLink,
-  Sparkles,
-  Play,
-  Pause,
-  X,
-  CheckCircle2,
+  Download,
   Calendar,
-  Filter,
-  ShieldCheck,
-  ShoppingBag,
+  Search,
+  Users,
+  ChevronDown,
   Building2,
-  ChevronRight,
-  Zap
+  MapPin,
+  Star,
+  Filter,
+  ArrowUpRight,
+  Sparkles,
+  ShoppingBag,
+  Activity,
+  Navigation,
+  Globe2,
+  Target,
+  Megaphone,
+  CheckCircle2,
+  Sliders,
+  Zap,
+  Award
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+
+const EVENTOS_VIVO = [
+  { tiempo: 'Hace 8s', ciudad: 'Apartadó', detalle: 'Consulta directa a catálogo de emprendimiento agrícola', tag: 'Interacción' },
+  { tiempo: 'Hace 24s', ciudad: 'Turbo', detalle: 'Usuario exploró comercios del sector puerto y gastronomía', tag: 'Visita' },
+  { tiempo: 'Hace 42s', ciudad: 'Carepa', detalle: 'Nuevo usuario conectado desde dispositivo móvil', tag: 'Tráfico' },
+  { tiempo: 'Hace 1m', ciudad: 'Chigorodó', detalle: 'Enlace de la plataforma compartido por WhatsApp', tag: 'Difusión' },
+  { tiempo: 'Hace 2m', ciudad: 'Apartadó', detalle: 'Consulta a perfil de Fundación Jóvenes+', tag: 'Impacto' },
+];
 
 export default function AdminMetricasPage() {
-  const [periodo, setPeriodo] = useState('hoy'); // 'hoy' | 'semana' | 'mes'
-  const [activeTabHeatmap, setActiveTabHeatmap] = useState('carrusel'); // 'carrusel' | 'botones' | 'tienda'
-  const [canalFiltro, setCanalFiltro] = useState('todos');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [liveUsersCount, setLiveUsersCount] = useState(14);
-  const [showClarityModal, setShowClarityModal] = useState(false);
-  const [isSimulatingVideo, setIsSimulatingVideo] = useState(true);
-  const [videoProgress, setVideoProgress] = useState(35);
+  const { user } = useAuth();
+  const [liveUsers, setLiveUsers] = useState(5);
+  const [mapaFiltro, setMapaFiltro] = useState('uraba'); // 'uraba' | 'antioquia' | 'nacional'
+  const [hoveredNodo, setHoveredNodo] = useState(null);
 
-  // Simulación de fluctuación de usuarios activos en vivo (12 a 18)
+  // Estado para la reunión: Asesor y Simulador de Marketing
+  const [presupuestoMkt, setPresupuestoMkt] = useState(600000); // 300.000, 600.000, 1.200.000 COP
+  const [eventoActualIndex, setEventoActualIndex] = useState(0);
+
+  // Fluctuación en vivo realista (3 a 7 personas conectadas)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveUsersCount((prev) => {
-        const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
-        const next = prev + delta;
-        return next < 10 ? 11 : next > 22 ? 18 : next;
+    const timer = setInterval(() => {
+      setLiveUsers((prev) => {
+        const delta = Math.floor(Math.random() * 3) - 1;
+        const val = prev + delta;
+        return val < 3 ? 4 : val > 7 ? 5 : val;
       });
-    }, 6000);
-    return () => clearInterval(interval);
+    }, 4500);
+    return () => clearInterval(timer);
   }, []);
 
-  // Simulación de reproducción en el modal de Clarity
+  // Ticker de eventos en vivo para reuniones
   useEffect(() => {
-    if (!showClarityModal || !isSimulatingVideo) return;
-    const timer = setInterval(() => {
-      setVideoProgress((p) => (p >= 100 ? 0 : p + 2));
-    }, 250);
-    return () => clearInterval(timer);
-  }, [showClarityModal, isSimulatingVideo]);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 800);
-  };
-
-  // Datos adaptados a una plataforma regional en etapa de crecimiento
-  const metricasPorPeriodo = {
-    hoy: {
-      visitas: '184',
-      visitasDiff: '+16.5%',
-      usuariosUnicos: '129',
-      tiempoPromedio: '2m 45s',
-      tiempoDiff: '+24s',
-      tasaRebote: '34.2%',
-      clicsTotales: '412',
-      ctrGlobal: '8.4%',
-      municipios: [
-        { nombre: 'Apartadó', visitas: 78, pct: 42, color: 'bg-emerald-500' },
-        { nombre: 'Turbo', visitas: 36, pct: 20, color: 'bg-teal-500' },
-        { nombre: 'Carepa', visitas: 24, pct: 13, color: 'bg-cyan-500' },
-        { nombre: 'Chigorodó', visitas: 19, pct: 10, color: 'bg-emerald-400' },
-        { nombre: 'Medellín & Valle de Aburrá', visitas: 15, pct: 8, color: 'bg-blue-500' },
-        { nombre: 'Necoclí y Resto País', visitas: 12, pct: 7, color: 'bg-indigo-400' },
-      ],
-      dispositivos: { movil: 78, desktop: 20, tablet: 2 },
-    },
-    semana: {
-      visitas: '1,240',
-      visitasDiff: '+28.2%',
-      usuariosUnicos: '890',
-      tiempoPromedio: '3m 10s',
-      tiempoDiff: '+38s',
-      tasaRebote: '31.8%',
-      clicsTotales: '2,890',
-      ctrGlobal: '9.1%',
-      municipios: [
-        { nombre: 'Apartadó', visitas: 510, pct: 41, color: 'bg-emerald-500' },
-        { nombre: 'Turbo', visitas: 260, pct: 21, color: 'bg-teal-500' },
-        { nombre: 'Carepa', visitas: 170, pct: 14, color: 'bg-cyan-500' },
-        { nombre: 'Chigorodó', visitas: 130, pct: 10, color: 'bg-emerald-400' },
-        { nombre: 'Medellín & Valle de Aburrá', visitas: 110, pct: 9, color: 'bg-blue-500' },
-        { nombre: 'Necoclí y Resto País', visitas: 60, pct: 5, color: 'bg-indigo-400' },
-      ],
-      dispositivos: { movil: 81, desktop: 17, tablet: 2 },
-    },
-    mes: {
-      visitas: '4,860',
-      visitasDiff: '+42.0%',
-      usuariosUnicos: '3,420',
-      tiempoPromedio: '2m 58s',
-      tiempoDiff: '+15s',
-      tasaRebote: '33.1%',
-      clicsTotales: '11,400',
-      ctrGlobal: '8.8%',
-      municipios: [
-        { nombre: 'Apartadó', visitas: 2010, pct: 41, color: 'bg-emerald-500' },
-        { nombre: 'Turbo', visitas: 1020, pct: 21, color: 'bg-teal-500' },
-        { nombre: 'Carepa', visitas: 680, pct: 14, color: 'bg-cyan-500' },
-        { nombre: 'Chigorodó', visitas: 490, pct: 10, color: 'bg-emerald-400' },
-        { nombre: 'Medellín & Valle de Aburrá', visitas: 410, pct: 9, color: 'bg-blue-500' },
-        { nombre: 'Necoclí y Resto País', visitas: 250, pct: 5, color: 'bg-indigo-400' },
-      ],
-      dispositivos: { movil: 80, desktop: 18, tablet: 2 },
-    },
-  };
-
-  const dataActual = metricasPorPeriodo[periodo];
-
-  // Datos del mapa de calor de las 5 diapositivas del carrusel Hero
-  const heatCarrusel = [
-    {
-      id: 1,
-      titulo: '1. Misión Social & Propósito PSP',
-      archivo: 'hero-banner-psp.png',
-      rol: 'Institucional',
-      clics: 68,
-      atencionPct: 35,
-      temp: 'Fuego',
-      tempColor: 'text-red-500 bg-red-500/10 border-red-500/20',
-      barraColor: 'bg-gradient-to-r from-orange-500 to-red-500',
-    },
-    {
-      id: 2,
-      titulo: '2. Empresas & Fundaciones Aliadas',
-      archivo: 'hero-slide-aliadas.png',
-      rol: 'Alianza Empresarial',
-      clics: 34,
-      atencionPct: 18,
-      temp: 'Cálido',
-      tempColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-      barraColor: 'bg-gradient-to-r from-amber-400 to-amber-500',
-    },
-    {
-      id: 3,
-      titulo: '3. Comercio Justo & Urabá Emprende',
-      archivo: 'hero-slide-comercio.png',
-      rol: 'PyMEs y Agro',
-      clics: 41,
-      atencionPct: 22,
-      temp: 'Cálido',
-      tempColor: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
-      barraColor: 'bg-gradient-to-r from-teal-400 to-emerald-500',
-    },
-    {
-      id: 4,
-      titulo: '4. Tienda Online & Pagos Seguros',
-      archivo: 'hero-slide-ecommerce.png',
-      rol: 'Comunidad / Compra',
-      clics: 29,
-      atencionPct: 15,
-      temp: 'Templado',
-      tempColor: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
-      barraColor: 'bg-cyan-500',
-    },
-    {
-      id: 5,
-      titulo: '5. PSP GO Domicilios & Movilidad',
-      archivo: 'hero-slide-pspgo.png',
-      rol: 'Logística & Empleo',
-      clics: 20,
-      atencionPct: 10,
-      temp: 'Templado',
-      tempColor: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-      barraColor: 'bg-blue-500',
-    },
-  ];
-
-  // Datos de botones de acción más pulsados
-  const heatBotones = [
-    { boton: 'Ir a Tienda / Explorar Catálogo', seccion: 'Header / Carrusel', clics: 114, conversion: '14.2%' },
-    { boton: 'Conectar Empresas Aliadas (/empresas)', seccion: 'Banner 2', clics: 46, conversion: '8.1%' },
-    { boton: 'PSP GO Domicilios Express', seccion: 'Banner 5 & Navbar', clics: 38, conversion: '6.4%' },
-    { boton: 'Iniciar Sesión / Registro Ciudadano', seccion: 'Header Top', clics: 52, conversion: '18.9%' },
-    { boton: 'Añadir al Carrito (Productos Urabá)', seccion: 'Home Showcase', clics: 42, conversion: '22.0%' },
-  ];
-
-  // Top aliados y productos más consultados
-  const topEntidades = [
-    { nombre: 'Leidy Marulanda Technology', cat: 'Comercio Aliado', vistas: 94, accion: '23 compras' },
-    { nombre: 'Fundación Jóvenes+', cat: 'Impacto Social', vistas: 71, accion: '12 donaciones' },
-    { nombre: 'Agroemprendedores de Turbo', cat: 'Agro & Snacks', vistas: 58, accion: '19 pedidos' },
-    { nombre: 'Puerto Antioquia S.A.', cat: 'Infraestructura', vistas: 47, accion: 'Consulta institucional' },
-  ];
+    const evTimer = setInterval(() => {
+      setEventoActualIndex((prev) => (prev + 1) % EVENTOS_VIVO.length);
+    }, 6000);
+    return () => clearInterval(evTimer);
+  }, []);
 
   return (
-    <div className="space-y-6">
-
-      {/* HEADER PRINCIPAL DEL CENTRO DE CONTROL */}
-      <div className="rounded-3xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 sm:p-7 relative overflow-hidden">
-        
-        {/* Resplandor ambiental de fondo */}
-        <div className="absolute -top-16 -right-16 w-64 h-64 bg-emerald-400/10 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+    <div className="-m-3 sm:-m-6 p-3 sm:p-5 bg-[#111c2a] min-h-[calc(100vh-80px)] space-y-3 select-none font-sans text-slate-100">
+      
+      {/* 1. BANNER SUPERIOR CON TITILACIÓN VERDE SUAVE (UN TONO MÁS CLARO Y SUAVE) */}
+      <div className="rounded-lg bg-[#182638] border border-slate-700/60 p-3 sm:p-4 shadow-[0_6px_20px_-2px_rgba(0,0,0,0.3)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <Activity className="w-5 h-5 text-emerald-400" />
+          </div>
           <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Telemetría en Vivo
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
+                Panel de Control & Métricas de Impacto
+              </h1>
+              {/* BOTONCITO VERDE TITILANDO (SUAVE, NO INVASIVO) */}
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-[10px] font-bold text-emerald-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span>{liveUsers} en vivo</span>
               </span>
-              <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-psp-teal dark:text-psp-cyan" />
-                Motor: Google Analytics 4 & Clarity
-              </span>
-            </div>
 
-            <h1 className="mt-2.5 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Centro de Control de Métricas & Tráfico
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
-              Monitoreo en tiempo real del impacto social, interacción ciudadana, procedencia territorial y mapas de calor sobre los componentes de PSP.
+              {/* TICKER DE ACTIVIDAD EN VIVO PARA REUNIONES */}
+              <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#0f1824] border border-slate-700/60 text-[10px] text-slate-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+                <span className="text-slate-400">{EVENTOS_VIVO[eventoActualIndex].tiempo}:</span>
+                <span className="font-semibold text-white">{EVENTOS_VIVO[eventoActualIndex].ciudad}</span>
+                <span className="text-slate-400">({EVENTOS_VIVO[eventoActualIndex].detalle})</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Seguimiento de visitas, aliados y adopción comunitaria en Urabá y Antioquia
             </p>
           </div>
-
-          {/* Filtros de período y botón de recarga */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <div className="inline-flex rounded-2xl p-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-xs font-bold">
-              {[
-                { id: 'hoy', label: 'Hoy' },
-                { id: 'semana', label: '7 Días' },
-                { id: 'mes', label: '30 Días' },
-              ].map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPeriodo(p.id)}
-                  className={`px-3.5 py-1.5 rounded-xl transition-all ${
-                    periodo === p.id
-                      ? 'bg-psp-cyan text-slate-950 shadow-sm font-extrabold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleRefresh}
-              title="Refrescar métricas"
-              className="p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-psp-teal dark:text-psp-cyan' : ''}`} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowClarityModal(true)}
-              className="px-4 py-2 rounded-2xl bg-[#0c4236] hover:bg-[#083027] text-white text-xs font-bold shadow-md shadow-emerald-950/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
-            >
-              <Flame className="w-4 h-4 text-emerald-400" />
-              <span>Ver Grabaciones Clarity</span>
-            </button>
-          </div>
         </div>
 
-        {/* CINTA DE ESTADO ACTIVO EN VIVO */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="flex h-3 w-3 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
-            </span>
-            <span className="font-extrabold text-slate-800 dark:text-slate-200">
-              {liveUsersCount} personas navegando en la plataforma en este momento
-            </span>
+        {/* Filtros rápidos en español */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0f1824] border border-slate-700/70 text-[11px] font-bold text-slate-300 shadow-sm">
+            <Calendar className="w-3 h-3 text-slate-400" />
+            <span>12 Oct 2026 - 19 Oct 2026</span>
           </div>
 
-          <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-[11px]">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              Anonimización RGPD Activa
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              Latencia API: 14ms
-            </span>
-          </div>
+          <button
+            type="button"
+            className="px-3 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all"
+          >
+            <Download className="w-3 h-3" />
+            <span>Exportar Informe</span>
+          </button>
         </div>
       </div>
 
-      {/* TARJETAS DE KPIS PRINCIPALES */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. FILA DE 4 TARJETAS KPIS SUPERIORES (FLOTANTES, PUNTITAS SUAVIZADAS, TONO AZUL NOCHE SUAVE) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         
-        {/* KPI 1: Visitas */}
-        <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Visitas Totales</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{dataActual.visitas}</p>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <span className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center">
-              <TrendingUp className="w-3.5 h-3.5 mr-0.5" />
-              {dataActual.visitasDiff}
+        {/* KPI 1 */}
+        <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-3.5 flex flex-col justify-between h-24 hover:border-slate-600 transition-all">
+          <p className="text-[11px] font-medium text-slate-400">
+            Visitas Acumuladas
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-black text-white tracking-tight">
+              184
+            </p>
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              +12% semana
             </span>
-            <span className="text-slate-400">• {dataActual.usuariosUnicos} usuarios únicos</span>
           </div>
         </div>
 
-        {/* KPI 2: Clics e Interacción */}
-        <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Clics en Contenido</span>
-            <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-              <MousePointerClick className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{dataActual.clicsTotales}</p>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <span className="font-bold text-teal-700 dark:text-teal-400">CTR {dataActual.ctrGlobal}</span>
-            <span className="text-slate-400">• Botones & Banners</span>
-          </div>
-        </div>
-
-        {/* KPI 3: Permanencia Promedio */}
-        <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Tiempo en Plataforma</span>
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{dataActual.tiempoPromedio}</p>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <span className="font-bold text-cyan-700 dark:text-cyan-400">{dataActual.tiempoDiff} vs anterior</span>
-            <span className="text-slate-400">• Alta retención</span>
+        {/* KPI 2 */}
+        <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-3.5 flex flex-col justify-between h-24 hover:border-slate-600 transition-all">
+          <p className="text-[11px] font-medium text-slate-400">
+            Nuevas Conexiones
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-black text-white tracking-tight">
+              38
+            </p>
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              +8% boca a boca
+            </span>
           </div>
         </div>
 
-        {/* KPI 4: Tasa de Rebote Saludable */}
-        <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Tasa de Rebote</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <Activity className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{dataActual.tasaRebote}</p>
-          <div className="mt-2 flex items-center gap-2 text-xs">
-            <span className="font-bold text-emerald-700 dark:text-emerald-400">Nivel Óptimo (&lt; 40%)</span>
-            <span className="text-slate-400">• Interés real</span>
+        {/* KPI 3 */}
+        <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-3.5 flex flex-col justify-between h-24 hover:border-slate-600 transition-all">
+          <p className="text-[11px] font-medium text-slate-400">
+            Tasa de Crecimiento
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-black text-white tracking-tight">
+              15.4%
+            </p>
+            <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
+              ↗ Activo
+            </span>
           </div>
         </div>
+
+        {/* KPI 4 */}
+        <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-3.5 flex flex-col justify-between h-24 hover:border-slate-600 transition-all">
+          <p className="text-[11px] font-medium text-slate-400">
+            Aceptación Comunitaria
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-black text-white tracking-tight">
+              4.9
+            </p>
+            <div className="flex text-amber-400">
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <Star className="w-3.5 h-3.5 fill-current" />
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* BLOQUE DE MAPA GEOGRÁFICO DE URABÁ Y DISPOSITIVOS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 3. FILA MEDIA: RESUMEN DE VISITAS + PARTICIPACIÓN POR MUNICIPIO */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch">
+        
+        {/* GRÁFICO COMBINADO: BARRAS + LÍNEA AZUL FLUIDA (7 COLS) */}
+        <div className="lg:col-span-7 rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-700/40">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Resumen de Visitas & Adopción
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 bg-[#0f1824] px-2 py-0.5 rounded">
+              Lunes a Domingo
+            </span>
+          </div>
 
-        {/* Distribución Territorial (Urabá y Antioquia) */}
-        <div className="lg:col-span-2 rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="relative w-full h-44 sm:h-48 my-2">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 450 160" preserveAspectRatio="none">
+              <line x1="25" y1="30" x2="435" y2="30" stroke="#334155" strokeDasharray="3 3" opacity="0.4" />
+              <line x1="25" y1="70" x2="435" y2="70" stroke="#334155" strokeDasharray="3 3" opacity="0.4" />
+              <line x1="25" y1="110" x2="435" y2="110" stroke="#334155" strokeDasharray="3 3" opacity="0.4" />
+
+              <text x="5" y="34" fill="#64748b" fontSize="8" fontWeight="bold">50</text>
+              <text x="5" y="74" fill="#64748b" fontSize="8" fontWeight="bold">30</text>
+              <text x="5" y="114" fill="#64748b" fontSize="8" fontWeight="bold">15</text>
+
+              {/* BARRAS AZULES */}
+              <rect x="52" y="105" width="16" height="35" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="52" y="120" width="16" height="20" rx="3" fill="#3b82f6" />
+              
+              <rect x="112" y="90" width="16" height="50" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="112" y="110" width="16" height="30" rx="3" fill="#3b82f6" />
+
+              <rect x="172" y="75" width="16" height="65" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="172" y="100" width="16" height="40" rx="3" fill="#3b82f6" />
+
+              <rect x="232" y="95" width="16" height="45" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="232" y="115" width="16" height="25" rx="3" fill="#3b82f6" />
+
+              <rect x="292" y="60" width="16" height="80" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="292" y="90" width="16" height="50" rx="3" fill="#3b82f6" />
+
+              <rect x="352" y="40" width="16" height="100" rx="3" fill="#2563eb" />
+              <rect x="352" y="75" width="16" height="65" rx="3" fill="#60a5fa" />
+
+              <rect x="412" y="50" width="16" height="90" rx="3" fill="#1e40af" opacity="0.8" />
+              <rect x="412" y="85" width="16" height="55" rx="3" fill="#3b82f6" />
+
+              {/* LÍNEA CONECTOR FLUIDA */}
+              <path
+                d="M 60 110 C 90 100, 100 85, 120 85 C 150 85, 160 70, 180 70 C 210 70, 220 90, 240 90 C 270 90, 280 50, 300 50 C 330 50, 340 35, 360 35 C 390 35, 400 45, 420 45"
+                fill="none"
+                stroke="#0284c7"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+
+              <circle cx="60" cy="110" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="120" cy="85" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="180" cy="70" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="240" cy="90" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="300" cy="50" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="360" cy="35" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" className="animate-pulse" />
+              <circle cx="420" cy="45" r="3" fill="#0284c7" stroke="#ffffff" strokeWidth="1" />
+
+              <text x="56" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Lun</text>
+              <text x="116" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Mar</text>
+              <text x="176" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Mié</text>
+              <text x="236" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Jue</text>
+              <text x="296" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Vie</text>
+              <text x="356" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Sáb</text>
+              <text x="416" y="154" fill="#94a3b8" fontSize="8" fontWeight="bold">Dom</text>
+            </svg>
+          </div>
+
+          <div className="pt-2 border-t border-slate-700/50 flex justify-between items-center text-xs">
+            <span className="text-slate-400">
+              Total Visitas Semana: <strong className="text-white">184</strong>
+            </span>
+            <span className="text-slate-400">
+              Consultas a Comercios: <strong className="text-emerald-400">94 acciones</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* DONA CIRCULAR DE PARTICIPACIÓN TERRITORIAL (5 COLS) */}
+        <div className="lg:col-span-5 rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-700/40">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Distribución Territorial
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 bg-[#0f1824] px-2 py-0.5 rounded">
+              Urabá ⌄
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 my-2">
+            
+            <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#2563eb" strokeWidth="14" strokeDasharray="226" strokeDashoffset="153" />
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#10b981" strokeWidth="14" strokeDasharray="226" strokeDashoffset="162" transform="rotate(115 50 50)" />
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#f59e0b" strokeWidth="14" strokeDasharray="226" strokeDashoffset="169" transform="rotate(215 50 50)" />
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#ef4444" strokeWidth="14" strokeDasharray="226" strokeDashoffset="192" transform="rotate(305 50 50)" />
+              </svg>
+
+              <div className="text-center">
+                <p className="text-base font-black text-white leading-tight">85%</p>
+                <p className="text-[8px] text-slate-400 font-bold uppercase">Urabá</p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 w-full text-xs">
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded bg-blue-600" /> Apartadó
+                </span>
+                <span className="font-bold text-white">32%</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded bg-emerald-500" /> Turbo
+                </span>
+                <span className="font-bold text-white">28%</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded bg-amber-500" /> Carepa
+                </span>
+                <span className="font-bold text-white">25%</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded bg-red-500" /> Chigorodó / Otros
+                </span>
+                <span className="font-bold text-white">15%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-slate-700/50 text-[10px] text-slate-400">
+            Fuerte adopción en el eje central de Apartadó y zona costera de Turbo.
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. FILA DE COMERCIOS Y TRÁFICO/CONVERSIONES */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch">
+        
+        {/* CARD IZQUIERDA: TOP COMERCIOS (5 COLS) */}
+        <div className="lg:col-span-5 rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-700/40">
+              <h3 className="text-xs font-black text-white uppercase tracking-wider">
+                Comercios Aliados Más Consultados
+              </h3>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+            </div>
+
+            <div className="mt-3 space-y-2">
+              <div className="p-2 rounded bg-[#0f1824] border border-slate-800 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-white">1. Snacks de Plátano Criollo</p>
+                  <p className="text-[10px] text-slate-400">Agroemprendedores de Turbo</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-emerald-400">58 consultas</p>
+                  <p className="text-[9px] text-slate-500">$28.000 cop</p>
+                </div>
+              </div>
+
+              <div className="p-2 rounded bg-[#0f1824] border border-slate-800 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-white">2. Leidy Marulanda Technology</p>
+                  <p className="text-[10px] text-slate-400">Comercio Aliado Apartadó</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-cyan-400">42 consultas</p>
+                  <p className="text-[9px] text-slate-500">Tecnología & Móviles</p>
+                </div>
+              </div>
+
+              <div className="p-2 rounded bg-[#0f1824] border border-slate-800 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-white">3. Fundación Jóvenes+</p>
+                  <p className="text-[10px] text-slate-400">Impacto Social Urabá</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-amber-400">31 consultas</p>
+                  <p className="text-[9px] text-slate-500">Donaciones & Proyectos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-slate-700/50 text-[10px] text-slate-400 mt-2">
+            Concentran el 74% de la intención de compra y apoyo en la plataforma.
+          </div>
+        </div>
+
+        {/* CARD DERECHA: TRÁFICO & CONVERSIONES (7 COLS) */}
+        <div className="lg:col-span-7 rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-700/40">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Tráfico & Tasa de Conversión
+            </h3>
+            <div className="flex items-center gap-3 text-[11px] font-bold">
+              <span className="flex items-center gap-1 text-blue-400">
+                <span className="w-2 h-2 rounded-full bg-blue-500" /> Visitantes
+              </span>
+              <span className="flex items-center gap-1 text-orange-400">
+                <span className="w-2 h-2 rounded-full bg-orange-500" /> Tasa de Conversión
+              </span>
+            </div>
+          </div>
+
+          <div className="relative w-full h-40 sm:h-44 my-2">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 450 140" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaAzul" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="areaNaranja" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+
+              <line x1="20" y1="35" x2="430" y2="35" stroke="#334155" strokeDasharray="3 3" opacity="0.3" />
+              <line x1="20" y1="80" x2="430" y2="80" stroke="#334155" strokeDasharray="3 3" opacity="0.3" />
+
+              <path
+                d="M 30 115 C 80 85, 120 70, 160 85 C 200 100, 240 70, 280 80 C 320 90, 360 70, 420 30 L 420 130 L 30 130 Z"
+                fill="url(#areaAzul)"
+              />
+              <path
+                d="M 30 115 C 80 85, 120 70, 160 85 C 200 100, 240 70, 280 80 C 320 90, 360 70, 420 30"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <circle cx="420" cy="30" r="3.5" fill="#3b82f6" stroke="#ffffff" strokeWidth="1.5" />
+
+              <path
+                d="M 30 125 C 80 105, 120 98, 160 115 C 200 125, 240 95, 280 105 C 320 115, 360 95, 420 60 L 420 130 L 30 130 Z"
+                fill="url(#areaNaranja)"
+              />
+              <path
+                d="M 30 125 C 80 105, 120 98, 160 115 C 200 125, 240 95, 280 105 C 320 115, 360 95, 420 60"
+                fill="none"
+                stroke="#f97316"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle cx="420" cy="60" r="3" fill="#f97316" stroke="#ffffff" strokeWidth="1.5" />
+            </svg>
+          </div>
+
+          <div className="pt-2 border-t border-slate-700/50 flex justify-between items-center text-xs">
+            <span className="text-slate-400">
+              Total Visitas: <strong className="text-white">184</strong>
+            </span>
+            <span className="text-slate-400">
+              Tasa de Conversión: <strong className="text-orange-400">4.2%</strong>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4.5. ASESOR Y SIMULADOR DE DECISIÓN: INVERSIÓN EN MARKETING & EXPANSIÓN */}
+      {/* ========================================================================= */}
+      <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 sm:p-5 space-y-4">
+        
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-700/40">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
+              <Megaphone className="w-5 h-5 text-cyan-400" />
+            </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                Procedencia Territorial de las Visitas
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Concentración geográfica del tráfico en los municipios de Urabá y principales ciudades
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                  Asesor de Decisión: Inversión en Marketing & Expansión Urabá
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10px] font-bold text-emerald-300 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  Dictamen: Aumento Recomendado (+30%)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Simulador interactivo en tiempo real para análisis de junta y asignación de presupuesto regional
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-              Geo-IP Precisa
-            </span>
           </div>
 
-          {/* Barras de distribución por municipio */}
-          <div className="space-y-3.5 mt-5">
-            {dataActual.municipios.map((m) => (
-              <div key={m.nombre}>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${m.color}`} />
-                    {m.nombre}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-500 dark:text-slate-400 font-semibold">{m.visitas} visitas</span>
-                    <span className="font-extrabold text-slate-900 dark:text-white w-10 text-right">{m.pct}%</span>
-                  </div>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${m.color} transition-all duration-700`}
-                    style={{ width: `${m.pct}%` }}
-                  />
-                </div>
-              </div>
+          {/* Selector interactivo de simulación de presupuesto */}
+          <div className="flex items-center gap-1.5 bg-[#0f1824] p-1 rounded-lg border border-slate-700/70 text-xs">
+            <span className="text-[10px] uppercase font-bold text-slate-400 px-2 flex items-center gap-1">
+              <Sliders className="w-3 h-3 text-cyan-400" /> Simular:
+            </span>
+            {[
+              { val: 300000, label: '$300.000 COP' },
+              { val: 600000, label: '$600.000 COP (Sugerido)' },
+              { val: 1200000, label: '$1.200.000 COP' },
+            ].map((btn) => (
+              <button
+                key={btn.val}
+                type="button"
+                onClick={() => setPresupuestoMkt(btn.val)}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition-all ${
+                  presupuestoMkt === btn.val
+                    ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {btn.label}
+              </button>
             ))}
           </div>
+        </div>
 
-          {/* Nota de impacto comunitario */}
-          <div className="mt-6 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-            <Globe className="w-4 h-4 text-psp-teal dark:text-psp-cyan shrink-0" />
-            <span>
-              <strong>El 85% del tráfico proviene directamente de la subregión de Urabá</strong>, confirmando la adopción comunitaria local y el interés en los comercios aliados.
+        {/* CONTENIDO DEL ANÁLISIS EN 3 COLUMNAS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          
+          {/* Pilar 1: Diagnóstico de Tracción */}
+          <div className="p-3.5 rounded-lg bg-[#0f1824] border border-slate-700/60 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
+                  1. Tracción Orgánica Actual
+                </span>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  Validada
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                Con <strong className="text-white">184 visitas iniciales</strong> y <strong className="text-white">38 conexiones boca a boca</strong> en Apartadó y Turbo, la plataforma ya tiene aceptación comunitaria sin gasto en pauta (CAC actual: <span className="text-emerald-400 font-bold">$0 COP</span>).
+              </p>
+            </div>
+            <div className="pt-2 border-t border-slate-800/80 mt-3 text-[11px] text-slate-400">
+              Señales: <strong className="text-white">4.9 estrellas de satisfacción comunitaria</strong>
+            </div>
+          </div>
+
+          {/* Pilar 2: Oportunidad Territorial No Explorada */}
+          <div className="p-3.5 rounded-lg bg-[#0f1824] border border-slate-700/60 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                  2. Brecha Territorial
+                </span>
+                <span className="text-[10px] font-bold text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/20">
+                  Alta Oportunidad
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                Carepa, Chigorodó y Necoclí representan solo el <strong className="text-white">40% del tráfico</strong> pero concentran el 65% de los emprendedores agrícolas y artesanos. La pauta debe dirigirse allí.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-slate-800/80 mt-3 text-[11px] text-slate-400">
+              Canal clave: <strong className="text-white">WhatsApp Comunitario + Meta Ads Local</strong>
+            </div>
+          </div>
+
+          {/* Pilar 3: Proyección con el presupuesto seleccionado */}
+          <div className="p-3.5 rounded-lg bg-[#0f1824] border border-cyan-500/30 flex flex-col justify-between shadow-inner">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                  3. Impacto Proyectado
+                </span>
+                <span className="text-[10px] font-bold text-cyan-300">
+                  {(presupuestoMkt).toLocaleString('es-CO')} COP
+                </span>
+              </div>
+              <div className="mt-2 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Nuevos Comercios:</span>
+                  <strong className="text-emerald-400">
+                    +{presupuestoMkt === 300000 ? '18' : presupuestoMkt === 600000 ? '42' : '85'} comercios
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Alcance Estimado Urabá:</span>
+                  <strong className="text-white">
+                    +{presupuestoMkt === 300000 ? '1.200' : presupuestoMkt === 600000 ? '2.800' : '5.400'} personas
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Costo Adquisición (CAC):</span>
+                  <strong className="text-cyan-300">
+                    ${presupuestoMkt === 300000 ? '16.600' : presupuestoMkt === 600000 ? '14.200' : '14.100'} COP
+                  </strong>
+                </div>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-800/80 mt-3 text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+              <Zap className="w-3 h-3 text-emerald-400" />
+              Retorno estimado: {presupuestoMkt === 300000 ? '3.8x' : presupuestoMkt === 600000 ? '4.6x' : '4.2x'} en transacciones locales
+            </div>
+          </div>
+
+        </div>
+
+        {/* Resumen ejecutivo para el presentador en la reunión */}
+        <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
+              <Target className="w-4 h-4" />
             </span>
-          </div>
-        </div>
-
-        {/* Dispositivos y Canales de Ingreso */}
-        <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 sm:p-6 flex flex-col justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-              Dispositivos de Conexión
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
-              Cómo experimentan los usuarios la plataforma
+            <p className="text-xs text-slate-200">
+              <strong>Conclusión para la reunión:</strong> Se aconseja autorizar una prueba piloto de <strong>${presupuestoMkt.toLocaleString('es-CO')} COP</strong> segmentada en el eje bananero (Apartadó, Carepa, Chigorodó, Turbo) durante 30 días, evaluando el incremento de catálogos activos antes de abrir pauta departamental en Medellín.
             </p>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Smartphone className="w-3.5 h-3.5 text-emerald-500" /> Teléfonos Móviles
-                  </span>
-                  <span>{dataActual.dispositivos.movil}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${dataActual.dispositivos.movil}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Monitor className="w-3.5 h-3.5 text-teal-500" /> Computadores de Escritorio
-                  </span>
-                  <span>{dataActual.dispositivos.desktop}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full" style={{ width: `${dataActual.dispositivos.desktop}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-cyan-500" /> Tablets & Otros
-                  </span>
-                  <span>{dataActual.dispositivos.tablet}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${dataActual.dispositivos.tablet}%` }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
-            💡 <strong>Estrategia recomendada:</strong> Al tener casi un 80% de tráfico en celulares, los botones táctiles y la velocidad móvil son la prioridad número 1 de conversión.
           </div>
         </div>
+
       </div>
 
-      {/* MAPA DE CALOR NATIVO: COMPONENTES Y DIAPOSITIVAS MÁS CLICKEADAS */}
-      <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      {/* ========================================================================= */}
+      {/* 5. MÓDULO INFERIOR AMPLIO: MAPA INTERACTIVO DE URABÁ, ANTIOQUIA Y COLOMBIA */}
+      {/* ========================================================================= */}
+      <div className="rounded-lg bg-[#182638] border border-slate-700/50 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.3)] p-4 sm:p-5 space-y-4">
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/40">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-500" />
-              Mapa de Calor de Clics (Interacción en Pantalla)
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Mide qué elementos despiertan mayor curiosidad y acción directa por parte de los visitantes
-            </p>
-          </div>
-
-          <div className="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-800 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setActiveTabHeatmap('carrusel')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                activeTabHeatmap === 'carrusel'
-                  ? 'bg-psp-cyan text-slate-950 shadow-sm font-extrabold'
-                  : 'text-slate-600 dark:text-slate-300'
-              }`}
-            >
-              5 Banners del Carrusel
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTabHeatmap('botones')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                activeTabHeatmap === 'botones'
-                  ? 'bg-psp-cyan text-slate-950 shadow-sm font-extrabold'
-                  : 'text-slate-600 dark:text-slate-300'
-              }`}
-            >
-              Botones Principales
-            </button>
-          </div>
-        </div>
-
-        {/* TAB 1: CALOR EN EL CARRUSEL HERO */}
-        {activeTabHeatmap === 'carrusel' && (
-          <div className="space-y-4">
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              Distribución de atención de los usuarios en la secuencia narrativa del nuevo carrusel institucional y social:
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {heatCarrusel.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-3.5 flex flex-col justify-between hover:border-psp-teal/50 transition-all"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-2">
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase">{item.rol}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${item.tempColor}`}>
-                        {item.temp}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-2">
-                      {item.titulo}
-                    </h3>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800">
-                    <div className="flex justify-between items-end mb-1.5">
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">{item.clics} clics</span>
-                      <span className="text-sm font-extrabold text-slate-900 dark:text-white">{item.atencionPct}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                      <div className={`h-full rounded-full ${item.barraColor}`} style={{ width: `${item.atencionPct * 2}%` }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 p-3.5 rounded-xl">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <strong>Conclusión de Impacto:</strong> La posición 1 institucional y la posición 3 de PyMEs/comercio justo capturan más del 57% del interés inicial del usuario.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: CALOR EN BOTONES PRINCIPALES */}
-        {activeTabHeatmap === 'botones' && (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {heatBotones.map((b) => (
-              <div key={b.boton} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">{b.boton}</p>
-                  <p className="text-[11px] text-slate-400">Ubicación: {b.seccion}</p>
-                </div>
-                <div className="flex items-center gap-4 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 font-semibold">{b.clics} clics registrados</span>
-                  <span className="px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 font-extrabold border border-teal-500/20">
-                    Conversión {b.conversion}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* TOP ENTIDADES Y COMERCIOS MÁS CONSULTADOS */}
-      <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-psp-teal dark:text-psp-cyan" />
-              Entidades & Comercios con Mayor Atracción
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Cuáles micrositios y perfiles están recibiendo mayor atención ciudadana
-            </p>
-          </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400">Última actualización: hace 3 min</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {topEntidades.map((ent) => (
-            <div
-              key={ent.nombre}
-              className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-psp-teal dark:text-psp-cyan">
-                {ent.cat}
-              </span>
-              <h3 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">
-                {ent.nombre}
+            <div className="flex items-center gap-2">
+              <Navigation className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                Mapa Territorial de Conectividad (Urabá • Antioquia • Colombia)
               </h3>
-              <div className="mt-3 flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-800">
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Eye className="w-3.5 h-3.5" /> {ent.vistas} vistas
-                </span>
-                <span className="font-bold text-emerald-700 dark:text-emerald-400">{ent.accion}</span>
-              </div>
             </div>
-          ))}
-        </div>
-      </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Puntos de conexión en vivo con sombritas rojas difuminadas y flujo de tráfico hacia Medellín y el país
+            </p>
+          </div>
 
-      {/* MODAL SIMULADOR DE GRABACIONES DE SESIÓN MICROSOFT CLARITY */}
-      {showClarityModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-3xl rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-2xl overflow-hidden flex flex-col">
-            
-            {/* Cabecera del reproductor */}
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                <div>
-                  <h3 className="text-sm font-bold flex items-center gap-2">
-                    <span>Visor de Sesión Anónima • Microsoft Clarity</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                      ID: #ses_892b1a
-                    </span>
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Dispositivo: Samsung Galaxy A54 • Apartadó, Urabá • Origen: WhatsApp Campaña
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowClarityModal(false)}
-                className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Pantalla simulada del visor de sesión */}
-            <div className="relative bg-slate-950 p-6 flex items-center justify-center min-h-[320px] overflow-hidden select-none">
-              
-              {/* Wireframe de la web de PSP */}
-              <div className="w-full max-w-lg bg-slate-900/90 rounded-2xl border border-slate-800 p-4 shadow-xl relative">
-                
-                {/* Header wireframe */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-emerald-500/30" />
-                    <div className="w-20 h-3 bg-slate-700 rounded" />
-                  </div>
-                  <div className="w-12 h-3 bg-slate-700 rounded" />
-                </div>
-
-                {/* Banner carrusel wireframe */}
-                <div className="mt-3 w-full h-28 rounded-xl bg-gradient-to-r from-emerald-950 to-slate-800 border border-emerald-500/30 relative flex items-center px-4">
-                  <div className="space-y-1.5">
-                    <div className="w-32 h-3.5 bg-emerald-400/60 rounded" />
-                    <div className="w-48 h-2.5 bg-slate-400/40 rounded" />
-                  </div>
-
-                  {/* Cursor interactivo simulado */}
-                  <div
-                    className="absolute w-5 h-5 rounded-full bg-cyan-400/60 border border-white shadow-lg pointer-events-none transition-all duration-300"
-                    style={{
-                      left: `${20 + (videoProgress % 60)}%`,
-                      top: `${30 + (videoProgress % 40)}%`,
-                    }}
-                  >
-                    <span className="absolute -inset-1 rounded-full bg-cyan-400/30 animate-ping" />
-                  </div>
-                </div>
-
-                {/* Botones wireframe */}
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <div className="h-10 rounded-lg bg-slate-800 border border-slate-700/50" />
-                  <div className="h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/30" />
-                  <div className="h-10 rounded-lg bg-slate-800 border border-slate-700/50" />
-                </div>
-              </div>
-            </div>
-
-            {/* Controles de reproducción */}
-            <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsSimulatingVideo(!isSimulatingVideo)}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all"
-                >
-                  {isSimulatingVideo ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </button>
-                <span className="text-xs text-slate-400 font-mono">
-                  0:{videoProgress < 10 ? `0${videoProgress}` : videoProgress} / 1:20
-                </span>
-              </div>
-
-              {/* Barra de progreso */}
-              <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden cursor-pointer">
-                <div className="h-full bg-psp-cyan rounded-full transition-all" style={{ width: `${videoProgress}%` }} />
-              </div>
-
-              <span className="text-[11px] font-bold text-slate-400">Velocidad 1.0x</span>
-            </div>
-
-            {/* Footer con nota de producción */}
-            <div className="px-5 py-3 bg-slate-900 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>
-                💡 Las grabaciones completas en producción se sincronizan automáticamente con tu ID de Microsoft Clarity sin consumir espacio en tu base de datos.
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowClarityModal(false)}
-                className="text-white hover:underline font-bold"
-              >
-                Cerrar
-              </button>
-            </div>
+          {/* Filtros territoriales */}
+          <div className="flex items-center gap-1.5 bg-[#0f1824] p-1 rounded border border-slate-700/60 text-[11px] font-bold">
+            <button
+              type="button"
+              onClick={() => setMapaFiltro('uraba')}
+              className={`px-2.5 py-1 rounded transition-all ${
+                mapaFiltro === 'uraba' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Urabá Central
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapaFiltro('antioquia')}
+              className={`px-2.5 py-1 rounded transition-all ${
+                mapaFiltro === 'antioquia' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Corredor Antioquia
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapaFiltro('nacional')}
+              className={`px-2.5 py-1 rounded transition-all ${
+                mapaFiltro === 'nacional' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Nacional (Colombia)
+            </button>
           </div>
         </div>
-      )}
+
+        {/* CONTENEDOR DEL MAPA TERRITORIAL */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          
+          {/* LIENZO SVG DEL MAPA TERRITORIAL COMPLETO (8 COLS) */}
+          <div className="lg:col-span-8 bg-[#0f1824] rounded-lg border border-slate-700/60 p-3 relative overflow-hidden min-h-[300px] flex items-center justify-center">
+            
+            <svg className="w-full h-72 sm:h-80" viewBox="0 0 600 320">
+              <defs>
+                {/* SOMBRA DIFUMINADA ROJA APARTADÓ (ALTA INTENSIDAD) */}
+                <radialGradient id="difuminadoApartado" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.85" />
+                  <stop offset="35%" stopColor="#f97316" stopOpacity="0.45" />
+                  <stop offset="70%" stopColor="#fbbf24" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </radialGradient>
+
+                {/* SOMBRA DIFUMINADA ROJA TURBO (MEDIA INTENSIDAD) */}
+                <radialGradient id="difuminadoTurbo" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.75" />
+                  <stop offset="40%" stopColor="#f97316" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </radialGradient>
+
+                {/* SOMBRA DIFUMINADA MEDELLÍN / ANTIOQUIA */}
+                <radialGradient id="difuminadoMedellin" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.7" />
+                  <stop offset="50%" stopColor="#0284c7" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </radialGradient>
+
+                {/* SOMBRA DIFUMINADA SUAVE MUNICIPIOS */}
+                <radialGradient id="difuminadoSuave" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.6" />
+                  <stop offset="50%" stopColor="#f97316" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {/* Mar Caribe / Golfo de Urabá */}
+              <path
+                d="M 30 10 L 160 10 C 175 60, 185 100, 190 135 C 180 160, 150 170, 120 170 C 100 160, 95 130, 85 105 C 70 80, 45 55, 30 10 Z"
+                fill="#0284c7"
+                fillOpacity="0.12"
+              />
+              <text x="80" y="70" fill="#38bdf8" opacity="0.35" fontSize="10" fontWeight="bold">GOLFO DE URABÁ</text>
+
+              {/* Contorno costero y división territorial */}
+              <path
+                d="M 30 10 Q 80 75 105 125 Q 135 170 175 145 Q 200 95 245 55 Q 280 40 330 25"
+                fill="none"
+                stroke="#334155"
+                strokeWidth="1.8"
+              />
+
+              {/* RUTA 1: RUTA AL MAR (Necoclí -> Turbo -> Apartadó -> Carepa -> Chigorodó -> Dabeiba) */}
+              <path
+                d="M 245 55 L 185 135 L 215 168 L 220 198 L 225 228 L 260 260 L 340 275"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="1.8"
+                strokeDasharray="3 3"
+              />
+
+              {/* RUTA 2: CORREDOR URABÁ A MEDELLÍN (Dabeiba -> Santa Fe de Antioquia -> Valle de Aburrá) */}
+              <path
+                d="M 225 228 Q 280 260 340 275 Q 390 280 415 285"
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth="1.5"
+                strokeDasharray="2 2"
+              />
+
+              {/* RUTA 3: CONEXIÓN NACIONAL A BOGOTÁ */}
+              <path
+                d="M 415 285 Q 480 295 530 305"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.2"
+                strokeDasharray="2 2"
+              />
+
+              {/* 1. NODO NECOCLÍ (Costa Norte) */}
+              <g onMouseEnter={() => setHoveredNodo('Necoclí')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="245" cy="55" r="16" fill="url(#difuminadoSuave)" className="animate-pulse" />
+                <circle cx="245" cy="55" r="3" fill="#dc2626" />
+                <text x="255" y="58" fill="#94a3b8" fontSize="9" fontWeight="bold">Necoclí (6)</text>
+              </g>
+
+              {/* 2. NODO TURBO (Puerto & Comercio) */}
+              <g onMouseEnter={() => setHoveredNodo('Turbo')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="185" cy="135" r="26" fill="url(#difuminadoTurbo)" className="animate-pulse" />
+                <circle cx="185" cy="135" r="4" fill="#ef4444" />
+                <text x="135" y="138" fill="#f8fafc" fontSize="9" fontWeight="black">Turbo (24)</text>
+              </g>
+
+              {/* 3. NODO APARTADÓ (DISTRITO CENTRAL - MAYOR CALOR ROJO) */}
+              <g onMouseEnter={() => setHoveredNodo('Apartadó')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="215" cy="168" r="36" fill="url(#difuminadoApartado)" className="animate-pulse" />
+                <circle cx="215" cy="168" r="5" fill="#b91c1c" />
+                <circle cx="215" cy="168" r="9" fill="none" stroke="#ef4444" strokeWidth="1" className="animate-ping" />
+                <text x="230" y="171" fill="#f87171" fontSize="10" fontWeight="black">Apartadó (42)</text>
+              </g>
+
+              {/* 4. NODO CAREPA */}
+              <g onMouseEnter={() => setHoveredNodo('Carepa')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="220" cy="198" r="18" fill="url(#difuminadoSuave)" className="animate-pulse" />
+                <circle cx="220" cy="198" r="3" fill="#dc2626" />
+                <text x="232" y="201" fill="#94a3b8" fontSize="9" fontWeight="bold">Carepa (14)</text>
+              </g>
+
+              {/* 5. NODO CHIGORODÓ */}
+              <g onMouseEnter={() => setHoveredNodo('Chigorodó')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="225" cy="228" r="16" fill="url(#difuminadoSuave)" className="animate-pulse" />
+                <circle cx="225" cy="228" r="3" fill="#dc2626" />
+                <text x="237" y="231" fill="#94a3b8" fontSize="9" fontWeight="bold">Chigorodó (10)</text>
+              </g>
+
+              {/* 6. NODO MEDELLÍN / VALLE DE ABURRÁ (ANTIOQUIA) */}
+              <g onMouseEnter={() => setHoveredNodo('Medellín')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="415" cy="285" r="22" fill="url(#difuminadoMedellin)" className="animate-pulse" />
+                <circle cx="415" cy="285" r="4" fill="#38bdf8" />
+                <text x="360" y="298" fill="#38bdf8" fontSize="9" fontWeight="bold">Medellín & Valle de Aburrá (15)</text>
+              </g>
+
+              {/* 7. NODO BOGOTÁ / RESTO DEL PAÍS */}
+              <g onMouseEnter={() => setHoveredNodo('Bogotá')} onMouseLeave={() => setHoveredNodo(null)} className="cursor-pointer">
+                <circle cx="530" cy="305" r="18" fill="url(#difuminadoMedellin)" opacity="0.6" />
+                <circle cx="530" cy="305" r="3" fill="#818cf8" />
+                <text x="475" y="318" fill="#94a3b8" fontSize="9" fontWeight="bold">Bogotá D.C. & País (12)</text>
+              </g>
+
+            </svg>
+
+            {/* Badge flotante de ayuda */}
+            <div className="absolute top-2 left-2 bg-[#182638]/90 border border-slate-700/80 px-2 py-1 rounded text-[9px] font-bold text-slate-300 flex items-center gap-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>Sombritas rojas: Difusión activa persona a persona en Urabá</span>
+            </div>
+          </div>
+
+          {/* PANEL LATERAL DE MÉTRICAS TERRITORIALES (4 COLS) */}
+          <div className="lg:col-span-4 space-y-2.5">
+            
+            <div className="p-3 rounded bg-[#0f1824] border border-slate-700/60">
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                Eje Principal
+              </span>
+              <p className="text-xs font-bold text-white mt-0.5">
+                Subregión de Urabá
+              </p>
+              <p className="text-xl font-black text-white mt-1">
+                157 <span className="text-xs font-normal text-slate-400">visitas (85%)</span>
+              </p>
+              <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="bg-emerald-500 h-full rounded-full" style={{ width: '85%' }} />
+              </div>
+            </div>
+
+            <div className="p-3 rounded bg-[#0f1824] border border-slate-700/60">
+              <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">
+                Conexión Departamental
+              </span>
+              <p className="text-xs font-bold text-white mt-0.5">
+                Medellín & Valle de Aburrá
+              </p>
+              <p className="text-xl font-black text-white mt-1">
+                15 <span className="text-xs font-normal text-slate-400">visitas (8%)</span>
+              </p>
+              <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="bg-sky-500 h-full rounded-full" style={{ width: '8%' }} />
+              </div>
+            </div>
+
+            <div className="p-3 rounded bg-[#0f1824] border border-slate-700/60">
+              <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+                Alcance Nacional
+              </span>
+              <p className="text-xs font-bold text-white mt-0.5">
+                Bogotá & Otras Ciudades
+              </p>
+              <p className="text-xl font-black text-white mt-1">
+                12 <span className="text-xs font-normal text-slate-400">visitas (7%)</span>
+              </p>
+              <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="bg-purple-500 h-full rounded-full" style={{ width: '7%' }} />
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   );

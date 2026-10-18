@@ -14,6 +14,8 @@ import {
   ShoppingBag,
   Building2,
   BarChart3,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 const NAV = [
@@ -46,6 +48,23 @@ export function AdminIndexRedirect() {
 export default function AdminLayout() {
   const { user, hasPermission, logout } = useAuth();
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = React.useState(() => {
+    try {
+      return localStorage.getItem('psp_admin_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('psp_admin_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const items = NAV.filter((i) => hasPermission(i.perm));
 
@@ -55,81 +74,152 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="w-full max-w-full px-3 sm:px-6 lg:px-8 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
-
+    <div className="w-full max-w-full px-2 sm:px-4 lg:px-6 py-4">
+      <div
+        className={`grid grid-cols-1 transition-all duration-300 gap-4 items-start ${
+          isCollapsed ? 'lg:grid-cols-[72px_1fr]' : 'lg:grid-cols-[240px_1fr]'
+        }`}
+      >
         {/* ---------- Sidebar ---------- */}
-        <aside className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft overflow-hidden lg:sticky lg:top-6">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-psp-teal dark:text-psp-cyan">
-              Gestor de Identidades
-            </p>
-            <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white truncate">
-              {user?.name}
-            </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {(user?.roleDisplayNames?.length ? user.roleDisplayNames : [user?.role]).map((rol) => (
+        <aside
+          className={`rounded-2xl bg-white dark:bg-[#182638] border border-slate-200 dark:border-slate-700/60 shadow-lg overflow-hidden lg:sticky lg:top-4 transition-all duration-300 ${
+            isCollapsed ? 'w-full' : 'w-full'
+          }`}
+        >
+          {/* Header del Sidebar con botón de colapso */}
+          <div className="p-3 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50 dark:bg-[#0f1824] flex items-center justify-between">
+            {!isCollapsed ? (
+              <div className="min-w-0 pr-2">
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-psp-teal dark:text-cyan-400 truncate">
+                  Gestor de Identidades
+                </p>
+                <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                  {user?.name || 'Administrador'}
+                </p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
+              </div>
+            ) : (
+              <div className="w-full flex justify-center py-1">
+                <span
+                  title={user?.name || 'Administrador'}
+                  className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-xs font-black text-cyan-400"
+                >
+                  {(user?.name || 'A').slice(0, 2).toUpperCase()}
+                </span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title={isCollapsed ? 'Expandir barra lateral' : 'Colapsar para pantalla completa'}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/60 transition-colors shrink-0"
+              aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+            >
+              {isCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-cyan-400" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+          </div>
+
+          {/* Roles si no está colapsado */}
+          {!isCollapsed && (
+            <div className="px-3 py-2 bg-slate-50/50 dark:bg-[#0f1824]/60 border-b border-slate-100 dark:border-slate-800/60 flex flex-wrap gap-1">
+              {(user?.roleDisplayNames?.length ? user.roleDisplayNames : [user?.role || 'Admin']).map((rol) => (
                 <span
                   key={rol}
-                  className="px-2 py-0.5 rounded-full bg-psp-cyan/15 text-psp-teal dark:text-psp-cyan text-[10px] font-bold border border-psp-cyan/30"
+                  className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 text-[10px] font-bold border border-cyan-500/30"
                 >
                   {rol}
                 </span>
               ))}
             </div>
-          </div>
+          )}
 
+          {/* Menú de Navegación Principal */}
           <nav className="p-2 space-y-1">
             {items.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
+                title={isCollapsed ? label : undefined}
                 className={({ isActive }) =>
                   [
-                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors',
+                    'flex items-center rounded-xl text-xs font-bold transition-all',
+                    isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5',
                     isActive
-                      ? 'bg-psp-cyan text-slate-950'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+                      ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80',
                   ].join(' ')
                 }
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                {label}
+                {!isCollapsed && <span className="truncate">{label}</span>}
               </NavLink>
             ))}
           </nav>
 
-          <div className="p-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+          {/* Accesos rápidos inferiores */}
+          <div className="p-2 border-t border-slate-100 dark:border-slate-700/60 space-y-1">
             <NavLink
               to="/mi-comercio/catalogo"
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-600 dark:text-teal-400 hover:bg-emerald-500/10"
+              title={isCollapsed ? 'Portal Comerciante' : undefined}
+              className={({ isActive }) =>
+                [
+                  'flex items-center rounded-xl text-xs font-bold text-emerald-600 dark:text-teal-400 hover:bg-emerald-500/10 transition-colors',
+                  isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5',
+                ].join(' ')
+              }
             >
-              <Store className="w-4 h-4" /> Portal Comerciante
+              <Store className="w-4 h-4 shrink-0" />
+              {!isCollapsed && <span className="truncate">Portal Comerciante</span>}
             </NavLink>
+
             <NavLink
               to="/mi-cuenta"
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              title={isCollapsed ? 'Mi cuenta' : undefined}
+              className={({ isActive }) =>
+                [
+                  'flex items-center rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors',
+                  isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5',
+                ].join(' ')
+              }
             >
-              <ExternalLink className="w-4 h-4" /> Mi cuenta
+              <ExternalLink className="w-4 h-4 shrink-0" />
+              {!isCollapsed && <span className="truncate">Mi cuenta</span>}
             </NavLink>
+
             <NavLink
               to="/"
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              title={isCollapsed ? 'Volver al sitio' : undefined}
+              className={({ isActive }) =>
+                [
+                  'flex items-center rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors',
+                  isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5',
+                ].join(' ')
+              }
             >
-              <Home className="w-4 h-4" /> Volver al sitio
+              <Home className="w-4 h-4 shrink-0" />
+              {!isCollapsed && <span className="truncate">Volver al sitio</span>}
             </NavLink>
+
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10"
+              title={isCollapsed ? 'Cerrar sesión' : undefined}
+              className={`w-full flex items-center rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors ${
+                isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5'
+              }`}
             >
-              <LogOut className="w-4 h-4" /> Cerrar sesión
+              <LogOut className="w-4 h-4 shrink-0" />
+              {!isCollapsed && <span className="truncate">Cerrar sesión</span>}
             </button>
           </div>
         </aside>
 
-        {/* ---------- Contenido ---------- */}
-        <section className="min-w-0">
+        {/* ---------- Contenido Principal ---------- */}
+        <section className="min-w-0 w-full transition-all duration-300">
           <Outlet />
         </section>
       </div>

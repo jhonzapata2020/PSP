@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Plus, Pencil, Trash2, ShieldCheck, Users as UsersIcon, RefreshCw, KeyRound, Lock,
+  LayoutGrid, List, Search
 } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +18,24 @@ export default function AdminRolesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+
+  // Modo de visualización: 'grid' (tarjetas) o 'list' (tabla CRUD)
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      return localStorage.getItem('psp_roles_view_mode') || 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const changeViewMode = (mode) => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('psp_roles_view_mode', mode);
+    } catch {}
+  };
 
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
@@ -121,6 +140,17 @@ export default function AdminRolesPage() {
     }
   };
 
+  const filteredRoles = useMemo(() => {
+    if (!searchTerm.trim()) return roles;
+    const term = searchTerm.toLowerCase();
+    return roles.filter(
+      (r) =>
+        r.displayName?.toLowerCase().includes(term) ||
+        r.name?.toLowerCase().includes(term) ||
+        r.description?.toLowerCase().includes(term)
+    );
+  }, [roles, searchTerm]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -130,7 +160,38 @@ export default function AdminRolesPage() {
             {roles.length} rol{roles.length === 1 ? '' : 'es'} · {permissions.length} permisos disponibles
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Selector de Modo de Vista: Tarjetas vs Lista CRUD */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60">
+            <button
+              type="button"
+              onClick={() => changeViewMode('grid')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-[#182638] text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+              title="Vista Cuadrícula (Tarjetas)"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tarjetas</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => changeViewMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'list'
+                  ? 'bg-psp-cyan text-slate-950 shadow-sm font-extrabold'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+              title="Vista Lista CRUD (Tabla)"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Lista CRUD</span>
+            </button>
+          </div>
+
           <button
             onClick={load}
             disabled={loading}
@@ -165,9 +226,131 @@ export default function AdminRolesPage() {
         <div className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 p-10 text-center text-slate-400 text-xs">
           Cargando roles...
         </div>
+      ) : viewMode === 'list' ? (
+        /* ================= VISTA LISTA CRUD (TABLA) ================= */
+        <div className="rounded-2xl bg-white dark:bg-[#182638] border border-slate-200 dark:border-slate-700/60 shadow-psp-soft overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700/70 bg-slate-50 dark:bg-[#0f1824] text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="py-3 px-4">Rol / Identificador</th>
+                  <th className="py-3 px-4">Descripción</th>
+                  <th className="py-3 px-4 text-center">Usuarios</th>
+                  <th className="py-3 px-4">Permisos</th>
+                  <th className="py-3 px-4 text-center">Descuento</th>
+                  <th className="py-3 px-4 text-right">Acciones CRUD</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                {filteredRoles.map((r) => (
+                  <tr
+                    key={r.id}
+                    className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                  >
+                    {/* Rol / Identificador */}
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-slate-900 dark:text-white">
+                          {r.displayName}
+                        </span>
+                        {r.isSystem && (
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-400 uppercase">
+                            Sistema
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-mono text-slate-400">{r.name}</p>
+                    </td>
+
+                    {/* Descripción */}
+                    <td className="py-3.5 px-4 align-middle text-slate-600 dark:text-slate-300 max-w-xs">
+                      <p className="line-clamp-2 text-[11px]">
+                        {r.description || <span className="italic text-slate-400">Sin descripción</span>}
+                      </p>
+                    </td>
+
+                    {/* Usuarios */}
+                    <td className="py-3.5 px-4 align-middle text-center">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        <UsersIcon className="w-3 h-3 text-slate-400" />
+                        {r.userCount}
+                      </span>
+                    </td>
+
+                    {/* Permisos */}
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          <KeyRound className="w-3 h-3 text-slate-400" />
+                          {r.permissions?.length ?? 0}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openPerms(r)}
+                          className="px-2 py-0.5 rounded text-[10px] font-bold border border-cyan-500/30 text-teal-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          title="Gestionar permisos"
+                        >
+                          {canManage ? 'Editar' : 'Ver'}
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Descuento */}
+                    <td className="py-3.5 px-4 align-middle text-center font-bold text-slate-700 dark:text-slate-300">
+                      {Number(r.discountPercentage ?? r.discount_percentage ?? 0) > 0 ? (
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                          {Number(r.discountPercentage ?? r.discount_percentage ?? 0)}%
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-[11px]">0%</span>
+                      )}
+                    </td>
+
+                    {/* Acciones CRUD al final */}
+                    <td className="py-3.5 px-4 align-middle text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openPerms(r)}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-teal-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          title="Editar permisos"
+                        >
+                          <Lock className="w-3.5 h-3.5" />
+                        </button>
+
+                        {canManage && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => openEdit(r)}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              title="Editar rol"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setToDelete(r)}
+                              disabled={r.isSystem}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-rose-500 hover:bg-rose-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                              title={r.isSystem ? 'Rol de sistema: no se puede eliminar' : 'Eliminar rol'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
+        /* ================= VISTA CUADRÍCULA (TARJETAS) ================= */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {roles.map((r) => (
+          {filteredRoles.map((r) => (
             <div
               key={r.id}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 space-y-3"

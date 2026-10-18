@@ -41,6 +41,11 @@ class ErrorBoundary extends React.Component {
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 No te preocupes, estamos conectando los servicios de Urabá. Puedes recargar la página o volver al inicio.
               </p>
+              {this.state.error && (
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-left text-[11px] font-mono break-words overflow-x-auto">
+                  {this.state.error.message || String(this.state.error)}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-2">

@@ -32,18 +32,6 @@ const HERO_SLIDES = [
     link: '#tienda-home',
   },
   {
-    id: 'psp-go',
-    src: '/hero-slide-pspgo.png',
-    alt: 'PSP GO Domicilios Express y Movilidad - Monitoreo GPS en tiempo real y membresías de afiliación',
-    link: '/domicilios',
-  },
-  {
-    id: 'psp-ecommerce',
-    src: '/hero-slide-ecommerce.png',
-    alt: 'Tienda Online y Pagos Seguros - Pasarela de pago rápida y protegida PSP',
-    link: '#tienda-home',
-  },
-  {
     id: 'psp-aliadas',
     src: '/hero-slide-aliadas.png',
     alt: 'Empresas y Fundaciones Aliadas - Directorio de Entidades Afiliadas a la Corporación',
@@ -54,6 +42,18 @@ const HERO_SLIDES = [
     src: '/hero-slide-comercio.png',
     alt: 'Comercio Justo y Sin Intermediarios - Emprendedores de Urabá',
     link: '/comercio',
+  },
+  {
+    id: 'psp-ecommerce',
+    src: '/hero-slide-ecommerce.png',
+    alt: 'Tienda Online y Pagos Seguros - Pasarela de pago rápida y protegida PSP',
+    link: '#tienda-home',
+  },
+  {
+    id: 'psp-go',
+    src: '/hero-slide-pspgo.png',
+    alt: 'PSP GO Domicilios Express y Movilidad - Monitoreo GPS en tiempo real y membresías de afiliación',
+    link: '/domicilios',
   },
 ];
 

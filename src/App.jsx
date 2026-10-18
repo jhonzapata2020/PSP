@@ -36,6 +36,7 @@ import AdminUsuariosPage from './pages/admin/AdminUsuariosPage';
 import AdminRolesPage from './pages/admin/AdminRolesPage';
 import AdminMatrizPage from './pages/admin/AdminMatrizPage';
 import AdminResumenPage from './pages/admin/AdminResumenPage';
+import AdminMetricasPage from './pages/admin/AdminMetricasPage';
 import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
 import AdminPedidosPage from './pages/admin/AdminPedidosPage';
 import AdminProductosPage from './pages/admin/AdminProductosPage';
@@ -144,6 +145,14 @@ function App() {
                         element={
                           <ProtectedRoute permission="roles.manage">
                             <AdminResumenPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="metricas"
+                        element={
+                          <ProtectedRoute permission="roles.manage">
+                            <AdminMetricasPage />
                           </ProtectedRoute>
                         }
                       />

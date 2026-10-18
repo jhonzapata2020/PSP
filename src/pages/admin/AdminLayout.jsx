@@ -13,10 +13,12 @@ import {
   Store,
   ShoppingBag,
   Building2,
+  BarChart3,
 } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/resumen',   label: 'Resumen',           icon: LayoutDashboard, perm: 'roles.manage'    },
+  { to: '/admin/metricas',  label: 'Métricas & Tráfico', icon: BarChart3,       perm: 'roles.manage'    },
   { to: '/admin/empresas',  label: 'Empresas Aliadas',  icon: Building2,       perm: 'users.read'      },
   { to: '/admin/pedidos',   label: 'Pedidos & Ventas',  icon: ShoppingBag,     perm: 'orders.manage'   },
   { to: '/admin/usuarios',  label: 'Usuarios',           icon: Users,           perm: 'users.read'      },

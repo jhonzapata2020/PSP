@@ -29,21 +29,31 @@ const HERO_SLIDES = [
     id: 'psp-comunidad',
     src: '/hero-banner-psp.png',
     alt: 'Plataforma Social con Propósito - Conectamos empresas y sociedad civil',
+    link: '#tienda-home',
+  },
+  {
+    id: 'psp-go',
+    src: '/hero-slide-pspgo.png',
+    alt: 'PSP GO Domicilios Express y Movilidad - Monitoreo GPS en tiempo real y membresías de afiliación',
+    link: '/domicilios',
   },
   {
     id: 'psp-ecommerce',
     src: '/hero-slide-ecommerce.png',
     alt: 'Tienda Online y Pagos Seguros - Pasarela de pago rápida y protegida PSP',
+    link: '#tienda-home',
   },
   {
     id: 'psp-aliadas',
     src: '/hero-slide-aliadas.png',
     alt: 'Empresas y Fundaciones Aliadas - Directorio de Entidades Afiliadas a la Corporación',
+    link: '/empresas',
   },
   {
     id: 'psp-comercio',
     src: '/hero-slide-comercio.png',
     alt: 'Comercio Justo y Sin Intermediarios - Emprendedores de Urabá',
+    link: '/comercio',
   },
 ];
 
@@ -185,20 +195,31 @@ const HomePage = () => {
       {/* 1. MAIN HERO CAROUSEL BANNER SHOWCASE AT THE VERY BEGINNING */}
       <section className="pt-2.5 sm:pt-3 pb-3 max-w-[1360px] mx-auto px-3 sm:px-5 lg:px-6">
         <div
-          className="relative w-full aspect-[1480/580] max-h-[calc(100vh-136px)] overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group select-none"
+          className="relative w-full aspect-[1480/580] overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-[#203330] shadow-xl dark:shadow-2xl dark:shadow-emerald-950/40 bg-white dark:bg-[#131c1a] group select-none"
           onMouseEnter={() => setIsCarouselPaused(true)}
           onMouseLeave={() => setIsCarouselPaused(false)}
         >
           {HERO_SLIDES.map((slide, idx) => {
             const isActive = idx === currentSlide;
+            const handleSlideClick = () => {
+              if (!slide.link) return;
+              if (slide.link.startsWith('#')) {
+                document.getElementById(slide.link.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate(slide.link);
+              }
+            };
+
             return (
               <img
                 key={slide.id}
                 src={slide.src}
                 alt={slide.alt}
-                className={`absolute inset-0 w-full h-full object-cover object-center brightness-[1.01] contrast-[1.03] transition-all duration-700 ease-out ${
+                onClick={isActive ? handleSlideClick : undefined}
+                title={isActive && slide.link ? 'Haz clic para ir a esta sección' : undefined}
+                className={`absolute inset-0 w-full h-full object-cover object-top brightness-[1.01] contrast-[1.03] transition-all duration-700 ease-out ${
                   isActive
-                    ? 'opacity-100 scale-100 z-10'
+                    ? 'opacity-100 scale-100 z-10 cursor-pointer'
                     : 'opacity-0 scale-[1.01] z-0 pointer-events-none'
                 }`}
               />

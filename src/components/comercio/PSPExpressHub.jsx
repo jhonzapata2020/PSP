@@ -58,6 +58,8 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
+import AuditorioPresenterTools from '../common/AuditorioPresenterTools';
+
 
 // ============================================================
 // MODELO DE NEGOCIO CORPLEX SOLUTION SAS & PSP EXPRESS
@@ -68,11 +70,6 @@ const CORP_SOLUTION_FEE = 500;
 const PSP_NON_MEMBER_RIDER_FEE = 300;
 // Matrícula de inscripción directa para repartidores sin membresía anual
 const RIDER_DIRECT_ENROLLMENT_FEE = 30000;
-// FlexDrive: Comisión total de plataforma sobre el viaje en carro particular (12% vs 25% de Uber)
-const FLEXDRIVE_COMMISSION_PCT = 0.12;
-// FlexDrive Alianza: 60% Corplex Solution SAS (Jhon - Desarrollo & Software) / 40% PSP (Janier - Comercialización)
-const CORP_FLEX_SPLIT = 0.60;
-const PSP_FLEX_SPLIT = 0.40;
 
 // Real GPS coordinates & verified geotagged street-level imagery sequences for Urabá municipalities
 const URABA_GEO_DATA = {
@@ -509,10 +506,64 @@ const STATUS_BADGE_STYLES = {
 
 const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, hasRole, hasPermission } = useAuth();
+
+  // Verificación estricta de permisos de Administrador / Arquitecto Técnico:
+  // Solo tienen acceso Jhon Rafael Zapata y Janier (dueño de PSP)
+  const isActualAdmin = Boolean(user) && (
+    hasRole?.('admin') ||
+    hasRole?.('superadmin') ||
+    hasRole?.('lead_architect') ||
+    user?.role === 'admin' ||
+    user?.roles?.includes?.('admin') ||
+    user?.roles?.includes?.('superadmin') ||
+    user?.email?.toLowerCase().includes('zapata') ||
+    user?.email?.toLowerCase().includes('admin') ||
+    hasPermission?.('roles.manage')
+  );
 
   // Detect default role view: if not logged in, start in 'guest' demo mode; otherwise 'admin' so Jhon sees everything
   const [viewRole, setViewRole] = useState(() => (!user ? 'guest' : 'admin'));
+
+  // La herramienta de auditorio y botón de expansión SOLO se muestran a administradores
+  const canUseAuditorio = isActualAdmin || (!user && viewRole === 'admin');
+
+
+  // Auditorio & Modo Pantalla Completa (Lienzo para exposiciones a repartidores y aliados)
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch(() => {});
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
 
   // Sidebar navigation state: 'tracking' | 'orders' | 'new_order' | 'riders' | 'rutas'
   const [activeNav, setActiveNav] = useState('tracking');
@@ -569,36 +620,6 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   const [vehiculoPhotoFile, setVehiculoPhotoFile] = useState('');
   const [acceptVerificationTerms, setAcceptVerificationTerms] = useState(true);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-
-  // ============================================================
-  // ESTADOS DE FLEXDRIVE (By Corplex Solution SAS • Alianza 60/40)
-  // ============================================================
-  const [flexSubTab, setFlexSubTab] = useState('request'); // 'request' | 'partnership' | 'register_car'
-  const [flexRouteKey, setFlexRouteKey] = useState('airport_turbo'); // 'airport_turbo' | 'airport_apartado' | 'urban_ride' | 'car_cargo'
-  const [flexPassengerName, setFlexPassengerName] = useState('');
-  const [flexPassengerPhone, setFlexPassengerPhone] = useState('');
-  const [flexPickupAddress, setFlexPickupAddress] = useState('Turbo Centro • Zona Residencial');
-  const [flexDropoffAddress, setFlexDropoffAddress] = useState('Aeropuerto Antonio Roldán Betancur (Los Cedros - Carepa)');
-  const [flexFlightTime, setFlexFlightTime] = useState('14:30');
-  const [flexPaymentChoice, setFlexPaymentChoice] = useState('Wompi • Nequi / Bancolombia');
-  const [flexSuccessModal, setFlexSuccessModal] = useState(false);
-
-  // Registro de Conductores de Carros Particulares FlexDrive (Modelos 2010 a 2026)
-  const [carDriverName, setCarDriverName] = useState('');
-  const [carDriverDoc, setCarDriverDoc] = useState('');
-  const [carDriverPhone, setCarDriverPhone] = useState('');
-  const [carMunicipio, setCarMunicipio] = useState('Turbo');
-  const [carBrandModel, setCarBrandModel] = useState('Renault Logan / Sandero');
-  const [carYear, setCarYear] = useState('2018');
-  const [carPlaca, setCarPlaca] = useState('');
-  const [carHasAC, setCarHasAC] = useState(true);
-  const [carSoatFile, setCarSoatFile] = useState('');
-  const [carTecnoFile, setCarTecnoFile] = useState('');
-  const [carLicenciaFile, setCarLicenciaFile] = useState('');
-  const [carPropiedadFile, setCarPropiedadFile] = useState('');
-  const [carCertPoliciaFile, setCarCertPoliciaFile] = useState('');
-  const [carAcceptTerms, setCarAcceptTerms] = useState(true);
-  const [carRegisterSuccess, setCarRegisterSuccess] = useState(false);
 
   // Sync guest mode if user logs in/out
   useEffect(() => {
@@ -886,13 +907,6 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
       icon: Users,
       count: viewRole === 'admin' ? 148 : undefined,
       roles: ['admin', 'client', 'rider_member', 'rider_non_member', 'guest']
-    },
-    {
-      id: 'flexdrive',
-      label: 'FlexDrive • Carros',
-      badge: 'Alianza 60/40',
-      icon: Car,
-      roles: ['admin', 'client', 'company', 'rider_member', 'rider_non_member', 'guest']
     }
   ];
 
@@ -918,7 +932,18 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   const activeOrderClientTotal = activeOrder.amount + CORP_SOLUTION_FEE;
 
   return (
-    <div className="w-full space-y-3">
+    <div 
+      ref={containerRef}
+      className={`w-full space-y-3 relative ${isFullscreen ? 'p-6 bg-[#0f172a] text-slate-100 overflow-y-auto max-h-screen' : ''}`}
+    >
+      {/* HERRAMIENTAS DE AUDITORIO: PUNTERO LÁSER, LÁPIZ INTELIGENTE Y CALIGRAFÍA CURSIVA (PROTEGIDO ADMIN) */}
+      {canUseAuditorio && (
+        <AuditorioPresenterTools
+          containerRef={containerRef}
+          isDark={true}
+          isFullscreen={isFullscreen}
+        />
+      )}
       
       {/* ============================================================
           TOP ROLE SIMULATOR & DEMO SHOWCASE BANNER
@@ -929,7 +954,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
             {viewRole === 'guest' ? 'Modo Demo Visitante' : 'Simulador de Vista por Rol'}
           </span>
           <span className="text-slate-600 dark:text-slate-300 font-medium hidden sm:inline">
-            {viewRole === 'admin' && '👑 Admin Total: Auditoría completa + liquidación +$500 Corplex SAS + $300 PSP + FlexDrive Alianza 60/40.'}
+            {viewRole === 'admin' && '👑 Admin Total: Auditoría completa + liquidación de despachos y repartidores en Urabá.'}
             {viewRole === 'client' && '👤 Cliente: Factura con +$500 COP por Sistema de Verificación de Repartidores & Monitoreo GPS en Vivo.'}
             {viewRole === 'rider_member' && '🛵 Repartidor Gold/Plata: Recibe $5.000 libres (100% de la tarifa sin descuentos de plataforma).'}
             {viewRole === 'rider_non_member' && '🛵 Repartidor Sin Membresía: Recibe $4.700 netos (-$300 COP plataforma PSP).'}
@@ -965,6 +990,32 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
               {r.label}
             </button>
           ))}
+
+          {/* Botón de Auditorio y Pantalla Completa para Exposición (Protegido Exclusivo Administrador) */}
+          {canUseAuditorio && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Salir de Pantalla Completa (Esc)' : 'Expandir a Pantalla Completa / Modo Auditorio (Pizarra y Puntero Láser)'}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-black tracking-wide transition-all shadow-sm cursor-pointer ml-auto sm:ml-1 ${
+                isFullscreen
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25 ring-1 ring-rose-400'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25 ring-1 ring-blue-400/40'
+              }`}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-white" />
+                  <span>Salir</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-white" />
+                  <span>Expandir</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -1078,8 +1129,6 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-orange-500/20 dark:to-amber-500/10 flex items-center justify-center mx-auto shadow-inner relative">
               {viewRole === 'company' ? (
                 <Building2 className="w-6 h-6 text-emerald-600" />
-              ) : activeNav === 'flexdrive' ? (
-                <Car className="w-6 h-6 text-[#ff5a1f]" />
               ) : (
                 <Package className="w-6 h-6 text-[#ff5a1f]" />
               )}
@@ -1141,9 +1190,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                   ? 'Panel de Órdenes Activas'
                   : activeNav === 'new_order'
                   ? 'Solicitar Domicilio o Mandado'
-                  : activeNav === 'riders'
-                  ? 'Sistema de Verificación de Repartidores'
-                  : '🚘 FlexDrive • By Corplex Solution SAS (Alianza 60/40)'}
+                  : 'Sistema de Verificación de Repartidores'}
               </span>
             </div>
 
@@ -2230,28 +2277,6 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                 })}
               </div>
 
-              {/* FlexDrive Car Trip Banner */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-[#102420] to-slate-900 text-white flex flex-wrap items-center justify-between gap-3 text-xs border border-teal-500/30">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#ff5a1f] text-white flex items-center justify-center shrink-0">
-                    <Car className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-extrabold block">¿Buscas transporte en carro particular o viaje al aeropuerto?</span>
-                    <span className="text-[11px] text-slate-300">
-                      Usa <strong>FlexDrive</strong>: carros climatizados 2010 a 2026. Turbo/Apartadó ➔ Aeropuerto Los Cedros ($65.000 COP).
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav('flexdrive')}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#ff5a1f] text-white font-extrabold text-[11px] hover:bg-[#e04812] shrink-0 cursor-pointer shadow-md"
-                >
-                  Abrir FlexDrive ➔
-                </button>
-              </div>
-
               <form onSubmit={handleCreateOrder} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
@@ -2797,717 +2822,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
             </div>
           )}
 
-          {/* ============================================================
-              VIEW 5: 🚘 FLEXDRIVE • BY CORPLEX SOLUTION SAS (Alianza 60/40 con PSP)
-          ============================================================ */}
-          {activeNav === 'flexdrive' && (
-            <div className="p-5 sm:p-8 max-w-5xl mx-auto w-full space-y-6 flex-1">
-              
-              {/* FlexDrive Main Hero & Strategic Partnership Banner */}
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-950 via-[#0d1a17] to-slate-900 text-white border border-teal-500/30 shadow-xl space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#ff5a1f] to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/30">
-                      <Car className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl font-black tracking-tight text-white">
-                          Flex<span className="text-[#ff5a1f]">Drive</span>
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-[#ff5a1f]/20 text-[#ff5a1f] text-[10px] font-black uppercase tracking-wider">
-                          By Corplex Solution SAS
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-300">
-                        Movilidad Climatizada & Aeropuerto • Alianza Comercial 60% Corplex / 40% PSP
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-right">
-                    <span className="text-[10px] text-teal-300 font-extrabold uppercase block">
-                      Comisión Plataforma Justa
-                    </span>
-                    <span className="text-base font-black text-white">
-                      Solo 12% <span className="text-[10px] font-normal text-slate-300">(vs 25% Uber/Cabify)</span>
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-                  Rompemos el monopolio tradicional de taxis hacia el <strong>Aeropuerto Antonio Roldán Betancur (Carepa)</strong> que cobran hasta <strong>$120.000 COP</strong>. Con <strong>FlexDrive</strong> viajas en carros particulares climatizados (modelos 2010 a 2026) desde <strong>$65.000 COP</strong>, con seguimiento GPS en vivo y pago transparente por Wompi (Nequi / Bancolombia).
-                </p>
-
-                {/* Sub-Tabs: Solicitar Viaje | Alianza 60/40 | Registro Conductor Carro */}
-                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10">
-                  {[
-                    { id: 'request', label: '✈️ Solicitar Viaje / Aeropuerto', icon: Plane },
-                    { id: 'partnership', label: '💼 Alianza 60/40 & Ganancias', icon: Calculator },
-                    { id: 'register_car', label: '🚗 Inscribir Mi Carro (2010–2026)', icon: ShieldCheck }
-                  ].map((tab) => {
-                    const isTabActive = flexSubTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setFlexSubTab(tab.id)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                          isTabActive
-                            ? 'bg-[#ff5a1f] text-white shadow-md shadow-orange-500/25 font-extrabold'
-                            : 'bg-white/10 text-slate-300 hover:bg-white/15 hover:text-white'
-                        }`}
-                      >
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* SUB-TAB 1: SOLICITAR VIAJE / AEROPUERTO */}
-              {flexSubTab === 'request' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                      Rutas Estrella & Tarifas FlexDrive
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Selecciona tu destino. Todos los viajes incluyen aire acondicionado, baúl amplio y rastreo en tiempo real.
-                    </p>
-                  </div>
-
-                  {/* 4 FlexDrive Route Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    {[
-                      {
-                        key: 'airport_turbo',
-                        title: 'Turbo ➔ Aeropuerto Carepa',
-                        orig: 'Turbo Centro / Muelle',
-                        dest: 'Aeropuerto Antonio Roldán Betancur',
-                        price: 65000,
-                        taxiComp: 120000,
-                        time: '55 min',
-                        tag: 'Ahorro $55.000 COP'
-                      },
-                      {
-                        key: 'airport_apartado',
-                        title: 'Apartadó ➔ Aeropuerto Carepa',
-                        orig: 'Apartadó Urbano',
-                        dest: 'Aeropuerto Antonio Roldán Betancur',
-                        price: 45000,
-                        taxiComp: 75000,
-                        time: '25 min',
-                        tag: 'Ahorro $30.000 COP'
-                      },
-                      {
-                        key: 'urban_ride',
-                        title: 'Carrera Urbana Confort A/C',
-                        orig: 'Centro / Comercio',
-                        dest: 'Barrio / Destino Urbano',
-                        price: 10000,
-                        taxiComp: 14000,
-                        time: '12 min',
-                        tag: 'Confort Climatizado'
-                      },
-                      {
-                        key: 'car_cargo',
-                        title: 'Encomienda en Baúl de Carro',
-                        orig: 'Cualquier punto Urabá',
-                        dest: 'Entrega puerta a puerta',
-                        price: 15000,
-                        taxiComp: 25000,
-                        time: '20 min',
-                        tag: 'Carga segura y seca'
-                      }
-                    ].map((route) => {
-                      const isSelected = flexRouteKey === route.key;
-                      return (
-                        <div
-                          key={route.key}
-                          onClick={() => {
-                            setFlexRouteKey(route.key);
-                            setFlexPickupAddress(route.orig);
-                            setFlexDropoffAddress(route.dest);
-                          }}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-3 ${
-                            isSelected
-                              ? 'border-[#ff5a1f] bg-orange-500/5 ring-2 ring-orange-500/20'
-                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111917] hover:border-slate-300'
-                          }`}
-                        >
-                          <div>
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                              {route.tag}
-                            </span>
-                            <h4 className="text-xs font-black text-slate-900 dark:text-white mt-2">
-                              {route.title}
-                            </h4>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                              {route.time} • Climatizado
-                            </p>
-                          </div>
-
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                            <div className="flex items-baseline justify-between">
-                              <span className="text-lg font-black text-[#ff5a1f]">
-                                ${route.price.toLocaleString()}
-                              </span>
-                              <span className="text-[10px] text-slate-400 line-through">
-                                Taxi: ${route.taxiComp.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Booking Form for FlexDrive */}
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!user || viewRole === 'guest') {
-                        setMembershipModal({
-                          open: true,
-                          reason:
-                            'Para confirmar y despachar tu viaje en FlexDrive con conductor verificado y pago por Wompi, activa tu cuenta PSP.'
-                        });
-                        return;
-                      }
-                      setFlexSuccessModal(true);
-                    }}
-                    className="p-6 rounded-3xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-[#223532] shadow-sm space-y-4"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                        <Car className="w-4 h-4 text-[#ff5a1f]" />
-                        Confirmación de Solicitud de Vehículo
-                      </span>
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        Vehículos Disponibles en la Zona: 8
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          📍 Punto de Recogida *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={flexPickupAddress}
-                          onChange={(e) => setFlexPickupAddress(e.target.value)}
-                          placeholder="Dirección o barrio de recogida"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          🏁 Destino *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={flexDropoffAddress}
-                          onChange={(e) => setFlexDropoffAddress(e.target.value)}
-                          placeholder="Aeropuerto o dirección de destino"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          Nombre del Pasajero *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={flexPassengerName}
-                          onChange={(e) => setFlexPassengerName(e.target.value)}
-                          placeholder="Nombre y apellido"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          Celular de Contacto *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={flexPassengerPhone}
-                          onChange={(e) => setFlexPassengerPhone(e.target.value)}
-                          placeholder="Ej. 312 987 6543"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          Hora de Vuelo / Recogida *
-                        </label>
-                        <input
-                          type="time"
-                          required
-                          value={flexFlightTime}
-                          onChange={(e) => setFlexFlightTime(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-bold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8F9FB] dark:bg-[#15201e] border border-dashed border-slate-300 dark:border-[#253935] flex flex-wrap items-center justify-between gap-3 text-xs">
-                      <div>
-                        <span className="font-extrabold text-slate-900 dark:text-white block">
-                          Tarifa Total del Viaje:
-                        </span>
-                        <span className="text-[11px] text-slate-400">
-                          {flexRouteKey === 'airport_turbo'
-                            ? 'Turbo ➔ Aeropuerto ($65.000) + $500 Verificación GPS'
-                            : flexRouteKey === 'airport_apartado'
-                            ? 'Apartadó ➔ Aeropuerto ($45.000) + $500 Verificación GPS'
-                            : flexRouteKey === 'urban_ride'
-                            ? 'Urbano A/C ($10.000) + $500 Verificación GPS'
-                            : 'Encomienda Baúl ($15.000) + $500 Verificación GPS'}
-                        </span>
-                      </div>
-                      <span className="text-2xl font-black text-[#ff5a1f]">
-                        $
-                        {(
-                          (flexRouteKey === 'airport_turbo'
-                            ? 65000
-                            : flexRouteKey === 'airport_apartado'
-                            ? 45000
-                            : flexRouteKey === 'urban_ride'
-                            ? 10000
-                            : 15000) + CORP_SOLUTION_FEE
-                        ).toLocaleString()}{' '}
-                        COP
-                      </span>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 rounded-2xl bg-[#ff5a1f] hover:bg-[#e04812] text-white font-extrabold text-xs shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <Navigation className="w-4 h-4" />
-                      <span>Confirmar Viaje FlexDrive con Wompi (Nequi / Bancolombia)</span>
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* SUB-TAB 2: ALIANZA 60/40 & CALCULADORA FINANCIERA */}
-              {flexSubTab === 'partnership' && (
-                <div className="space-y-6">
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-[#223532] shadow-sm space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                      <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-[#ff5a1f]">
-                          Propuesta de Negocio y Estructura Financiera
-                        </span>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                          Alianza Estratégica: 60% Corplex Solution SAS / 40% PSP
-                        </h3>
-                      </div>
-                      <span className="px-3 py-1 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-extrabold">
-                        Modelo Ganar-Ganar
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                      FlexDrive opera con una comisión del <strong>12% por viaje</strong> (frente al 20–25% abusivo de plataformas como Uber o Cabify). El conductor particular se queda con el <strong>88% íntegro</strong> de la carrera, y el 12% recaudado se distribuye de manera automatizada:
-                    </p>
-
-                    {/* Financial Split Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Card Conductor */}
-                      <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-                        <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block">
-                          Conductor FlexDrive
-                        </span>
-                        <p className="text-2xl font-black text-slate-900 dark:text-white">
-                          88%
-                        </p>
-                        <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                          $57.200 COP netos
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          En una carrera al aeropuerto de $65.000 COP, gana mucho más que con cualquier otra app.
-                        </p>
-                      </div>
-
-                      {/* Card Corplex Solution SAS (60%) */}
-                      <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 space-y-2">
-                        <span className="text-[10px] font-black uppercase text-[#ff5a1f] block">
-                          Corplex Solution SAS (60%)
-                        </span>
-                        <p className="text-2xl font-black text-[#ff5a1f]">
-                          $4.680 COP
-                        </p>
-                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                          Por carrera de aeropuerto
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Cubre desarrollo de software, servidores en la nube, APIs satelitales, IA y soporte.
-                        </p>
-                      </div>
-
-                      {/* Card PSP (40%) */}
-                      <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/30 space-y-2">
-                        <span className="text-[10px] font-black uppercase text-sky-600 dark:text-sky-400 block">
-                          PSP Urabá - Janier (40%)
-                        </span>
-                        <p className="text-2xl font-black text-sky-600 dark:text-sky-400">
-                          $3.120 COP
-                        </p>
-                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                          Por carrera de aeropuerto
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Ingreso pasivo por comercialización, base de usuarios y difusión en la plataforma.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Proyección Mensual */}
-                    <div className="p-5 rounded-2xl bg-[#F8F9FB] dark:bg-[#141f1d] border border-slate-200 dark:border-[#223532] space-y-3">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                        <Calculator className="w-4 h-4 text-[#ff5a1f]" />
-                        Proyección de Ingresos Mensuales por Volumen de Viajes (Aeropuerto / Urbanos)
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div className="p-3 rounded-xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-slate-800 space-y-1">
-                          <span className="font-extrabold block text-slate-900 dark:text-white">Escenario 20 viajes / día:</span>
-                          <span className="text-slate-500 block">• Corplex SAS: <strong>$2.808.000 / mes</strong></span>
-                          <span className="text-slate-500 block">• PSP (Janier): <strong>$1.872.000 / mes</strong></span>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-slate-800 space-y-1">
-                          <span className="font-extrabold block text-slate-900 dark:text-white">Escenario 50 viajes / día:</span>
-                          <span className="text-[#ff5a1f] block font-bold">• Corplex SAS: $7.020.000 / mes</span>
-                          <span className="text-sky-600 dark:text-sky-400 block font-bold">• PSP (Janier): $4.680.000 / mes</span>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-slate-800 space-y-1">
-                          <span className="font-extrabold block text-slate-900 dark:text-white">Escenario 100 viajes / día:</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 block font-black">• Corplex SAS: $14.040.000 / mes</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 block font-black">• PSP (Janier): $9.360.000 / mes</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* SUB-TAB 3: REGISTRO DE CONDUCTORES DE CARROS PARTICULARES (2010 A 2026) */}
-              {flexSubTab === 'register_car' && (
-                <div className="space-y-6">
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#111917] border border-slate-200 dark:border-[#223532] shadow-sm space-y-5">
-                    <div className="space-y-1">
-                      <span className="text-xs font-black uppercase tracking-wider text-[#ff5a1f]">
-                        Únete a FlexDrive como Conductor Particular
-                      </span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                        Inscripción de Vehículos Confort Climatizados (Modelos 2010 a 2026)
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Monetiza tu carro particular en tus tiempos libres realizando viajes al aeropuerto y carreras urbanas en Urabá.
-                      </p>
-                    </div>
-
-                    {/* Vehicle Quality & Year Constraint Notice */}
-                    <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 text-xs">
-                      <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div className="space-y-1">
-                        <h4 className="font-extrabold text-slate-900 dark:text-white">
-                          Estándar de Calidad: Solo modelos 2010 en adelante con A/C
-                        </h4>
-                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                          Para brindar una experiencia superior al taxi tradicional, no se aceptan vehículos antiguos descontinuados (ej. Chevrolet Sprint 2001/2002 quedan excluidos). Tu carro debe contar con aire acondicionado activo y baúl espacioso para maletas.
-                        </p>
-                      </div>
-                    </div>
-
-                    {carRegisterSuccess ? (
-                      <div className="p-6 rounded-3xl bg-emerald-500/15 border border-emerald-500/40 text-center space-y-4">
-                        <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-                        <h4 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                          ¡Solicitud de Conductor FlexDrive Recibida!
-                        </h4>
-                        <p className="text-xs text-slate-600 dark:text-slate-300 max-w-lg mx-auto">
-                          Gracias <strong>{carDriverName}</strong>. Hemos recibido los documentos de tu <strong>{carBrandModel} ({carYear})</strong> con placa <strong>{carPlaca}</strong>. Nuestro equipo técnico validará tu SOAT y antecedentes para darte de alta en la bolsa de viajes.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setCarRegisterSuccess(false)}
-                          className="px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs cursor-pointer"
-                        >
-                          Inscribir otro vehículo
-                        </button>
-                      </div>
-                    ) : (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          if (!user || viewRole === 'guest') {
-                            setMembershipModal({
-                              open: true,
-                              reason:
-                                'Para darte de alta como conductor de FlexDrive y recibir comisiones directas por Wompi, crea tu cuenta en la plataforma.'
-                            });
-                            return;
-                          }
-                          setCarRegisterSuccess(true);
-                        }}
-                        className="space-y-4"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Nombre Completo *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={carDriverName}
-                              onChange={(e) => setCarDriverName(e.target.value)}
-                              placeholder="Ej. Carlos Alberto Torres"
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Cédula de Ciudadanía *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={carDriverDoc}
-                              onChange={(e) => setCarDriverDoc(e.target.value)}
-                              placeholder="Ej. 1017894561"
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Celular / WhatsApp *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={carDriverPhone}
-                              onChange={(e) => setCarDriverPhone(e.target.value)}
-                              placeholder="Ej. 314 555 1234"
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Municipio Base *
-                            </label>
-                            <select
-                              value={carMunicipio}
-                              onChange={(e) => setCarMunicipio(e.target.value)}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-semibold"
-                            >
-                              <option value="Turbo">Turbo</option>
-                              <option value="Apartadó">Apartadó</option>
-                              <option value="Carepa">Carepa</option>
-                              <option value="Chigorodó">Chigorodó</option>
-                              <option value="Necoclí">Necoclí</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Marca y Línea *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={carBrandModel}
-                              onChange={(e) => setCarBrandModel(e.target.value)}
-                              placeholder="Ej. Renault Logan / Duster"
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Año / Modelo (2010 a 2026) *
-                            </label>
-                            <select
-                              value={carYear}
-                              onChange={(e) => setCarYear(e.target.value)}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-black text-slate-900 dark:text-white"
-                            >
-                              {Array.from({ length: 17 }, (_, i) => 2026 - i).map((y) => (
-                                <option key={y} value={y}>
-                                  Modelo {y}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                              Placa del Carro *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={carPlaca}
-                              onChange={(e) => setCarPlaca(e.target.value.toUpperCase())}
-                              placeholder="Ej. ABC-123"
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-black uppercase text-slate-900 dark:text-white"
-                            />
-                          </div>
-                        </div>
-
-                        {/* File Uploads for FlexDrive Car */}
-                        <div className="p-5 rounded-2xl bg-[#F8F9FB] dark:bg-[#141f1d] border border-slate-200 dark:border-[#223532] space-y-4">
-                          <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-[#ff5a1f]" />
-                            Carga de Documentos del Vehículo (PDF / Imagen)
-                          </h4>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                            <label className="p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#29403c] hover:border-[#ff5a1f] bg-white dark:bg-[#111917] cursor-pointer transition-colors flex flex-col justify-between gap-1.5">
-                              <span className="text-[11px] font-extrabold text-slate-900 dark:text-white truncate">
-                                1. SOAT Vigente *
-                              </span>
-                              <span className="text-[10px] text-slate-400 truncate">
-                                {carSoatFile || 'Subir PDF de SOAT...'}
-                              </span>
-                              <input
-                                type="file"
-                                required
-                                accept=".pdf,image/*"
-                                onChange={(e) => setCarSoatFile(e.target.files?.[0]?.name || '')}
-                                className="hidden"
-                              />
-                            </label>
-
-                            <label className="p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#29403c] hover:border-[#ff5a1f] bg-white dark:bg-[#111917] cursor-pointer transition-colors flex flex-col justify-between gap-1.5">
-                              <span className="text-[11px] font-extrabold text-slate-900 dark:text-white truncate">
-                                2. Tecnomecánica Vigente *
-                              </span>
-                              <span className="text-[10px] text-slate-400 truncate">
-                                {carTecnoFile || 'Subir PDF CDA...'}
-                              </span>
-                              <input
-                                type="file"
-                                required
-                                accept=".pdf,image/*"
-                                onChange={(e) => setCarTecnoFile(e.target.files?.[0]?.name || '')}
-                                className="hidden"
-                              />
-                            </label>
-
-                            <label className="p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#29403c] hover:border-[#ff5a1f] bg-white dark:bg-[#111917] cursor-pointer transition-colors flex flex-col justify-between gap-1.5">
-                              <span className="text-[11px] font-extrabold text-slate-900 dark:text-white truncate">
-                                3. Licencia B1 / C1 *
-                              </span>
-                              <span className="text-[10px] text-slate-400 truncate">
-                                {carLicenciaFile || 'Subir foto de licencia...'}
-                              </span>
-                              <input
-                                type="file"
-                                required
-                                accept=".pdf,image/*"
-                                onChange={(e) => setCarLicenciaFile(e.target.files?.[0]?.name || '')}
-                                className="hidden"
-                              />
-                            </label>
-
-                            <label className="p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#29403c] hover:border-[#ff5a1f] bg-white dark:bg-[#111917] cursor-pointer transition-colors flex flex-col justify-between gap-1.5">
-                              <span className="text-[11px] font-extrabold text-slate-900 dark:text-white truncate">
-                                4. Antecedentes Policía (PDF) *
-                              </span>
-                              <span className="text-[10px] text-slate-400 truncate">
-                                {carCertPoliciaFile || 'Subir PDF oficial...'}
-                              </span>
-                              <input
-                                type="file"
-                                required
-                                accept=".pdf,image/*"
-                                onChange={(e) => setCarCertPoliciaFile(e.target.files?.[0]?.name || '')}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-
-                          <div className="space-y-2 pt-2">
-                            <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                required
-                                checked={carHasAC}
-                                onChange={(e) => setCarHasAC(e.target.checked)}
-                                className="rounded text-[#ff5a1f] focus:ring-[#ff5a1f]"
-                              />
-                              <span>Mi vehículo cuenta con Aire Acondicionado (A/C) 100% operativo y en óptimo estado.</span>
-                            </label>
-
-                            <label className="flex items-start gap-2.5 text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                required
-                                checked={carAcceptTerms}
-                                onChange={(e) => setCarAcceptTerms(e.target.checked)}
-                                className="mt-0.5 rounded text-[#ff5a1f] focus:ring-[#ff5a1f]"
-                              />
-                              <span>
-                                Acepto los términos de FlexDrive: comisión del 12% por viaje recaudada por Wompi y 88% transferido semanalmente a mi cuenta.
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <button
-                          type="submit"
-                          className="w-full py-3.5 rounded-2xl bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950 font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <ShieldCheck className="w-4 h-4" />
-                          <span>Enviar Documentación para Alta como Conductor FlexDrive</span>
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* FlexDrive Booking Success Modal */}
-              {flexSuccessModal && (
-                <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-white dark:bg-[#111917] border border-slate-200 dark:border-[#243834] rounded-3xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl">
-                    <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white">
-                      ¡Viaje FlexDrive Confirmado!
-                    </h4>
-                    <p className="text-xs text-slate-600 dark:text-slate-300">
-                      Hemos asignado un vehículo climatizado 2018 para recoger a <strong>{flexPassengerName || 'Pasajero'}</strong> en <strong>{flexPickupAddress}</strong> con destino <strong>{flexDropoffAddress}</strong> a las <strong>{flexFlightTime}</strong>.
-                    </p>
-                    <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
-                      Pago registrado por Wompi • Ahorraste más de $40.000 COP vs el taxi tradicional.
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFlexSuccessModal(false)}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950 text-xs font-bold cursor-pointer"
-                    >
-                      Entendido
-                    </button>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          )}
-
+          
         </div>
       </div>
       </div>

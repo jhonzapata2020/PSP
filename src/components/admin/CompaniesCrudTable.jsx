@@ -32,12 +32,31 @@ const CATEGORIES_ESTRATEGICAS = [
 ];
 
 const CATEGORY_BADGE_STYLES = {
-  'Tecnología & Comercio': 'bg-teal-50 text-teal-700 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-700',
-  'Salud & Bienestar': 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700',
-  'Educación & Cultura': 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-700',
-  'Agro & Campo': 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700',
-  'Fundaciones & Juventud': 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700',
-  'Impacto Social': 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700',
+  'Tecnología & Comercio': 'bg-teal-50 text-teal-700 border-teal-300',
+  'Salud & Bienestar': 'bg-emerald-50 text-emerald-700 border-emerald-300',
+  'Educación & Cultura': 'bg-indigo-50 text-indigo-700 border-indigo-300',
+  'Agro & Campo': 'bg-amber-50 text-amber-700 border-amber-300',
+  'Fundaciones & Juventud': 'bg-rose-50 text-rose-700 border-rose-300',
+  'Impacto Social': 'bg-rose-50 text-rose-700 border-rose-300',
+  'Privado': 'bg-sky-50 text-sky-700 border-sky-300',
+  'Público': 'bg-purple-50 text-purple-700 border-purple-300',
+  'Gremial': 'bg-teal-50 text-teal-700 border-teal-300',
+  'Fundación': 'bg-pink-50 text-pink-700 border-pink-300',
+  'Caja de Compensación': 'bg-orange-50 text-orange-700 border-orange-300',
+};
+
+const CATEGORY_BADGE_STYLES_DARK = {
+  'Tecnología & Comercio': 'bg-cyan-950/70 text-cyan-300 border-cyan-500/40',
+  'Salud & Bienestar': 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40',
+  'Educación & Cultura': 'bg-indigo-950/70 text-indigo-300 border-indigo-500/40',
+  'Agro & Campo': 'bg-amber-950/70 text-amber-300 border-amber-500/40',
+  'Fundaciones & Juventud': 'bg-rose-950/70 text-rose-300 border-rose-500/40',
+  'Impacto Social': 'bg-rose-950/70 text-rose-300 border-rose-500/40',
+  'Privado': 'bg-sky-950/70 text-sky-300 border-sky-500/40',
+  'Público': 'bg-purple-950/70 text-purple-300 border-purple-500/40',
+  'Gremial': 'bg-teal-950/70 text-teal-300 border-teal-500/40',
+  'Fundación': 'bg-pink-950/70 text-pink-300 border-pink-500/40',
+  'Caja de Compensación': 'bg-orange-950/70 text-orange-300 border-orange-500/40',
 };
 
 const EMPTY_FORM = {
@@ -53,7 +72,7 @@ const EMPTY_FORM = {
   discountPercentage: 10,
 };
 
-export default function CompaniesCrudTable({ companies = [], onRefresh }) {
+export default function CompaniesCrudTable({ companies = [], onRefresh, isDark = false }) {
   const [activeTab, setActiveTab] = useState('afiliada'); // 'afiliada' | 'estrategica'
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
@@ -192,12 +211,20 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
   const categoriesForTab =
     activeTab === 'estrategica' ? CATEGORIES_ESTRATEGICAS : CATEGORIES_AFILIADAS;
 
+  const cardContainerClass = isDark
+    ? 'bg-[#182638] border border-slate-700/60 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.35)] text-slate-100'
+    : 'bg-[#f8fafc] border border-slate-300/80 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.06)] text-slate-800';
+
+  const innerContainerClass = isDark
+    ? 'bg-[#0f1824] border border-slate-700/70 text-slate-100'
+    : 'bg-white border border-slate-200/90 text-slate-800';
+
   return (
-    <div className="bg-white dark:bg-[#131c1a] rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl p-5 sm:p-7 space-y-6">
+    <div className={`rounded-3xl p-5 sm:p-7 space-y-6 transition-colors duration-200 ${cardContainerClass}`}>
       {/* Barra Superior estilo Referencia (Tabs a la izquierda + Buscador, Filtro y Botón Crear a la derecha) */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Selector de Pestañas (Entidades Afiliadas vs Socios Estratégicos) */}
-        <div className="inline-flex items-center bg-slate-100/90 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 self-start">
+        <div className={`inline-flex items-center p-1.5 rounded-2xl border self-start ${isDark ? 'bg-[#0f1824] border-slate-700/70' : 'bg-slate-100/90 border-slate-200/60'}`}>
           <button
             type="button"
             onClick={() => {
@@ -207,8 +234,12 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'afiliada'
-                ? 'bg-emerald-50 text-[#0c4236] dark:bg-teal-500/20 dark:text-teal-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? isDark
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-xs'
+                  : 'bg-emerald-50 text-[#0c4236] border border-emerald-200 shadow-xs'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -224,8 +255,12 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'estrategica'
-                ? 'bg-emerald-50 text-[#0c4236] dark:bg-teal-500/20 dark:text-teal-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? isDark
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-xs'
+                  : 'bg-emerald-50 text-[#0c4236] border border-emerald-200 shadow-xs'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <span>Socios Estratégicos</span>
@@ -235,7 +270,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
         {/* Buscador + Filtro de Categoría + Botón + Crear Empresa */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-400' : 'text-slate-400'}`} />
             <input
               type="text"
               value={search}
@@ -244,23 +279,33 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                 setPage(1);
               }}
               placeholder="Buscar empresa..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs focus:outline-none transition-colors ${
+                isDark
+                  ? 'bg-[#0f1824] border-slate-700/80 text-white placeholder-slate-500 focus:border-cyan-400'
+                  : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-teal-500'
+              }`}
             />
           </div>
 
           <div className="relative">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <SlidersHorizontal className={`w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
             <select
               value={categoryFilter}
               onChange={(e) => {
                 setCategoryFilter(e.target.value);
                 setPage(1);
               }}
-              className="pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+              className={`pl-8 pr-4 py-2.5 rounded-xl border text-xs font-semibold focus:outline-none cursor-pointer transition-colors ${
+                isDark
+                  ? 'bg-[#0f1824] border-slate-700/80 text-slate-200 focus:border-cyan-400'
+                  : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-teal-500'
+              }`}
             >
-              <option value="Todas">Todas las categorías</option>
+              <option value="Todas" className={isDark ? 'bg-[#0f1824] text-white' : 'bg-white text-slate-900'}>
+                Todas las categorías
+              </option>
               {categoriesForTab.map((cat) => (
-                <option key={cat} value={cat}>
+                <option key={cat} value={cat} className={isDark ? 'bg-[#0f1824] text-white' : 'bg-white text-slate-900'}>
                   {cat}
                 </option>
               ))}
@@ -270,7 +315,11 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 text-xs font-extrabold shadow-md transition-all cursor-pointer"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-extrabold shadow-md transition-all cursor-pointer ${
+              isDark
+                ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black'
+                : 'bg-[#0c4236] hover:bg-[#0f5144] text-white'
+            }`}
           >
             <Plus className="w-4 h-4" />
             <span>Crear Empresa</span>
@@ -280,17 +329,27 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
 
       {/* Notificación de confirmación */}
       {notice && (
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold ${
+          isDark
+            ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
+            : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+        }`}>
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
           <span>{notice}</span>
         </div>
       )}
 
       {/* Tabla CRUD Limpia estilo Referencia */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800/80">
+      <div className={`overflow-x-auto rounded-2xl border transition-colors ${
+        isDark ? 'border-slate-700/60 bg-[#111c2a]' : 'border-slate-200 bg-white'
+      }`}>
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/90 dark:bg-slate-900/80 text-[11px] font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+            <tr className={`text-[11px] font-bold border-b transition-colors ${
+              isDark
+                ? 'bg-[#0f1824] text-slate-300 border-slate-700/70'
+                : 'bg-slate-50/90 text-slate-500 border-slate-200'
+            }`}>
               <th className="py-3.5 px-4">Empresa & Logo</th>
               <th className="py-3.5 px-4">A qué se dedica (Sector)</th>
               <th className="py-3.5 px-4">Objeto Social / Descripción</th>
@@ -300,21 +359,25 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 text-xs">
+          <tbody className={`divide-y text-xs transition-colors ${isDark ? 'divide-slate-700/50' : 'divide-slate-100'}`}>
             {paginatedRows.map((comp) => {
-              const badgeStyle =
-                CATEGORY_BADGE_STYLES[comp.categoria] ||
-                'bg-teal-50 text-teal-700 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-700';
+              const badgeStyle = isDark
+                ? CATEGORY_BADGE_STYLES_DARK[comp.categoria] || 'bg-cyan-950/70 text-cyan-300 border-cyan-500/40'
+                : CATEGORY_BADGE_STYLES[comp.categoria] || 'bg-teal-50 text-teal-700 border-teal-300';
 
               return (
                 <tr
                   key={comp.id}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors group"
+                  className={`transition-colors group ${
+                    isDark ? 'hover:bg-[#1a293d]/70 text-slate-200' : 'hover:bg-slate-50/70 text-slate-700'
+                  }`}
                 >
                   {/* 1. Empresa & Logo + Botoncito de explorar PC para cambiar logo */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3.5 min-w-[220px]">
-                      <div className="relative w-11 h-11 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                      <div className={`relative w-11 h-11 rounded-full border p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs ${
+                        isDark ? 'bg-[#0f1824] border-slate-700 text-cyan-300' : 'bg-white border-slate-200 text-[#0c4236]'
+                      }`}>
                         {comp.logo ? (
                           <img
                             src={comp.logo}
@@ -322,18 +385,20 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                             className="max-h-full max-w-full object-contain rounded-full"
                           />
                         ) : (
-                          <span className="text-[10px] font-extrabold text-[#0c4236] dark:text-teal-300">
+                          <span className={`text-[10px] font-extrabold ${isDark ? 'text-cyan-300' : 'text-[#0c4236]'}`}>
                             {comp.sigla || 'EMP'}
                           </span>
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-slate-900 dark:text-white truncate">
+                        <p className={`font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
                           {comp.nombre}
                         </p>
                         <label
-                          className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
+                          className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold hover:underline cursor-pointer ${
+                            isDark ? 'text-cyan-400' : 'text-teal-600'
+                          }`}
                           title="Explorar el computador para subir o cambiar el logo"
                         >
                           <Upload className="w-3 h-3" />
@@ -350,12 +415,12 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                   </td>
 
                   {/* 2. A qué se dedica / Sector */}
-                  <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300 max-w-[200px]">
+                  <td className={`py-3.5 px-4 font-semibold max-w-[200px] ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
                     <p className="line-clamp-2">{comp.sector || '—'}</p>
                   </td>
 
                   {/* 3. Objeto Social / Descripción */}
-                  <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 max-w-[280px]">
+                  <td className={`py-3.5 px-4 max-w-[280px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     <p className="line-clamp-2 leading-relaxed">{comp.descripcion || '—'}</p>
                   </td>
 
@@ -364,10 +429,14 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                     <select
                       value={comp.discountPercentage ?? 10}
                       onChange={(e) => handleDirectDiscountChange(comp, e.target.value)}
-                      className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
+                      className={`px-2.5 py-1 rounded-full border text-xs font-extrabold focus:outline-none cursor-pointer transition-colors ${
+                        isDark
+                          ? 'bg-[#0f1824] text-cyan-300 border-slate-700 focus:border-cyan-400'
+                          : 'bg-slate-100 text-slate-800 border-slate-200 focus:border-teal-500'
+                      }`}
                     >
                       {[0, 2, 3, 5, 7, 8, 10, 12, 15, 20, 25].map((pct) => (
-                        <option key={pct} value={pct}>
+                        <option key={pct} value={pct} className={isDark ? 'bg-[#0f1824] text-white' : 'bg-white text-slate-900'}>
                           {pct}%
                         </option>
                       ))}
@@ -386,7 +455,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                         <option
                           key={cat}
                           value={cat}
-                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                          className={isDark ? 'bg-[#0f1824] text-white' : 'bg-white text-slate-900'}
                         >
                           {cat.split(' ')[0]} ({cat})
                         </option>
@@ -400,7 +469,11 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                       <button
                         type="button"
                         onClick={() => openEdit(comp)}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-teal-950/60 text-slate-700 hover:text-[#0c4236] dark:text-slate-200 dark:hover:text-teal-300 font-bold text-[11px] inline-flex items-center gap-1 transition-colors cursor-pointer"
+                        className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] inline-flex items-center gap-1 transition-colors cursor-pointer ${
+                          isDark
+                            ? 'bg-[#0f1824] hover:bg-cyan-950/70 text-cyan-300 border border-cyan-500/30'
+                            : 'bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-[#0c4236]'
+                        }`}
                         title="Editar información, logo, objeto social y categoría"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -410,7 +483,9 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                       <button
                         type="button"
                         onClick={() => setToDelete(comp)}
-                        className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 transition-colors cursor-pointer"
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          isDark ? 'hover:bg-rose-950/60 text-rose-400' : 'hover:bg-rose-50 text-rose-500'
+                        }`}
                         title="Eliminar empresa"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -423,7 +498,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
 
             {paginatedRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-xs text-slate-400">
+                <td colSpan={6} className={`py-10 text-center text-xs ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>
                   No se encontraron empresas con ese criterio de búsqueda.
                 </td>
               </tr>
@@ -433,7 +508,9 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
       </div>
 
       {/* Paginación inferior estilo Referencia (< 1 2 3 4 >) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-slate-500 dark:text-slate-400">
+      <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs ${
+        isDark ? 'text-slate-400' : 'text-slate-500'
+      }`}>
         <span>
           Mostrando {paginatedRows.length} de {filteredList.length} empresas
         </span>
@@ -443,7 +520,9 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             type="button"
             disabled={safePage <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors disabled:opacity-40 cursor-pointer ${
+              isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-300' : 'border-slate-200 hover:bg-slate-100 text-slate-700'
+            }`}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -455,8 +534,12 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
               onClick={() => setPage(pageNum)}
               className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 safePage === pageNum
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 shadow-xs'
-                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? isDark
+                    ? 'bg-cyan-500 text-slate-950 border border-cyan-400 font-black shadow-xs'
+                    : 'bg-white text-slate-900 border border-slate-300 shadow-xs'
+                  : isDark
+                  ? 'text-slate-400 hover:bg-slate-800 border border-transparent'
+                  : 'text-slate-500 hover:bg-slate-100'
               }`}
             >
               {pageNum}
@@ -467,7 +550,9 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             type="button"
             disabled={safePage >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors disabled:opacity-40 cursor-pointer ${
+              isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-300' : 'border-slate-200 hover:bg-slate-100 text-slate-700'
+            }`}
           >
             <ChevronRight className="w-4 h-4" />
           </button>

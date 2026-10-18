@@ -265,6 +265,63 @@ const ProfilePage = () => {
                 {user.gender && <p><strong>Género:</strong> {user.gender === 'femenino' ? 'Femenino' : user.gender === 'masculino' ? 'Masculino' : 'Otro'}</p>}
                 <p><strong>Documento / NIT:</strong> {user.documentType} - {user.documentNumber}</p>
                 <p><strong>Teléfono:</strong> {user.phone || '—'}</p>
+                {(() => {
+                  const roleList = Array.isArray(user.roles) ? user.roles.map((r) => String(r).toLowerCase()) : [];
+                  const plan = String(user.membershipPlan || user.role || '').toLowerCase();
+                  const isGold =
+                    plan === 'membresia_gold' ||
+                    roleList.some((r) => r === 'membresia_gold' || r === 'admin' || r === 'admin_sistema' || r === 'empresa_aliada');
+                  const isPlata =
+                    !isGold &&
+                    (plan === 'membresia_plata' ||
+                      roleList.some((r) => r === 'membresia_plata' || r === 'coordinador' || r === 'moderador'));
+                  const isSocial =
+                    !isGold && !isPlata && (plan === 'emprendedor_social' || roleList.some((r) => r === 'emprendedor_social'));
+
+                  if (!isGold && !isPlata && !isSocial) return null;
+                  const tierLabel = isGold
+                    ? 'Nivel Gold (aplica Descuento Gold de cada producto)'
+                    : isPlata
+                    ? 'Nivel Plata (aplica Descuento Plata de cada producto)'
+                    : 'Nivel Social (aplica Descuento Social de cada producto)';
+                  return (
+                    <p>
+                      <strong>Beneficio en Productos PSP:</strong>{' '}
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-teal-300 font-extrabold">
+                        {tierLabel}
+                      </span>
+                    </p>
+                  );
+                })()}
+                {user.ownReferralCode && (
+                  <div className="pt-2 mt-2 border-t border-slate-200/70 dark:border-slate-800 space-y-1.5">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">Código Promotor / Referido PSP:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-xs text-[#0c4236] dark:text-teal-300">
+                        {user.ownReferralCode}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(user.ownReferralCode);
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-teal-300 font-bold text-[11px] transition-colors cursor-pointer"
+                      >
+                        Copiar código
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const inviteUrl = `${window.location.origin}/auth?mode=register&ref=${encodeURIComponent(user.ownReferralCode)}`;
+                          navigator.clipboard?.writeText(inviteUrl);
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition-colors cursor-pointer"
+                      >
+                        Copiar link invitación
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <p>
                   <strong>Estado del Perfil:</strong>{' '}
                   {user.completedProfile >= 100 ? (

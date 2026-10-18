@@ -6,7 +6,30 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/ui/Modal';
 
-const EMPTY = { name: '', displayName: '', description: '', discountPercentage: 0 };
+const EMPTY = { name: '', displayName: '', description: '' };
+
+function resolveRoleTierBadge(roleName) {
+  const r = String(roleName || '').toLowerCase();
+  if (r === 'membresia_gold' || r === 'admin' || r === 'admin_sistema' || r === 'empresa_aliada') {
+    return {
+      label: 'Beneficio Producto: Nivel Gold',
+      className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    };
+  }
+  if (r === 'membresia_plata' || r === 'coordinador' || r === 'moderador') {
+    return {
+      label: 'Beneficio Producto: Nivel Plata',
+      className: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30',
+    };
+  }
+  if (r === 'emprendedor_social') {
+    return {
+      label: 'Beneficio Producto: Nivel Social',
+      className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+    };
+  }
+  return null;
+}
 
 export default function AdminRolesPage() {
   const { hasPermission } = useAuth();
@@ -63,7 +86,6 @@ export default function AdminRolesPage() {
       name: r.name,
       displayName: r.displayName,
       description: r.description ?? '',
-      discountPercentage: Number(r.discountPercentage ?? r.discount_percentage ?? 0),
     });
     setFormError('');
     setFormOpen(true);
@@ -167,7 +189,9 @@ export default function AdminRolesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {roles.map((r) => (
+          {roles.map((r) => {
+            const tierBadge = resolveRoleTierBadge(r.name);
+            return (
             <div
               key={r.id}
               className="rounded-2xl bg-white dark:bg-psp-dark-card border border-slate-200 dark:border-slate-800 shadow-psp-soft p-5 space-y-3"
@@ -179,6 +203,11 @@ export default function AdminRolesPage() {
                     {r.isSystem && (
                       <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-400 uppercase">
                         sistema
+                      </span>
+                    )}
+                    {tierBadge && (
+                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-extrabold ${tierBadge.className}`}>
+                        {tierBadge.label}
                       </span>
                     )}
                   </div>
@@ -240,7 +269,8 @@ export default function AdminRolesPage() {
                 {canManage ? 'Editar permisos' : 'Ver permisos (solo lectura)'}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -278,18 +308,6 @@ export default function AdminRolesPage() {
               placeholder="ej. Coordinador"
               required
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:border-psp-cyan"
-            />
-          </Field>
-          <Field label="Porcentaje de Descuento en Carrito (%)">
-            <input
-              type="number"
-              min={0}
-              max={100}
-              step={0.5}
-              value={form.discountPercentage ?? 0}
-              onChange={(e) => setForm((f) => ({ ...f, discountPercentage: Number(e.target.value) }))}
-              placeholder="Ej. 5"
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-psp-cyan"
             />
           </Field>
           <Field label="Descripción">

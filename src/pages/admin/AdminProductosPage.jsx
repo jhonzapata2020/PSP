@@ -192,9 +192,19 @@ export default function AdminProductosPage() {
             <h2 className="font-bold text-xl text-slate-800 dark:text-slate-100">Paso 2: Subir Catálogo (Excel / CSV)</h2>
           </div>
 
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
             Sube tu archivo <strong>Excel (.xlsx)</strong> o <strong>CSV (.csv)</strong>. El sistema procesará los productos en lotes y vinculará automáticamente las fotos subidas en el Paso 1.
           </p>
+
+          <div className="mb-4 p-3 rounded-lg bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 text-xs text-slate-700 dark:text-slate-300">
+            <span className="font-bold text-teal-800 dark:text-teal-300 block mb-1">
+              Descuentos por Membresía en la Plantilla (0 a 100%, hasta 2 decimales):
+            </span>
+            Define en cada fila los porcentajes (no negativos, admiten hasta 2 decimales como <code className="font-mono">12.5</code> o <code className="font-mono">3.25</code>) en las columnas{' '}
+            <code className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono font-bold text-amber-700 dark:text-amber-400">DescuentoGold</code>,{' '}
+            <code className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono font-bold text-slate-700 dark:text-slate-300">DescuentoPlata</code> y{' '}
+            <code className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono font-bold text-emerald-700 dark:text-emerald-400">DescuentoSocial</code>.
+          </div>
 
           {/* Configuración de lotes */}
           <div className="flex items-center justify-between mb-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -251,6 +261,7 @@ export default function AdminProductosPage() {
             className="w-full flex justify-center items-center gap-2 bg-[#0c4236] hover:bg-[#0f5144] dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 px-4 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-sm"
           >
             <FileText className="w-4 h-4" />
+            <span>Importar Catálogo en Lotes</span>
           </button>
         </div>
       </div>

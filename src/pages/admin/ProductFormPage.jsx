@@ -32,6 +32,9 @@ const EMPTY = {
   categoriaId: '',
   precio: '',
   precioAnterior: '',
+  descuentoGold: '15',
+  descuentoPlata: '10',
+  descuentoSocial: '3',
   stock: '',
   sku: '',
   municipio: '',
@@ -130,6 +133,9 @@ export default function ProductFormPage() {
           categoriaId:          selectedCat,
           precio:               p.precio ?? '',
           precioAnterior:       p.precioAnterior ?? '',
+          descuentoGold:        p.descuentoGold ?? 0,
+          descuentoPlata:       p.descuentoPlata ?? 0,
+          descuentoSocial:      p.descuentoSocial ?? 0,
           stock:                p.stock ?? '',
           sku:                  p.sku ?? '',
           municipio:            p.municipio ?? '',
@@ -234,6 +240,23 @@ export default function ProductFormPage() {
       return;
     }
 
+    const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+    const rawPrecio = Number(form.precio) || 0;
+    const rawPrecioAnt = form.precioAnterior !== '' && form.precioAnterior !== null ? Number(form.precioAnterior) : null;
+    const rawGold = Number(form.descuentoGold) || 0;
+    const rawPlata = Number(form.descuentoPlata) || 0;
+    const rawSocial = Number(form.descuentoSocial) || 0;
+
+    if (rawPrecio < 0 || (rawPrecioAnt !== null && rawPrecioAnt < 0)) {
+      setError('Los precios no pueden ser negativos.');
+      return;
+    }
+
+    if (rawGold < 0 || rawGold > 100 || rawPlata < 0 || rawPlata > 100 || rawSocial < 0 || rawSocial > 100) {
+      setError('Los porcentajes de descuento por membresía no pueden ser negativos y deben estar entre 0 y 100%.');
+      return;
+    }
+
     setSaving(true);
 
     const especificacionesObj = {};
@@ -251,9 +274,12 @@ export default function ProductFormPage() {
     const payload = {
       nombre:               form.nombre.trim(),
       categoriaId:          form.categoriaId,
-      precio:               Number(form.precio) || 0,
-      precioAnterior:       form.precioAnterior ? Number(form.precioAnterior) : null,
-      stock:                parseInt(form.stock, 10) || 0,
+      precio:               round2(rawPrecio),
+      precioAnterior:       rawPrecioAnt !== null ? round2(rawPrecioAnt) : null,
+      descuentoGold:        round2(Math.min(100, Math.max(0, rawGold))),
+      descuentoPlata:       round2(Math.min(100, Math.max(0, rawPlata))),
+      descuentoSocial:      round2(Math.min(100, Math.max(0, rawSocial))),
+      stock:                Math.max(0, parseInt(form.stock, 10) || 0),
       descripcion:          form.descripcion?.trim() || null,
       descripcionDetallada: form.descripcionDetallada?.trim() || null,
       municipio:            form.municipio?.trim() || null,
@@ -490,7 +516,8 @@ export default function ProductFormPage() {
                 required
                 type="number"
                 min="0"
-                step="100"
+                step="0.01"
+                onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
                 value={form.precio}
                 onChange={e => set('precio', e.target.value)}
                 className="input-field"
@@ -505,7 +532,8 @@ export default function ProductFormPage() {
               <input
                 type="number"
                 min="0"
-                step="100"
+                step="0.01"
+                onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
                 value={form.precioAnterior}
                 onChange={e => set('precioAnterior', e.target.value)}
                 className="input-field"
@@ -521,6 +549,8 @@ export default function ProductFormPage() {
                 required
                 type="number"
                 min="0"
+                step="1"
+                onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
                 value={form.stock}
                 onChange={e => set('stock', e.target.value)}
                 className="input-field"
@@ -538,6 +568,98 @@ export default function ProductFormPage() {
                 className="input-field"
                 placeholder="Ej. Turbo, Apartadó, Carepa"
               />
+            </div>
+          </div>
+
+          {/* ── Descuentos por Nivel de Membresía (Definidos por la Empresa para este Producto) ── */}
+          <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-700/70 space-y-3">
+            <div>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-teal-400">
+                Descuentos por Membresía en este Producto (%)
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Define el porcentaje de descuento (0 a 100%, hasta 2 decimales y sin valores negativos) que tu empresa otorga en este producto según el nivel del comprador.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/50">
+                <label className="block text-xs font-bold text-amber-900 dark:text-amber-300 mb-1">
+                  Descuento Gold (%) *
+                </label>
+                <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mb-2">
+                  Membresía Gold, Admin y Empresas Aliadas
+                </p>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
+                  value={form.descuentoGold}
+                  onChange={e => set('descuentoGold', e.target.value)}
+                  className="input-field"
+                  placeholder="Ej. 15 o 12.5"
+                />
+                {Number(form.precio) > 0 && (
+                  <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 mt-1.5">
+                    Precio final: ${Math.max(0, Math.round(Number(form.precio) * (1 - (Number(form.descuentoGold) || 0) / 100))).toLocaleString()} COP
+                  </p>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  Descuento Plata (%) *
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                  Membresía Plata, Coordinador y Moderador
+                </p>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
+                  value={form.descuentoPlata}
+                  onChange={e => set('descuentoPlata', e.target.value)}
+                  className="input-field"
+                  placeholder="Ej. 10 o 8.5"
+                />
+                {Number(form.precio) > 0 && (
+                  <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1.5">
+                    Precio final: ${Math.max(0, Math.round(Number(form.precio) * (1 - (Number(form.descuentoPlata) || 0) / 100))).toLocaleString()} COP
+                  </p>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/50">
+                <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">
+                  Descuento Social (%) *
+                </label>
+                <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mb-2">
+                  Emprendedor Social / Ciudadano
+                </p>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
+                  value={form.descuentoSocial}
+                  onChange={e => set('descuentoSocial', e.target.value)}
+                  className="input-field"
+                  placeholder="Ej. 3 o 2.5"
+                />
+                {Number(form.precio) > 0 && (
+                  <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mt-1.5">
+                    Precio final: ${Math.max(0, Math.round(Number(form.precio) * (1 - (Number(form.descuentoSocial) || 0) / 100))).toLocaleString()} COP
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

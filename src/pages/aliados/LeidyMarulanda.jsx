@@ -14,6 +14,8 @@ import {
   CreditCard
 } from 'lucide-react';
 import MockPaymentModal from '../../components/comercio/MockPaymentModal';
+import ordersApi from '../../services/ordersApi';
+import { getToken } from '../../services/api';
 
 const PLATFORM_FEE_RATE = 0.02; // 2% para la plataforma PSP
 
@@ -404,13 +406,13 @@ const LeidyMarulanda = () => {
     setIsWompiOpen(true);
   };
 
-  const handlePaymentSuccess = (paymentResult) => {
+  const handlePaymentSuccess = async (paymentResult) => {
     setIsWompiOpen(false);
     const totalPaid = Number(paymentResult.amount || paymentAmount);
     const platformCommission = Math.round(totalPaid * PLATFORM_FEE_RATE); // 2% para PSP
     const merchantNet = totalPaid - platformCommission; // 98% para el comercio aliado
 
-    setOrderReceipt({
+    const receiptData = {
       ...paymentResult,
       amount: totalPaid,
       platformCommission,
@@ -426,7 +428,46 @@ const LeidyMarulanda = () => {
         hour: '2-digit',
         minute: '2-digit'
       })
-    });
+    };
+
+    setOrderReceipt(receiptData);
+
+    // Si el comprador tiene sesión activa en PSP, persistimos también la orden y sub-orden en Psp.Orders.services
+    if (getToken()) {
+      try {
+        await ordersApi.checkout({
+          paymentMethod: paymentResult.paymentMethod || 'online_gateway',
+          idempotencyKey: `lmt_${paymentResult.transactionId || Date.now()}`,
+          paymentGateway: paymentResult.gateway || 'wompi',
+          paymentTransactionId: paymentResult.transactionId,
+          cardBrand: paymentResult.cardBrand,
+          cardLastFour: paymentResult.lastFour,
+          authorizationCode: paymentResult.authorizationCode || `AUTH-${Date.now().toString().slice(-6)}`,
+          installments: paymentResult.installments || 1,
+          shipping: {
+            receiverName: receiptData.customerName,
+            contactPhone: '3000000000',
+            department: 'Antioquia',
+            municipality: 'Apartadó',
+            address: 'Entrega coordinada con Leidy Marulanda Technology',
+            notes: `Opción seleccionada: ${selectedOption}`
+          },
+          directItems: [
+            {
+              productId: selectedProduct?.id || 'LMT-DIRECT',
+              productName: `${receiptData.productTitle} (${selectedOption})`,
+              productImageUrl: selectedProduct?.image || null,
+              unitPrice: totalPaid,
+              quantity: 1,
+              companyId: 'leidy-marulanda-tech',
+              companyName: 'Leidy Marulanda Technology'
+            }
+          ]
+        });
+      } catch {
+        // Si el microservicio no está disponible en local, el comprobante visual ya quedó generado
+      }
+    }
   };
 
   const scrollToSection = (id) => {

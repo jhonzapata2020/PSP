@@ -459,16 +459,36 @@ export default function AdminPedidosPage() {
                     )}
 
                     <div className="divide-y divide-slate-100 dark:divide-slate-800/50 pt-1">
-                      {sub.items?.map((it) => (
-                        <div key={it.id} className="py-1.5 flex justify-between items-center text-xs">
-                          <span className="text-slate-700 dark:text-slate-300">
-                            {it.quantity}x {it.productName} <span className="text-slate-400 text-[10px]">({it.sku})</span>
-                          </span>
-                          <span className="font-bold text-slate-900 dark:text-white">
-                            ${it.lineTotal?.toLocaleString()} COP
-                          </span>
-                        </div>
-                      ))}
+                      {sub.items?.map((it) => {
+                        const rawSub = (it.unitPrice || 0) * (it.quantity || 1);
+                        const discAmt = it.discountAmount ?? Math.max(0, rawSub - (it.lineTotal || 0));
+                        const discPct = it.discountPercentage ?? (rawSub > 0 && discAmt > 0
+                          ? Number(((discAmt / rawSub) * 100).toFixed(2))
+                          : 0);
+
+                        return (
+                          <div key={it.id} className="py-1.5 flex justify-between items-center text-xs">
+                            <span className="text-slate-700 dark:text-slate-300">
+                              {it.quantity}x {it.productName} <span className="text-slate-400 text-[10px]">({it.sku})</span>
+                              {discPct > 0 && (
+                                <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded font-bold text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                  -{discPct}%
+                                </span>
+                              )}
+                            </span>
+                            <div className="text-right">
+                              {discPct > 0 && (
+                                <span className="block text-[9.5px] text-slate-400 line-through">
+                                  ${rawSub.toLocaleString()} COP
+                                </span>
+                              )}
+                              <span className="font-bold text-slate-900 dark:text-white">
+                                ${it.lineTotal?.toLocaleString()} COP
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

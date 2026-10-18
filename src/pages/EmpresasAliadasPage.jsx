@@ -471,20 +471,18 @@ const EmpresasAliadasPage = () => {
                 </p>
               </div>
 
-              {/* Dynamic Discount Benefit Badge inside Modal */}
-              {Number(selectedAffiliateModal.discountPercentage ?? 10) > 0 && (
-                <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-3">
-                  <Tag className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <div className="text-[11px] text-slate-700 dark:text-slate-200">
-                    <strong className="text-slate-900 dark:text-white block">
-                      Convenio Red PSP: {selectedAffiliateModal.discountPercentage ?? 10}% de Descuento
-                    </strong>
-                    <span>
-                      Aplica {selectedAffiliateModal.discountPercentage ?? 10}% desc. en servicios/productos al identificarse como afiliado a la Red PSP Urabá.
-                    </span>
-                  </div>
+              {/* Product-level Membership Discount Benefit Badge inside Modal */}
+              <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-3">
+                <Tag className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="text-[11px] text-slate-700 dark:text-slate-200">
+                  <strong className="text-slate-900 dark:text-white block">
+                    Convenio Red PSP: Descuentos por Producto según Membresía
+                  </strong>
+                  <span>
+                    Cada producto o servicio publicado por la empresa otorga tarifas preferenciales diferenciadas para niveles <strong>Gold</strong>, <strong>Plata</strong> y <strong>Emprendedor Social</strong>.
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">

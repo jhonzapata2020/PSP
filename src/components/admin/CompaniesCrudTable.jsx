@@ -50,7 +50,6 @@ const EMPTY_FORM = {
   ubicacion: 'Turbo, Urabá',
   logo: '',
   sitioWeb: '',
-  discountPercentage: 10,
 };
 
 export default function CompaniesCrudTable({ companies = [], onRefresh }) {
@@ -114,14 +113,6 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
     onRefresh?.();
   };
 
-  // Cambiar % de descuento directo desde la fila
-  const handleDirectDiscountChange = async (company, newDiscount) => {
-    const val = Math.max(0, Math.min(100, Number(newDiscount) || 0));
-    await companiesApi.update(company.id, { ...company, discountPercentage: val });
-    notify(`Descuento de "${company.nombre}" actualizado a ${val}%.`);
-    onRefresh?.();
-  };
-
   const openCreate = () => {
     setEditingId(null);
     setForm({
@@ -144,7 +135,6 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
       ubicacion: company.ubicacion || company.ubicación || 'Turbo, Urabá',
       logo: company.logo || '',
       sitioWeb: company.sitioWeb || '',
-      discountPercentage: Number(company.discountPercentage ?? 10),
     });
     setModalOpen(true);
   };
@@ -294,7 +284,6 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
               <th className="py-3.5 px-4">Empresa & Logo</th>
               <th className="py-3.5 px-4">A qué se dedica (Sector)</th>
               <th className="py-3.5 px-4">Objeto Social / Descripción</th>
-              <th className="py-3.5 px-4 text-center">% Descuento</th>
               <th className="py-3.5 px-4 text-center">Categoría</th>
               <th className="py-3.5 px-4 text-right">Acciones</th>
             </tr>
@@ -359,22 +348,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                     <p className="line-clamp-2 leading-relaxed">{comp.descripcion || '—'}</p>
                   </td>
 
-                  {/* 4. % Descuento ajustable */}
-                  <td className="py-3.5 px-4 text-center">
-                    <select
-                      value={comp.discountPercentage ?? 10}
-                      onChange={(e) => handleDirectDiscountChange(comp, e.target.value)}
-                      className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
-                    >
-                      {[0, 2, 3, 5, 7, 8, 10, 12, 15, 20, 25].map((pct) => (
-                        <option key={pct} value={pct}>
-                          {pct}%
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  {/* 5. Categoría (Salud, Tecnología, Educación, Agro...) editable tipo Pill como en la foto */}
+                  {/* 4. Categoría (Salud, Tecnología, Educación, Agro...) editable tipo Pill como en la foto */}
                   <td className="py-3.5 px-4 text-center">
                     <select
                       value={comp.categoria}
@@ -394,7 +368,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
                     </select>
                   </td>
 
-                  {/* 6. Columna de Acciones (Editar / Eliminar) */}
+                  {/* 5. Columna de Acciones (Editar / Eliminar) */}
                   <td className="py-3.5 px-4 text-right">
                     <div className="inline-flex items-center justify-end gap-1.5">
                       <button
@@ -423,7 +397,7 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
 
             {paginatedRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-xs text-slate-400">
+                <td colSpan={5} className="py-10 text-center text-xs text-slate-400">
                   No se encontraron empresas con ese criterio de búsqueda.
                 </td>
               </tr>
@@ -534,37 +508,18 @@ export default function CompaniesCrudTable({ companies = [], onRefresh }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
-              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Nombre de la Empresa *
-              </label>
-              <input
-                type="text"
-                required
-                value={form.nombre}
-                onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                placeholder="Ej. Ecosistemas Urabá"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                % Descuento Empresa
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={form.discountPercentage}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, discountPercentage: Number(e.target.value) }))
-                }
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white"
-              />
-            </div>
+          <div>
+            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Nombre de la Empresa *
+            </label>
+            <input
+              type="text"
+              required
+              value={form.nombre}
+              onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
+              placeholder="Ej. Ecosistemas Urabá"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

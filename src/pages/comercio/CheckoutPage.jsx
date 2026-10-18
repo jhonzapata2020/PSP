@@ -39,9 +39,19 @@ const MUNICIPIOS_URABA = [
 ];
 
 export default function CheckoutPage() {
-  const { cartGroups, cartItems, totalAmount, clearCart } = useCart();
+  const {
+    cartGroups,
+    cartItems,
+    totalAmount,
+    subtotalAmount = totalAmount,
+    discountPercentage = 0,
+    discountAmount = 0,
+    payableAmount,
+    clearCart
+  } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const finalPayableAmount = payableAmount !== undefined ? payableAmount : totalAmount;
 
   // Formulario de Entrega
   const [receiverName, setReceiverName] = useState(user?.name || '');
@@ -68,8 +78,8 @@ export default function CheckoutPage() {
     e.preventDefault();
     setErrorMessage('');
 
-    if (totalAmount < MIN_PURCHASE_AMOUNT) {
-      setErrorMessage(`El monto mínimo de compra en la plataforma es de $${MIN_PURCHASE_AMOUNT.toLocaleString()} COP. Tu carrito suma $${totalAmount.toLocaleString()} COP. Agrega más productos para continuar.`);
+    if (subtotalAmount < MIN_PURCHASE_AMOUNT) {
+      setErrorMessage(`El monto mínimo de compra en la plataforma es de $${MIN_PURCHASE_AMOUNT.toLocaleString()} COP. Tu carrito suma $${subtotalAmount.toLocaleString()} COP. Agrega más productos para continuar.`);
       return;
     }
 
@@ -549,8 +559,14 @@ export default function CheckoutPage() {
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Subtotal Productos:</span>
-                <span className="font-bold text-slate-900 dark:text-white">${totalAmount.toLocaleString()} COP</span>
+                <span className="font-bold text-slate-900 dark:text-white">${subtotalAmount.toLocaleString()} COP</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-teal-400 font-bold">
+                  <span>Beneficio Membresía ({discountPercentage}% OFF):</span>
+                  <span>-${discountAmount.toLocaleString()} COP</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span className="flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5" /> Envío subregional:
@@ -559,7 +575,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-800">
                 <span>Total a Pagar:</span>
-                <span className="text-[#0c4236] dark:text-teal-400 font-black">${totalAmount.toLocaleString()} COP</span>
+                <span className="text-[#0c4236] dark:text-teal-400 font-black">${finalPayableAmount.toLocaleString()} COP</span>
               </div>
             </div>
 
@@ -592,7 +608,7 @@ export default function CheckoutPage() {
       <MockPaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        totalAmount={totalAmount}
+        totalAmount={finalPayableAmount}
         orderReference={idempotencyKey}
         buyerInfo={{
           name: receiverName,

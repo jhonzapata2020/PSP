@@ -137,11 +137,29 @@ export default function MisPedidosPage() {
     const itemsRows = (order.items || []).map(item => {
       const isExempt = isItemIvaExempt(item);
       const taxTag = isExempt ? 'IVA 0% (Excluido Canasta Familiar Art. 424 E.T.)' : 'IVA 19% Incluido';
+      const rawSubtotal = (item.unitPrice || 0) * (item.quantity || 1);
+      const lineDiscount = item.discountAmount ?? Math.max(0, rawSubtotal - (item.lineTotal || 0));
+      const discountPct = item.discountPercentage ?? (rawSubtotal > 0 && lineDiscount > 0
+        ? Number(((lineDiscount / rawSubtotal) * 100).toFixed(2))
+        : 0);
+
+      const discountTag = discountPct > 0
+        ? ` • <strong style="color: #047857;">Desc: ${discountPct}% (-$${lineDiscount.toLocaleString('es-CO')})</strong>`
+        : '';
+
+      const discountCol = discountPct > 0
+        ? `<span style="background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9.5px; border: 1px solid #a7f3d0;">-${discountPct}%</span>`
+        : `<span style="color: #94a3b8; font-size: 10px;">0%</span>`;
+
+      const lineTotalHtml = discountPct > 0
+        ? `<div style="font-size: 9px; color: #94a3b8; text-decoration: line-through; font-weight: normal;">$${rawSubtotal.toLocaleString('es-CO')}</div><div>$${(item.lineTotal || 0).toLocaleString('es-CO')}</div>`
+        : `$${(item.lineTotal || 0).toLocaleString('es-CO')}`;
+
       return `
         <tr>
           <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
             <strong>${item.productName}</strong><br/>
-            <span style="font-size: 9.5px; color: #64748b;">SKU: ${item.sku || 'N/A'} • ${item.companyName || 'Comercio Local'} • <em style="color: ${isExempt ? '#047857' : '#475569'};">${taxTag}</em></span>
+            <span style="font-size: 9.5px; color: #64748b;">SKU: ${item.sku || 'N/A'} • ${item.companyName || 'Comercio Local'} • <em style="color: ${isExempt ? '#047857' : '#475569'};">${taxTag}</em>${discountTag}</span>
           </td>
           <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 11px;">
             ${item.quantity}
@@ -149,8 +167,11 @@ export default function MisPedidosPage() {
           <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px;">
             $${(item.unitPrice || 0).toLocaleString('es-CO')}
           </td>
+          <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 11px;">
+            ${discountCol}
+          </td>
           <td style="padding: 7px 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 11px; font-weight: bold;">
-            $${(item.lineTotal || 0).toLocaleString('es-CO')}
+            ${lineTotalHtml}
           </td>
         </tr>
       `;
@@ -325,8 +346,9 @@ export default function MisPedidosPage() {
             <tr>
               <th style="text-align: left;">Artículo</th>
               <th style="text-align: center; width: 45px;">Cant.</th>
-              <th style="text-align: right; width: 85px;">Precio</th>
-              <th style="text-align: right; width: 95px;">Total</th>
+              <th style="text-align: right; width: 80px;">Precio</th>
+              <th style="text-align: center; width: 65px;">Dto.</th>
+              <th style="text-align: right; width: 90px;">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -710,24 +732,47 @@ export default function MisPedidosPage() {
 
                           {/* Ítems del paquete */}
                           <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                            {sub.items?.map((item) => (
-                              <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <img 
-                                    src={item.productImage || '/icon.png'} 
-                                    alt={item.productName} 
-                                    className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"
-                                  />
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-slate-900 dark:text-white truncate">{item.productName}</p>
-                                    <p className="text-[10px] text-slate-400">SKU: {item.sku} &bull; Cantidad: <strong>{item.quantity}</strong></p>
+                            {sub.items?.map((item) => {
+                              const rawSub = (item.unitPrice || 0) * (item.quantity || 1);
+                              const discAmt = item.discountAmount ?? Math.max(0, rawSub - (item.lineTotal || 0));
+                              const discPct = item.discountPercentage ?? (rawSub > 0 && discAmt > 0
+                                ? Number(((discAmt / rawSub) * 100).toFixed(2))
+                                : 0);
+
+                              return (
+                                <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <img 
+                                      src={item.productImage || '/icon.png'} 
+                                      alt={item.productName} 
+                                      className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                      <p className="font-bold text-slate-900 dark:text-white truncate">{item.productName}</p>
+                                      <p className="text-[10px] text-slate-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                                        <span>SKU: {item.sku}</span> &bull; 
+                                        <span>Cant: <strong>{item.quantity}</strong></span>
+                                        {discPct > 0 && (
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            -{discPct}% Dto.
+                                          </span>
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    {discPct > 0 && (
+                                      <span className="block text-[10px] text-slate-400 line-through">
+                                        ${rawSub.toLocaleString()} COP
+                                      </span>
+                                    )}
+                                    <span className="font-extrabold text-slate-900 dark:text-white">
+                                      ${item.lineTotal?.toLocaleString()} COP
+                                    </span>
                                   </div>
                                 </div>
-                                <span className="font-extrabold text-slate-900 dark:text-white shrink-0">
-                                  ${item.lineTotal?.toLocaleString()} COP
-                                </span>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
 
                           <div className="pt-2 text-right text-xs font-semibold text-slate-500">
@@ -802,20 +847,40 @@ export default function MisPedidosPage() {
                 <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-48 overflow-y-auto">
                   {selectedReceiptOrder.items?.map((item) => {
                     const isExempt = isItemIvaExempt(item);
+                    const rawSub = (item.unitPrice || 0) * (item.quantity || 1);
+                    const discAmt = item.discountAmount ?? Math.max(0, rawSub - (item.lineTotal || 0));
+                    const discPct = item.discountPercentage ?? (rawSub > 0 && discAmt > 0
+                      ? Number(((discAmt / rawSub) * 100).toFixed(2))
+                      : 0);
+
                     return (
-                      <div key={item.id} className="py-2 flex justify-between items-center text-xs">
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{item.productName}</p>
-                          <p className="text-[10px] text-slate-400">
-                            Cant: {item.quantity} &bull; {item.companyName || 'Comercio Local'} &bull;{' '}
+                      <div key={item.id} className="py-2.5 flex justify-between items-center text-xs gap-3">
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{item.productName}</p>
+                          <p className="text-[10px] text-slate-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                            <span>Cant: <strong>{item.quantity}</strong></span> &bull;
+                            <span>Precio: ${(item.unitPrice || 0).toLocaleString()}</span> &bull;
+                            <span>{item.companyName || 'Comercio Local'}</span> &bull;
                             <span className={isExempt ? 'text-emerald-600 dark:text-teal-400 font-semibold' : 'text-slate-500'}>
                               {isExempt ? 'IVA 0% (Excluido Art. 424 E.T.)' : 'IVA 19% Incluido'}
                             </span>
+                            {discPct > 0 && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                Desc. -{discPct}% (-${discAmt.toLocaleString()} COP)
+                              </span>
+                            )}
                           </p>
                         </div>
-                        <span className="font-extrabold text-slate-900 dark:text-white">
-                          ${item.lineTotal?.toLocaleString()} COP
-                        </span>
+                        <div className="text-right shrink-0">
+                          {discPct > 0 && (
+                            <span className="block text-[10px] text-slate-400 line-through">
+                              ${rawSub.toLocaleString()} COP
+                            </span>
+                          )}
+                          <span className="font-extrabold text-slate-900 dark:text-white">
+                            ${(item.lineTotal || 0).toLocaleString()} COP
+                          </span>
+                        </div>
                       </div>
                     );
                   })}

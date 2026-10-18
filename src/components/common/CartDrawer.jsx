@@ -25,6 +25,10 @@ const CartDrawer = () => {
     cartItems,
     removeFromCart,
     updateQuantity,
+    subtotalAmount = 0,
+    discountPercentage = 0,
+    discountAmount = 0,
+    payableAmount,
     totalAmount,
     totalItemsCount,
     isCartOpen,
@@ -32,6 +36,8 @@ const CartDrawer = () => {
     cartError,
     clearCartError
   } = useCart();
+
+  const finalTotal = typeof payableAmount === 'number' ? payableAmount : totalAmount;
 
   const navigate = useNavigate();
 
@@ -182,15 +188,24 @@ const CartDrawer = () => {
                             </h4>
 
                             {/* Precios y Ahorro */}
-                            <div className="flex items-baseline gap-2">
+                            <div className="flex items-baseline gap-2 flex-wrap">
                               <span className="text-xs font-extrabold text-[#0c4236] dark:text-teal-400">
-                                ${((item.precio || item.unitPrice || 0) * item.quantity).toLocaleString()} COP
+                                ${(item.netSubtotal ?? ((item.precio || item.unitPrice || 0) * item.quantity)).toLocaleString()} COP
                               </span>
-                              {hasDiscount && (
+                              {(item.appliedDiscountPercentage > 0 || (item.discountAmount > 0)) ? (
+                                <>
+                                  <span className="text-[10px] text-slate-400 line-through">
+                                    ${((item.precio || item.unitPrice || 0) * item.quantity).toLocaleString()}
+                                  </span>
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded font-bold text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    -{item.appliedDiscountPercentage}% Dto.
+                                  </span>
+                                </>
+                              ) : hasDiscount ? (
                                 <span className="text-[10px] text-slate-400 line-through">
                                   ${((item.precioAnterior || 0) * item.quantity).toLocaleString()}
                                 </span>
-                              )}
+                              ) : null}
                             </div>
 
                             {/* Alertas de Stock */}
@@ -272,11 +287,26 @@ const CartDrawer = () => {
           {cartItems.length > 0 && (
             <div className="p-4 sm:p-5 bg-slate-50 dark:bg-[#0e1514] border-t border-slate-200 dark:border-slate-800 flex flex-col gap-3 shadow-lg">
               
-              <div className="space-y-1">
+              <div className="space-y-1.5">
+                {discountAmount > 0 && (
+                  <>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      <span>Subtotal productos:</span>
+                      <span>${subtotalAmount.toLocaleString()} COP</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Beneficio Membresía ({discountPercentage}% OFF):
+                      </span>
+                      <span>-${discountAmount.toLocaleString()} COP</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-white">
                   <span>Total Estimado:</span>
                   <span className="text-xl text-[#0c4236] dark:text-teal-400 font-black">
-                    ${totalAmount.toLocaleString()} COP
+                    ${finalTotal.toLocaleString()} COP
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400">

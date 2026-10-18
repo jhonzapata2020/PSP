@@ -100,6 +100,9 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const serverCart = await ordersApi.getCart();
       if (serverCart) {
+        if (typeof serverCart.discountPercentage === 'number') {
+          setServerDiscountPct(serverCart.discountPercentage);
+        }
         const groups = serverCart.groups || [];
         setCartGroups(groups);
         if (groups.length === 0) {
@@ -117,6 +120,10 @@ export const CartProvider = ({ children }) => {
                   sku: i.sku,
                   precio: i.unitPrice,
                   precioAnterior: localExisting?.precioAnterior ?? null,
+                  descuentoGold: i.descuentoGold ?? localExisting?.descuentoGold ?? 15,
+                  descuentoPlata: i.descuentoPlata ?? localExisting?.descuentoPlata ?? 10,
+                  descuentoSocial: i.descuentoSocial ?? localExisting?.descuentoSocial ?? 3,
+                  appliedDiscountPercentage: i.appliedDiscountPercentage,
                   stock: localExisting?.stock ?? 99,
                   imagen: i.productImage || localExisting?.imagen || '',
                   companyId: i.companyId,
@@ -193,7 +200,14 @@ export const CartProvider = ({ children }) => {
       if (prevExisting) {
         return prev.map(item =>
           (item.id === productId || item.productId === productId)
-            ? { ...item, quantity: item.quantity + finalQtyToAdd, stock: availableStock }
+            ? {
+                ...item,
+                quantity: item.quantity + finalQtyToAdd,
+                stock: availableStock,
+                descuentoGold: product.descuentoGold ?? item.descuentoGold ?? 15,
+                descuentoPlata: product.descuentoPlata ?? item.descuentoPlata ?? 10,
+                descuentoSocial: product.descuentoSocial ?? item.descuentoSocial ?? 3
+              }
             : item
         );
       }
@@ -204,6 +218,9 @@ export const CartProvider = ({ children }) => {
         sku: product.sku || '',
         precio: unitPrice,
         precioAnterior: product.precioAnterior || null,
+        descuentoGold: product.descuentoGold ?? 15,
+        descuentoPlata: product.descuentoPlata ?? 10,
+        descuentoSocial: product.descuentoSocial ?? 3,
         stock: availableStock,
         imagen: mainImg,
         companyId,
@@ -293,10 +310,88 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const totalAmount = cartItems.reduce(
+  const [, setServerDiscountPct] = useState(null);
+
+  // Resolver el Nivel de Beneficio (Tier) del comprador según sus roles y empresa
+  // Gold: empresa_aliada (companyId o personType juridica), admin, admin_sistema, membresia_gold
+  // Plata: membresia_plata, coordinador, moderador
+  // Social: emprendedor_social
+  const resolveUserDiscountTier = () => {
+    if (!user) return 'none';
+
+    // Cualquier Empresa Aliada (con companyId o registrada como persona jurídica) accede directamente al beneficio Gold
+    if (user.companyId || user.personType === 'juridica') {
+      return 'gold';
+    }
+
+    const rawRoles = [
+      ...(Array.isArray(user.roles) ? user.roles : []),
+      ...(Array.isArray(user.roleDisplayNames) ? user.roleDisplayNames : []),
+      user.role
+    ].filter(Boolean).map(r => String(r).toLowerCase().trim().replace(/_/g, ' '));
+
+    const plan = String(user.membershipPlan || '').toLowerCase().trim().replace(/_/g, ' ');
+
+    if (
+      plan.includes('gold') ||
+      rawRoles.some(r => ['membresia gold', 'gold', 'admin', 'admin sistema', 'administrador', 'empresa aliada', 'empresa'].includes(r))
+    ) {
+      return 'gold';
+    }
+
+    if (
+      plan.includes('plata') ||
+      rawRoles.some(r => ['membresia plata', 'plata', 'coordinador', 'moderador'].includes(r))
+    ) {
+      return 'plata';
+    }
+
+    if (
+      plan.includes('social') ||
+      rawRoles.some(r => ['emprendedor social', 'social', 'emprendedor'].includes(r))
+    ) {
+      return 'social';
+    }
+
+    return 'none';
+  };
+
+  const discountTier = resolveUserDiscountTier();
+
+  const resolveItemDiscountPct = (item) => {
+    const tier = resolveUserDiscountTier();
+    if (tier === 'none') return 0;
+
+    // Si viene sincronizado desde el backend y tiene descuento positivo calculado
+    if (typeof item.appliedDiscountPercentage === 'number' && item.appliedDiscountPercentage > 0) {
+      return Math.min(100, Math.max(0, item.appliedDiscountPercentage));
+    }
+
+    // Resolver directamente a partir de las columnas de descuento por membresía del producto
+    if (tier === 'gold') return Math.min(100, Math.max(0, Number(item.descuentoGold ?? 15)));
+    if (tier === 'plata') return Math.min(100, Math.max(0, Number(item.descuentoPlata ?? 10)));
+    if (tier === 'social') return Math.min(100, Math.max(0, Number(item.descuentoSocial ?? 3)));
+    return 0;
+  };
+
+  const subtotalAmount = cartItems.reduce(
     (sum, item) => sum + (item.precio || item.unitPrice || 0) * item.quantity,
     0
   );
+
+  const discountAmount = cartItems.reduce((sum, item) => {
+    const itemSub = (item.precio || item.unitPrice || 0) * item.quantity;
+    const pct = resolveItemDiscountPct(item);
+    return sum + Math.round((itemSub * pct) / 100);
+  }, 0);
+
+  const discountPercentage = subtotalAmount > 0 && discountAmount > 0
+    ? Math.round((discountAmount / subtotalAmount) * 10000) / 100
+    : (discountTier === 'gold' ? 15 : discountTier === 'plata' ? 10 : discountTier === 'social' ? 3 : 0);
+
+  const payableAmount = Math.max(0, subtotalAmount - discountAmount);
+  // Mantiene totalAmount como el subtotal bruto para las validaciones de compra mínima ($20,000 COP)
+  const totalAmount = subtotalAmount;
 
   const totalItemsCount = cartItems.reduce(
     (sum, item) => sum + item.quantity,
@@ -311,6 +406,10 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
+      subtotalAmount,
+      discountPercentage,
+      discountAmount,
+      payableAmount,
       totalAmount,
       totalItemsCount,
       isCartOpen,

@@ -15,16 +15,10 @@ const API_URL = BASE_API_URL.endsWith('/api') ? BASE_API_URL : `${BASE_API_URL}/
 const STORAGE_KEY = 'psp_companies_store_v4';
 
 /**
- * Normaliza las empresas iniciales desde mockData.js incluyendo el campo
- * `discountPercentage` ajustable por el Admin (por defecto 10% o 15%, o ej. 5% para cocinas/alto valor).
+ * Normaliza las empresas iniciales desde mockData.js.
  */
 function buildInitialSeed() {
   const afiliadas = ENTIDADES_AFILIADAS.map((item) => {
-    const isFoundation =
-      item.categoria === 'Fundaciones & Juventud' ||
-      item.categoria === 'Impacto Social' ||
-      (item.nombre || '').toLowerCase().includes('fundaci');
-
     return {
       id: String(item.id),
       nombre: item.nombre || '',
@@ -39,7 +33,6 @@ function buildInitialSeed() {
       color: item.color || 'from-teal-500 to-emerald-700',
       sitioWeb: item.sitioWeb || '',
       rutaInterna: item.rutaInterna || '',
-      discountPercentage: isFoundation ? 0 : 10,
       ods: item.ods || [8, 11],
       activa: true,
     };
@@ -64,7 +57,6 @@ function buildInitialSeed() {
     color: 'from-emerald-600 to-teal-800',
     sitioWeb: item.sitioWeb || '',
     rutaInterna: '',
-    discountPercentage: 10,
     ods: Array.isArray(item.ods) ? item.ods : [8, 9, 11],
     activa: true,
   }));
@@ -113,10 +105,6 @@ function normalizeCompanyPayload(payload, existing = {}) {
       .toUpperCase() ||
     'EMP';
 
-  const parsedDiscount = Number(
-    payload.discountPercentage ?? payload.discount_percentage ?? existing.discountPercentage ?? 10
-  );
-
   return {
     id: existing.id || payload.id || `emp-${Date.now()}`,
     nombre,
@@ -131,7 +119,6 @@ function normalizeCompanyPayload(payload, existing = {}) {
     color: payload.color || existing.color || 'from-teal-500 to-emerald-700',
     sitioWeb: (payload.sitioWeb ?? payload.website_url ?? existing.sitioWeb ?? '').trim(),
     rutaInterna: payload.rutaInterna ?? existing.rutaInterna ?? '',
-    discountPercentage: Number.isFinite(parsedDiscount) ? Math.max(0, Math.min(100, parsedDiscount)) : 10,
     ods: Array.isArray(payload.ods) ? payload.ods : existing.ods || [8, 11],
     activa: payload.activa !== undefined ? Boolean(payload.activa) : existing.activa ?? true,
   };
@@ -188,7 +175,6 @@ export const companiesApi = {
           location: newCompany.ubicacion,
           logo_url: newCompany.logo,
           website_url: newCompany.sitioWeb,
-          discount_percentage: newCompany.discountPercentage,
         },
       });
       if (created) {
@@ -206,14 +192,14 @@ export const companiesApi = {
     return newCompany;
   },
 
-  /** Actualiza una empresa existente (incluyendo su % de descuento, logo, nombre, etc.). */
+  /** Actualiza una empresa existente (logo, nombre, sector, categoría, etc.). */
   async update(id, payload) {
     const list = readLocalCompanies();
     const current = list.find((c) => String(c.id) === String(id)) || { id };
-    const updatedItem = normalizeCompanyPayload(payload, current);
+    let updatedItem = normalizeCompanyPayload(payload, current);
 
     try {
-      await tryBackendRequest(`/companies/${id}`, {
+      const updatedFromBackend = await tryBackendRequest(`/companies/${id}`, {
         method: 'PUT',
         body: {
           ...updatedItem,
@@ -224,9 +210,11 @@ export const companiesApi = {
           location: updatedItem.ubicacion,
           logo_url: updatedItem.logo,
           website_url: updatedItem.sitioWeb,
-          discount_percentage: updatedItem.discountPercentage,
         },
       });
+      if (updatedFromBackend) {
+        updatedItem = normalizeCompanyPayload(updatedFromBackend, updatedItem);
+      }
     } catch {
       // Fallback local inmediato
     }

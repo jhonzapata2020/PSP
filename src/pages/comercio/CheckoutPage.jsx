@@ -98,8 +98,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Si el usuario eligió Tarjeta o PSE o Transferencia, abrimos la pasarela de pago Wompi Sandbox
-    if (paymentMethod === 'online_gateway' || paymentMethod === 'direct_transfer') {
+    // Si el usuario eligió Wompi, abrimos la pasarela de pago Wompi
+    if (paymentMethod === 'wompi') {
       setIsPaymentModalOpen(true);
       return;
     }
@@ -125,29 +125,48 @@ export default function CheckoutPage() {
         }
       };
 
-      if (paymentResult) {
-        payload.paymentGateway = paymentResult.gateway || 'wompi';
-        payload.paymentTransactionId = paymentResult.transactionId;
-        payload.cardBrand = paymentResult.cardBrand;
-        payload.cardLastFour = paymentResult.lastFour;
-        payload.authorizationCode = paymentResult.authorizationCode || `AUTH-${Date.now().toString().slice(-6)}`;
-        payload.installments = paymentResult.installments || 1;
-      } else if (chosenPaymentMethod !== 'cash_on_delivery') {
-        payload.paymentGateway = chosenPaymentMethod === 'direct_transfer' ? 'PSE / Bancolombia' : 'wompi';
-        payload.paymentTransactionId = `WMP-TX-${Date.now().toString().slice(-7)}`;
-        payload.cardBrand = chosenPaymentMethod === 'direct_transfer' ? 'Transferencia PSE' : 'Tarjeta';
-        payload.authorizationCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
-        payload.installments = 1;
+      if (chosenPaymentMethod === 'wompi') {
+        payload.paymentGateway = 'wompi';
+        if (paymentResult) {
+          payload.paymentTransactionId = paymentResult.transactionId;
+          payload.cardBrand = paymentResult.cardBrand;
+          payload.cardLastFour = paymentResult.lastFour;
+          payload.authorizationCode = paymentResult.authorizationCode || `AUTH-${Date.now().toString().slice(-6)}`;
+          payload.installments = paymentResult.installments || 1;
+        }
       }
 
       const result = await ordersApi.checkout(payload);
-      if (paymentResult) {
+
+      // Si fue pagado a través de la pasarela Wompi, emitir la confirmación mediante el webhook
+      if (chosenPaymentMethod === 'wompi' && paymentResult) {
+        try {
+          await ordersApi.postPaymentWebhook({
+            orderId: result.id,
+            orderNumber: result.orderNumber,
+            transactionId: paymentResult.transactionId,
+            status: 'APPROVED',
+            authorizationCode: payload.authorizationCode,
+            gateway: 'wompi',
+            rawPayload: JSON.stringify(paymentResult)
+          });
+          result.paymentStatus = 'paid';
+          result.status = 'confirmed';
+        } catch (webhookErr) {
+          console.warn('Confirmación vía webhook diferida', webhookErr);
+        }
         result.mockPayment = paymentResult;
       }
+
       setCompletedOrder(result);
       await clearCart();
     } catch (err) {
-      setErrorMessage(err.message || 'Ocurrió un error al procesar el pedido. Por favor intenta de nuevo.');
+      const msg = err.message || 'Ocurrió un error al procesar el pedido. Por favor intenta de nuevo.';
+      if (msg.toLowerCase().includes('stock insuficiente') || msg.toLowerCase().includes('agotado')) {
+        setErrorMessage(`⚠️ Disponibilidad de inventario: ${msg} Por favor revisa tu carrito para ajustar las cantidades.`);
+      } else {
+        setErrorMessage(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -436,7 +455,7 @@ export default function CheckoutPage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${
                 paymentMethod === 'cash_on_delivery'
                   ? 'border-emerald-500 bg-emerald-50/50 dark:bg-teal-950/30'
@@ -454,52 +473,35 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Contraentrega</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Paga en efectivo al recibir en Urabá</p>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Pago Contraentrega</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Paga en efectivo al recibir tu pedido en Urabá</p>
                 </div>
               </label>
 
               <label className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${
-                paymentMethod === 'direct_transfer'
+                paymentMethod === 'wompi'
                   ? 'border-emerald-500 bg-emerald-50/50 dark:bg-teal-950/30'
                   : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
               }`}>
                 <div className="flex items-center justify-between">
-                  <Building2 className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
+                  <div className="flex items-center gap-1.5">
+                    <CreditCard className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-teal-300">
+                      Oficial
+                    </span>
+                  </div>
                   <input
                     type="radio"
                     name="payment"
-                    value="direct_transfer"
-                    checked={paymentMethod === 'direct_transfer'}
-                    onChange={() => setPaymentMethod('direct_transfer')}
+                    value="wompi"
+                    checked={paymentMethod === 'wompi'}
+                    onChange={() => setPaymentMethod('wompi')}
                     className="text-emerald-600"
                   />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Nequi / Bancolombia</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Transferencia directa al comercio</p>
-                </div>
-              </label>
-
-              <label className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${
-                paymentMethod === 'online_gateway'
-                  ? 'border-emerald-500 bg-emerald-50/50 dark:bg-teal-950/30'
-                  : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <CreditCard className="w-5 h-5 text-emerald-600 dark:text-teal-400" />
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="online_gateway"
-                    checked={paymentMethod === 'online_gateway'}
-                    onChange={() => setPaymentMethod('online_gateway')}
-                    className="text-emerald-600"
-                  />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">PSE / Tarjeta</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Pago en línea seguro (Simulado)</p>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Wompi (Bancolombia)</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Tarjetas de crédito/débito, PSE, Nequi y Botón Bancolombia</p>
                 </div>
               </label>
             </div>
@@ -599,6 +601,9 @@ export default function CheckoutPage() {
                 </>
               )}
             </button>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center leading-relaxed pt-2">
+              🔒 <strong>Compra protegida:</strong> El inventario se reserva de forma segura al confirmar tu pedido. Conforme a la Ley 1480 de 2011, la disponibilidad se valida en tiempo real.
+            </p>
           </div>
         </div>
 

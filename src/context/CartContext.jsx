@@ -55,6 +55,7 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cartError, setCartError] = useState(null);
+  const [cartNotifications, setCartNotifications] = useState([]);
 
   // Sincronización instantánea de estado ante cambio de usuario o logout (evita fugas entre sesiones)
   if (prevUserId !== userId) {
@@ -100,6 +101,11 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const serverCart = await ordersApi.getCart();
       if (serverCart) {
+        if (Array.isArray(serverCart.notifications) && serverCart.notifications.length > 0) {
+          setCartNotifications(serverCart.notifications);
+        } else {
+          setCartNotifications([]);
+        }
         if (typeof serverCart.discountPercentage === 'number') {
           setServerDiscountPct(serverCart.discountPercentage);
         }
@@ -418,7 +424,9 @@ export const CartProvider = ({ children }) => {
       loading,
       cartError,
       setCartError,
-      clearCartError: () => setCartError(null)
+      clearCartError: () => setCartError(null),
+      cartNotifications,
+      clearCartNotifications: () => setCartNotifications([])
     }}>
       {children}
     </CartContext.Provider>

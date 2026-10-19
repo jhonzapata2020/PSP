@@ -116,6 +116,10 @@ export const ordersApi = {
     if (status) params.set('status', status);
     return request(`/admin/orders?${params.toString()}`);
   },
+
+  // ---------- WEBHOOK DE PASARELA (WOMPI) ----------
+  postPaymentWebhook: (payload) =>
+    request('/payments/webhook', { method: 'POST', body: payload }),
 };
 
 export default ordersApi;

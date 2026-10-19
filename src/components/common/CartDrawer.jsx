@@ -14,7 +14,8 @@ import {
   ShieldCheck, 
   Package, 
   Truck,
-  CheckCircle 
+  CheckCircle,
+  Info 
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { MIN_PURCHASE_AMOUNT } from '../../constants/commerce';
@@ -34,7 +35,9 @@ const CartDrawer = () => {
     isCartOpen,
     setIsCartOpen,
     cartError,
-    clearCartError
+    clearCartError,
+    cartNotifications = [],
+    clearCartNotifications
   } = useCart();
 
   const finalTotal = typeof payableAmount === 'number' ? payableAmount : totalAmount;
@@ -120,6 +123,30 @@ const CartDrawer = () => {
               >
                 <X className="w-3.5 h-3.5" />
               </button>
+            </div>
+          )}
+
+          {/* Cart Notifications Banner (Stock / Price updates) */}
+          {cartNotifications && cartNotifications.length > 0 && (
+            <div className="mx-4 mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-100 text-xs space-y-1.5 shadow-sm animate-fadeIn">
+              <div className="flex items-center justify-between font-bold">
+                <span className="flex items-center gap-1.5">
+                  <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  Actualización de tu carrito
+                </span>
+                <button 
+                  onClick={clearCartNotifications}
+                  className="text-amber-600 hover:text-amber-800 dark:hover:text-amber-200 p-0.5 cursor-pointer"
+                  title="Cerrar aviso"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-amber-800 dark:text-amber-200 font-medium">
+                {cartNotifications.map((msg, idx) => (
+                  <li key={idx}>{msg}</li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -366,6 +393,10 @@ const CartDrawer = () => {
                 <span>•</span>
                 <span>Productores locales de Urabá</span>
               </div>
+
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center px-2 pt-0.5 leading-tight">
+                El inventario se reserva al confirmar el pedido. Disponibilidad y precios en tiempo real.
+              </p>
 
             </div>
           )}

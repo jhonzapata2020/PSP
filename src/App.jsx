@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -12,41 +12,53 @@ import CartDrawer from './components/common/CartDrawer';
 import EcommerceFloatingButton from './components/common/EcommerceFloatingButton';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
+// Landing principal cargada estáticamente para FCP instantáneo
 import HomePage from './pages/HomePage';
-import MapaPage from './pages/MapaPage';
-import EmpresasAliadasPage from './pages/EmpresasAliadasPage';
-import ComercioPage from './pages/ComercioPage';
-import ForoPage from './pages/ForoPage';
-import AyudaPage from './pages/AyudaPage';
-import AuthPage from './pages/AuthPage';
-import ProfilePage from './pages/ProfilePage';
-import JovenesMas from './pages/aliados/JovenesMas';
-import LeidyMarulanda from './pages/aliados/LeidyMarulanda';
 
-// Portal de Comerciantes & Catálogo (Módulo Desacoplado)
-import VendorLayout from './pages/comercio/VendorLayout';
-import CheckoutPage from './pages/comercio/CheckoutPage';
-import MisPedidosPage from './pages/comercio/MisPedidosPage';
-import VendorOrdersPage from './pages/comercio/VendorOrdersPage';
+// Lazy loading de páginas secundarias para aligerar el bundle inicial
+const MapaPage = lazy(() => import('./pages/MapaPage'));
+const EmpresasAliadasPage = lazy(() => import('./pages/EmpresasAliadasPage'));
+const ComercioPage = lazy(() => import('./pages/ComercioPage'));
+const ForoPage = lazy(() => import('./pages/ForoPage'));
+const AyudaPage = lazy(() => import('./pages/AyudaPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const JovenesMas = lazy(() => import('./pages/aliados/JovenesMas'));
+const LeidyMarulanda = lazy(() => import('./pages/aliados/LeidyMarulanda'));
 
-// Panel de administración (Fase 3 - Gestor de Identidades)
+// Portal de Comerciantes & Catálogo
+const VendorLayout = lazy(() => import('./pages/comercio/VendorLayout'));
+const CheckoutPage = lazy(() => import('./pages/comercio/CheckoutPage'));
+const MisPedidosPage = lazy(() => import('./pages/comercio/MisPedidosPage'));
+const VendorOrdersPage = lazy(() => import('./pages/comercio/VendorOrdersPage'));
+
+// Panel de administración
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminLayout, { AdminIndexRedirect } from './pages/admin/AdminLayout';
-import AdminUsuariosPage from './pages/admin/AdminUsuariosPage';
-import AdminRolesPage from './pages/admin/AdminRolesPage';
-import AdminMatrizPage from './pages/admin/AdminMatrizPage';
-import AdminResumenPage from './pages/admin/AdminResumenPage';
-import AdminAuditoriaPage from './pages/admin/AdminAuditoriaPage';
-import AdminPedidosPage from './pages/admin/AdminPedidosPage';
-import AdminProductosPage from './pages/admin/AdminProductosPage';
-import AdminCatalogoPage from './pages/admin/AdminCatalogoPage';
-import ProductFormPage from './pages/admin/ProductFormPage';
-import AdminEmpresasPage from './pages/admin/AdminEmpresasPage';
+const AdminUsuariosPage = lazy(() => import('./pages/admin/AdminUsuariosPage'));
+const AdminRolesPage = lazy(() => import('./pages/admin/AdminRolesPage'));
+const AdminMatrizPage = lazy(() => import('./pages/admin/AdminMatrizPage'));
+const AdminResumenPage = lazy(() => import('./pages/admin/AdminResumenPage'));
+const AdminAuditoriaPage = lazy(() => import('./pages/admin/AdminAuditoriaPage'));
+const AdminPedidosPage = lazy(() => import('./pages/admin/AdminPedidosPage'));
+const AdminProductosPage = lazy(() => import('./pages/admin/AdminProductosPage'));
+const AdminCatalogoPage = lazy(() => import('./pages/admin/AdminCatalogoPage'));
+const ProductFormPage = lazy(() => import('./pages/admin/ProductFormPage'));
+const AdminEmpresasPage = lazy(() => import('./pages/admin/AdminEmpresasPage'));
 
-// Legal & Policy Pages (Etapa 1)
-import TerminosCondicionesPage from './pages/TerminosCondicionesPage';
-import PoliticaPrivacidadPage from './pages/PoliticaPrivacidadPage';
-import PoliticaCookiesPage from './pages/PoliticaCookiesPage';
+// Legal & Policy Pages
+const TerminosCondicionesPage = lazy(() => import('./pages/TerminosCondicionesPage'));
+const PoliticaPrivacidadPage = lazy(() => import('./pages/PoliticaPrivacidadPage'));
+const PoliticaCookiesPage = lazy(() => import('./pages/PoliticaCookiesPage'));
+
+function PageLoader() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+      <div className="animate-spin h-9 w-9 border-4 border-psp-cyan border-t-transparent rounded-full" />
+      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Cargando vista...</span>
+    </div>
+  );
+}
 
 function AdminEditRedirect() {
   const { sku } = useParams();
@@ -75,9 +87,10 @@ function App() {
               
               <main className="flex-grow w-full max-w-full overflow-x-hidden">
                 <ErrorBoundary>
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<HomePage />} />
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Public Routes */}
+                      <Route path="/" element={<HomePage />} />
                     <Route path="/ingresar" element={<AuthPage />} />
                     <Route path="/registro" element={<AuthPage />} />
 
@@ -202,7 +215,8 @@ function App() {
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
-                </ErrorBoundary>
+                </Suspense>
+              </ErrorBoundary>
               </main>
 
               <EcommerceFloatingButton />

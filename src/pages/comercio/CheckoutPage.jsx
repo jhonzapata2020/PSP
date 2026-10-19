@@ -61,7 +61,11 @@ export default function CheckoutPage() {
   const [neighborhood, setNeighborhood] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Método de Pago
+  // Errores específicos por campo y campos tocados
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
+
+  // Método de Pago ('cash_on_delivery' | 'wompi')
   const [paymentMethod, setPaymentMethod] = useState('cash_on_delivery');
 
   // Estados de proceso
@@ -74,27 +78,123 @@ export default function CheckoutPage() {
   // Clave de idempotencia única para este intento de compra
   const [idempotencyKey] = useState(() => `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
 
+  // Helpers de validación profesional y formateo
+  const formatPhoneNumber = (val) => {
+    // Extraer solo dígitos
+    let digits = val.replace(/\D/g, '');
+    // Si viene con el código de país 57 al inicio y tiene más de 10 dígitos, quitarlo
+    if (digits.startsWith('57') && digits.length > 10) {
+      digits = digits.slice(2);
+    }
+    // Limitar a máximo 10 dígitos (estándar nacional Colombia)
+    digits = digits.slice(0, 10);
+
+    // Formatear visualmente: 3XX XXX XXXX
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+  };
+
+  const getCleanPhoneDigits = (val) => {
+    let digits = (val || '').replace(/\D/g, '');
+    if (digits.startsWith('57') && digits.length > 10) {
+      digits = digits.slice(2);
+    }
+    return digits;
+  };
+
+  const validateField = (name, value) => {
+    let err = '';
+    const val = (value || '').trim();
+
+    if (name === 'receiverName') {
+      if (!val) {
+        err = 'El nombre de quien recibe es obligatorio.';
+      } else if (val.length < 5) {
+        err = 'Ingresa un nombre y apellido con al menos 5 caracteres.';
+      } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/.test(val)) {
+        err = 'El nombre no debe contener números ni símbolos especiales.';
+      } else if (!/\s+/.test(val)) {
+        err = 'Por favor ingresa nombre y apellido para entrega segura.';
+      }
+    }
+
+    if (name === 'contactPhone') {
+      const cleanDigits = getCleanPhoneDigits(val);
+      if (!cleanDigits) {
+        err = 'El teléfono de contacto es obligatorio.';
+      } else if (cleanDigits.length !== 10) {
+        err = `Debe tener 10 dígitos (actualmente tiene ${cleanDigits.length}).`;
+      } else if (!cleanDigits.startsWith('3') && !cleanDigits.startsWith('60')) {
+        err = 'Ingresa un celular válido (inicia por 3) o línea fija (inicia por 60).';
+      }
+    }
+
+    if (name === 'address') {
+      if (!val) {
+        err = 'La dirección exacta de entrega es obligatoria.';
+      } else if (val.length < 7) {
+        err = 'Ingresa una dirección completa (ej. Calle, Carrera, Vereda o referencia clara).';
+      }
+    }
+
+    if (name === 'neighborhood') {
+      if (val && val.length < 3) {
+        err = 'Si indicas un barrio o sector, debe tener al menos 3 caracteres.';
+      }
+    }
+
+    return err;
+  };
+
+  const handleFieldBlur = (fieldName, value) => {
+    setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
+    const error = validateField(fieldName, value);
+    setFieldErrors(prev => ({ ...prev, [fieldName]: error }));
+  };
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setContactPhone(formatted);
+    if (touchedFields.contactPhone) {
+      const error = validateField('contactPhone', formatted);
+      setFieldErrors(prev => ({ ...prev, contactPhone: error }));
+    }
+  };
+
   const handleInitiateOrder = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
+    // Marcar todos los campos como tocados y evaluar errores
+    const nameErr = validateField('receiverName', receiverName);
+    const phoneErr = validateField('contactPhone', contactPhone);
+    const addrErr = validateField('address', address);
+    const neighErr = validateField('neighborhood', neighborhood);
+
+    const errors = {
+      receiverName: nameErr,
+      contactPhone: phoneErr,
+      address: addrErr,
+      neighborhood: neighErr
+    };
+
+    setTouchedFields({
+      receiverName: true,
+      contactPhone: true,
+      address: true,
+      neighborhood: true
+    });
+    setFieldErrors(errors);
+
+    const hasValidationErrors = Object.values(errors).some(err => !!err);
+    if (hasValidationErrors) {
+      setErrorMessage('Por favor corrige los campos señalados en rojo antes de continuar con tu compra.');
+      return;
+    }
+
     if (subtotalAmount < MIN_PURCHASE_AMOUNT) {
       setErrorMessage(`El monto mínimo de compra en la plataforma es de $${MIN_PURCHASE_AMOUNT.toLocaleString()} COP. Tu carrito suma $${subtotalAmount.toLocaleString()} COP. Agrega más productos para continuar.`);
-      return;
-    }
-
-    if (!receiverName.trim()) {
-      setErrorMessage('Por favor ingresa el nombre de la persona que recibe.');
-      return;
-    }
-
-    if (!contactPhone.trim() || contactPhone.trim().length < 7) {
-      setErrorMessage('Por favor ingresa un número de teléfono de contacto válido.');
-      return;
-    }
-
-    if (!address.trim()) {
-      setErrorMessage('Por favor ingresa la dirección de entrega.');
       return;
     }
 
@@ -111,12 +211,13 @@ export default function CheckoutPage() {
   const executeCheckout = async (chosenPaymentMethod, paymentResult) => {
     setSubmitting(true);
     try {
+      const cleanPhone = getCleanPhoneDigits(contactPhone);
       const payload = {
         paymentMethod: chosenPaymentMethod,
         idempotencyKey,
         shipping: {
           receiverName: receiverName.trim(),
-          contactPhone: contactPhone.trim(),
+          contactPhone: cleanPhone,
           department: 'Antioquia',
           municipality,
           address: address.trim(),
@@ -349,37 +450,87 @@ export default function CheckoutPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Nombre de quien recibe *
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Nombre de quien recibe *</span>
+                  {touchedFields.receiverName && !fieldErrors.receiverName && (
+                    <span className="text-[10px] text-emerald-600 dark:text-teal-400 font-semibold flex items-center gap-0.5">
+                      ✓ Válido
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                    touchedFields.receiverName && fieldErrors.receiverName 
+                      ? 'text-rose-500' 
+                      : 'text-slate-400'
+                  }`} />
                   <input
                     type="text"
                     required
                     value={receiverName}
-                    onChange={(e) => setReceiverName(e.target.value)}
+                    onChange={(e) => {
+                      setReceiverName(e.target.value);
+                      if (touchedFields.receiverName) {
+                        setFieldErrors(prev => ({ ...prev, receiverName: validateField('receiverName', e.target.value) }));
+                      }
+                    }}
+                    onBlur={(e) => handleFieldBlur('receiverName', e.target.value)}
                     placeholder="Ej. Juan Pérez"
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none transition-all ${
+                      touchedFields.receiverName && fieldErrors.receiverName
+                        ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/30'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-psp-cyan'
+                    }`}
                   />
                 </div>
+                {touchedFields.receiverName && fieldErrors.receiverName && (
+                  <p className="text-[11px] font-semibold text-rose-500 flex items-center gap-1 mt-1 animate-fadeIn">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.receiverName}</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Teléfono de Contacto (WhatsApp) *
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Teléfono de Contacto (WhatsApp) *</span>
+                  {touchedFields.contactPhone && !fieldErrors.contactPhone && (
+                    <span className="text-[10px] text-emerald-600 dark:text-teal-400 font-semibold flex items-center gap-0.5">
+                      ✓ 10 dígitos OK
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                    touchedFields.contactPhone && fieldErrors.contactPhone 
+                      ? 'text-rose-500' 
+                      : 'text-slate-400'
+                  }`} />
                   <input
                     type="tel"
                     required
                     value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
+                    onChange={handlePhoneChange}
+                    onBlur={(e) => handleFieldBlur('contactPhone', e.target.value)}
                     placeholder="Ej. 312 000 0000"
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                    maxLength={13}
+                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none transition-all ${
+                      touchedFields.contactPhone && fieldErrors.contactPhone
+                        ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/30'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-psp-cyan'
+                    }`}
                   />
                 </div>
+                {touchedFields.contactPhone && fieldErrors.contactPhone ? (
+                  <p className="text-[11px] font-semibold text-rose-500 flex items-center gap-1 mt-1 animate-fadeIn">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.contactPhone}</span>
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Número colombiano a 10 dígitos para notificaciones de entrega.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -404,30 +555,67 @@ export default function CheckoutPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Barrio o Sector
+                  Barrio o Sector (opcional)
                 </label>
                 <input
                   type="text"
                   value={neighborhood}
-                  onChange={(e) => setNeighborhood(e.target.value)}
-                  placeholder="Ej. Barrio Obrero, Centro"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                  onChange={(e) => {
+                    setNeighborhood(e.target.value);
+                    if (touchedFields.neighborhood) {
+                      setFieldErrors(prev => ({ ...prev, neighborhood: validateField('neighborhood', e.target.value) }));
+                    }
+                  }}
+                  onBlur={(e) => handleFieldBlur('neighborhood', e.target.value)}
+                  placeholder="Ej. Barrio Obrero, Centro, Vereda..."
+                  className={`w-full px-3 py-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none transition-all ${
+                    touchedFields.neighborhood && fieldErrors.neighborhood
+                      ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/30'
+                      : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-psp-cyan'
+                  }`}
                 />
+                {touchedFields.neighborhood && fieldErrors.neighborhood && (
+                  <p className="text-[11px] font-semibold text-rose-500 flex items-center gap-1 mt-1 animate-fadeIn">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.neighborhood}</span>
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Dirección exacta de entrega *
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Dirección exacta de entrega *</span>
+                {touchedFields.address && !fieldErrors.address && (
+                  <span className="text-[10px] text-emerald-600 dark:text-teal-400 font-semibold flex items-center gap-0.5">
+                    ✓ Completa
+                  </span>
+                )}
               </label>
               <input
                 type="text"
                 required
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Ej. Calle 100 # 98-45, Casa 3"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                  if (touchedFields.address) {
+                    setFieldErrors(prev => ({ ...prev, address: validateField('address', e.target.value) }));
+                  }
+                }}
+                onBlur={(e) => handleFieldBlur('address', e.target.value)}
+                placeholder="Ej. Calle 100 # 98-45, Casa 3 / Vereda El Silencio Finca La Palma"
+                className={`w-full px-3 py-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none transition-all ${
+                  touchedFields.address && fieldErrors.address
+                    ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/30'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-psp-cyan'
+                }`}
               />
+              {touchedFields.address && fieldErrors.address && (
+                <p className="text-[11px] font-semibold text-rose-500 flex items-center gap-1 mt-1 animate-fadeIn">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{fieldErrors.address}</span>
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -438,7 +626,7 @@ export default function CheckoutPage() {
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Ej. Portón negro frente a la tienda de abarrotes"
+                placeholder="Ej. Portón negro frente a la tienda de abarrotes, timbre 2"
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-psp-cyan"
               />
             </div>
@@ -591,11 +779,9 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   <span>
-                    {paymentMethod === 'online_gateway' 
-                      ? 'Pagar con Tarjeta / PSE (Wompi)' 
-                      : paymentMethod === 'direct_transfer'
-                        ? 'Continuar con Nequi / Bancolombia'
-                        : 'Confirmar Pedido Contraentrega'}
+                    {paymentMethod === 'wompi'
+                      ? 'Pagar con Tarjeta / PSE / Nequi (Wompi)'
+                      : 'Confirmar Pedido Contraentrega'}
                   </span>
                   <ArrowRight className="w-4 h-4" />
                 </>
@@ -616,8 +802,8 @@ export default function CheckoutPage() {
         totalAmount={finalPayableAmount}
         orderReference={idempotencyKey}
         buyerInfo={{
-          name: receiverName,
-          phone: contactPhone,
+          name: receiverName.trim(),
+          phone: getCleanPhoneDigits(contactPhone),
           email: user?.email
         }}
         onPaymentSuccess={handlePaymentApproved}

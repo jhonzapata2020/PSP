@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Search, RefreshCw, CheckCircle, XCircle, Archive, Star, StarOff, Trash2, Pencil, Eye, ChevronLeft, ChevronRight, X, Package } from 'lucide-react';
 import productsApi from '../../services/productsApi';
+import { useAuth } from '../../context/AuthContext';
 
 const STATUS_LABELS = {
   pending:   { label: 'Pendiente',  cls: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
@@ -13,6 +14,8 @@ const STATUS_LABELS = {
 export default function AdminCatalogoPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const isCompanyUser = Boolean(user?.companyId);
 
   // Leer estado inicial desde la URL para sincronización y persistencia con F5
   const initialPage     = Number(searchParams.get('page')) || 1;
@@ -433,39 +436,43 @@ export default function AdminCatalogoPage() {
                     {/* Acciones */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
-                        {/* Editar */}
+                        {/* Editar o Auditar */}
                         <button
                           onClick={() => navigate(`/mi-comercio/catalogo/editar/${p.sku}`)}
-                          title="Editar"
-                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-psp-cyan transition-colors"
+                          title={!isCompanyUser && p.companyId ? "Auditar ficha de producto (Solo lectura)" : "Editar producto"}
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            !isCompanyUser && p.companyId
+                              ? 'hover:bg-amber-50 dark:hover:bg-amber-950/30 text-amber-600 dark:text-amber-400'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-psp-cyan'
+                          }`}
                         >
-                          <Pencil className="w-4 h-4" />
+                          {!isCompanyUser && p.companyId ? <Eye className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
                         </button>
-                        {/* Aprobar */}
+                        {/* Aprobar / Publicar */}
                         {p.estado !== 'published' && (
                           <button
                             onClick={() => handleStatus(p.sku, 'published')}
-                            title="Aprobar y publicar"
+                            title={isCompanyUser ? "Publicar en vitrina" : "Aprobar y publicar"}
                             className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 text-slate-500 hover:text-green-600 transition-colors"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </button>
                         )}
-                        {/* Rechazar */}
-                        {p.estado === 'pending' && (
+                        {/* Rechazar (Solo administradores en moderación) */}
+                        {!isCompanyUser && p.estado === 'pending' && (
                           <button
                             onClick={() => handleStatus(p.sku, 'rejected')}
-                            title="Rechazar"
+                            title="Rechazar publicación"
                             className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-500 hover:text-red-600 transition-colors"
                           >
                             <XCircle className="w-4 h-4" />
                           </button>
                         )}
-                        {/* Archivar */}
+                        {/* Archivar / Pausar */}
                         {p.estado === 'published' && (
                           <button
                             onClick={() => handleStatus(p.sku, 'archived')}
-                            title="Archivar"
+                            title={isCompanyUser ? "Pausar / Retirar de vitrina" : "Archivar publicación"}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 transition-colors"
                           >
                             <Archive className="w-4 h-4" />
@@ -479,14 +486,16 @@ export default function AdminCatalogoPage() {
                         >
                           {p.destacado ? <Star className="w-4 h-4 fill-current" /> : <StarOff className="w-4 h-4" />}
                         </button>
-                        {/* Eliminar */}
-                        <button
-                          onClick={() => handleDelete(p.sku, p.nombre)}
-                          title="Eliminar"
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Eliminar (Reservado para la empresa titular o productos de la plataforma) */}
+                        {(!p.companyId || isCompanyUser) && (
+                          <button
+                            onClick={() => handleDelete(p.sku, p.nombre)}
+                            title="Eliminar producto"
+                            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

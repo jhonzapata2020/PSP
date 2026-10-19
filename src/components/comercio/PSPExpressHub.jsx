@@ -104,38 +104,60 @@ const URABA_GEO_DATA = {
         caption: 'Acceso Urbano • Vía Barrio Ortíz, Apartadó',
         coords: '7.8764° N, 76.6328° W'
       }
+    ],
+    nightFrames: [
+      {
+        url: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?w=960&auto=format&fit=crop&q=80',
+        caption: 'Carrera 100 Nocturna • Farolas y Tráfico Activo, Apartadó',
+        coords: '7.8862° N, 76.6283° W',
+        tag: 'Carrera 100'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=960&auto=format&fit=crop&q=80',
+        caption: 'Av. Alfonso López • Luces de Comercio y Motos, Apartadó',
+        coords: '7.8767° N, 76.6331° W',
+        tag: 'Av. López'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=960&auto=format&fit=crop&q=80',
+        caption: 'Troncal de Urabá • Destellos en Eje Vial, Apartadó',
+        coords: '7.8766° N, 76.6330° W',
+        tag: 'Troncal'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=960&auto=format&fit=crop&q=80',
+        caption: 'Dashcam Manubrio • Repartidor en Vía Barrio Ortíz, Apartadó',
+        coords: '7.8764° N, 76.6328° W',
+        tag: 'Barrio Ortíz'
+      }
     ]
   },
   Turbo: {
     originCoords: [8.0926, -76.7282], // Muelle El Waffe, Turbo
-    destCoords: [8.0985, -76.7194],   // Barrio Obrero, Turbo
+    destCoords: [8.0985, -76.7194],   // Parque de la 14 & Barrio Obrero, Turbo
     waypointsCoords: [
-      [8.0926, -76.7282],
-      [8.0941, -76.7260],
-      [8.0958, -76.7235],
-      [8.0972, -76.7212],
-      [8.0985, -76.7194]
+      [8.0926, -76.7282], // Muelle El Waffe
+      [8.0942, -76.7301], // Parque del Pescador / Malecón
+      [8.0935, -76.7265], // Parque Comercial de la 14
+      [8.0948, -76.7251], // Av. La Playa / Calle 101
+      [8.0985, -76.7194]  // Barrio Obrero
     ],
     streetFrames: [
       {
-        url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg/960px-Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg',
-        caption: 'Calle 101 Portuaria • Centro Urbano, Turbo',
-        coords: '8.0931° N, 76.7274° W'
-      },
+        url: '/camaras/turbo/turbo_dashcam.mp4',
+        isVideo: true,
+        caption: 'Cámara Frontal Moto en Vivo • Tanque de Turbo & Carrera 14',
+        coords: '8.0935° N, 76.7265° W',
+        tag: 'Moto en Vivo (Turbo)'
+      }
+    ],
+    nightFrames: [
       {
-        url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%282%29.jpg/960px-Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%282%29.jpg',
-        caption: 'Avenida La Playa • Distrito de Turbo',
-        coords: '8.0948° N, 76.7251° W'
-      },
-      {
-        url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/La_Victoria%2C_Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg/960px-La_Victoria%2C_Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg',
-        caption: 'Corredor Vial La Victoria • Turbo',
-        coords: '7.9698° N, 76.6477° W'
-      },
-      {
-        url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Puerto_de_Turbo_%28sur%29.JPG/960px-Puerto_de_Turbo_%28sur%29.JPG',
-        caption: 'Muelle El Waffe • Zona Portuaria, Turbo',
-        coords: '8.0926° N, 76.7282° W'
+        url: '/camaras/turbo/turbo_dashcam.mp4',
+        isVideo: true,
+        caption: 'Cámara Frontal Moto en Vivo • Tanque de Turbo & Carrera 14',
+        coords: '8.0935° N, 76.7265° W',
+        tag: 'Moto en Vivo (Turbo)'
       }
     ]
   },
@@ -164,6 +186,20 @@ const URABA_GEO_DATA = {
         url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Apartad%C3%B3%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg/960px-Apartad%C3%B3%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg',
         caption: 'Carrera 68 • Eje Comercial Carepa',
         coords: '7.7598° N, 76.6538° W'
+      }
+    ],
+    nightFrames: [
+      {
+        url: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?w=960&auto=format&fit=crop&q=80',
+        caption: 'Troncal de Urabá • Eje Vial Nocturno, Carepa',
+        coords: '7.8034° N, 76.6516° W',
+        tag: 'Troncal Carepa'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=960&auto=format&fit=crop&q=80',
+        caption: 'Sector Bellavista • Vía Nacional con Farolas, Carepa',
+        coords: '7.8034° N, 76.6524° W',
+        tag: 'Bellavista'
       }
     ]
   },
@@ -198,6 +234,20 @@ const URABA_GEO_DATA = {
         caption: 'Corredor Agroindustrial • Río Chigorodó',
         coords: '7.6659° N, 76.6825° W'
       }
+    ],
+    nightFrames: [
+      {
+        url: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=960&auto=format&fit=crop&q=80',
+        caption: 'Vía Principal • Tráfico Nocturno de Motos, Chigorodó',
+        coords: '7.6672° N, 76.6811° W',
+        tag: 'Vía Principal'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=960&auto=format&fit=crop&q=80',
+        caption: 'Carrera 96 Comercial • Luces Nocturnas, Chigorodó',
+        coords: '7.6685° N, 76.6802° W',
+        tag: 'Carrera 96'
+      }
     ]
   },
   Necoclí: {
@@ -225,6 +275,20 @@ const URABA_GEO_DATA = {
         url: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Paisaje_en_Colombia.jpg/960px-Paisaje_en_Colombia.jpg',
         caption: 'Corredor Costero Vía El Totumo • Necoclí',
         coords: '8.3820° N, 76.7540° W'
+      }
+    ],
+    nightFrames: [
+      {
+        url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=960&auto=format&fit=crop&q=80',
+        caption: 'Calle 50 Principal • Iluminación Nocturna, Necoclí',
+        coords: '8.4258° N, 76.7839° W',
+        tag: 'Calle 50'
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?w=960&auto=format&fit=crop&q=80',
+        caption: 'Av. del Mar • Malecón Turístico Nocturno, Necoclí',
+        coords: '8.4271° N, 76.7855° W',
+        tag: 'Malecón'
       }
     ]
   }
@@ -282,15 +346,15 @@ const INITIAL_SHIPMENTS = [
     id: '#B30400E',
     shipmentId: 'PSP-78549-TRB',
     serviceType: 'mototaxi',
-    serviceLabel: 'Mototaxi Express',
+    serviceLabel: 'Movilidad Express',
     status: 'in_transit',
     statusLabel: 'En tránsito',
     origin: 'Muelle El Waffe, Turbo',
-    destination: 'Barrio Obrero, Turbo',
+    destination: 'Parque Comercial de la 14, Turbo',
     municipio: 'Turbo',
     neighborhoodLabel: 'DISTRITO PORTUARIO • TURBO',
     estimatedDelivery: 'Hoy, 04:35 PM',
-    etaMinutes: '6 min',
+    etaMinutes: '5 min',
     payment: 'Efectivo Contraentrega',
     amount: 5000,
     customer: {
@@ -300,29 +364,29 @@ const INITIAL_SHIPMENTS = [
     },
     rider: {
       name: 'Fabián Mosquera',
-      role: 'Mototaxista Aliado • Bajaj Boxer CT100 (TRB-89A)',
+      role: 'Conductor Verificado • Bajaj Boxer CT100 (TRB-89A)',
       phone: '+573104567891',
       rating: 4.8,
       trips: 520,
       avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80'
     },
-    progressStep: 2,
-    streetPreview: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg/960px-Turbo%2C_Antioquia%2C_Colombia_-_panoramio_%281%29.jpg',
+    progressStep: 0,
+    streetPreview: '/camaras/turbo/turbo_dashcam.mp4',
     streets: {
-      ave1: 'Av. La Playa',
+      ave1: 'Av. La Playa • Malecón',
       ave2: 'Calle 101 Portuaria',
-      ave3: 'Carrera 13 • Waffe',
+      ave3: 'Carrera 14 • Eje Comercial',
       ave4: 'Vía Barrio Obrero',
-      landmark1: 'Capitanía de Puerto',
-      landmark2: 'Estadio JJ Tréllez',
-      landmark3: 'Parque Central Turbo'
+      landmark1: 'Parque del Pescador • Golfo',
+      landmark2: 'Muelle El Waffe',
+      landmark3: 'Parque de la 14 • Centro'
     },
     timeline: [
-      { title: 'Solicitud aceptada', location: 'Muelle El Waffe, Turbo', date: '17 Oct', time: '04:15 PM' },
-      { title: 'Pasajero / Paquete a bordo', location: 'Muelle El Waffe, Turbo', date: '17 Oct', time: '04:21 PM' },
-      { title: 'En tránsito urbano', location: 'Calle 101 Portuaria, Turbo', date: '17 Oct', time: '04:27 PM' },
-      { title: 'Llegando al destino', location: 'Barrio Obrero, Turbo', date: '17 Oct', time: '04:32 PM' },
-      { title: 'Finalizado', location: 'Barrio Obrero, Turbo', date: '17 Oct', time: '04:35 PM' }
+      { title: 'Carrera solicitada', location: 'Muelle El Waffe, Turbo', date: 'Hoy', time: '04:15 PM' },
+      { title: 'Pasajero a bordo • Servicio en curso', location: 'Muelle El Waffe, Turbo', date: 'Hoy', time: '04:21 PM' },
+      { title: 'Pasando Parque del Pescador', location: 'Malecón Ecoturístico, Turbo', date: 'Hoy', time: '04:27 PM' },
+      { title: 'Llegando a Parque de la 14', location: 'Carrera 14 • Zona Bancaria, Turbo', date: 'Hoy', time: '04:32 PM' },
+      { title: 'Destino finalizado', location: 'Parque Comercial de la 14, Turbo', date: 'Hoy', time: '04:35 PM' }
     ]
   },
   {
@@ -514,10 +578,10 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
     hasRole?.('admin') ||
     hasRole?.('superadmin') ||
     hasRole?.('lead_architect') ||
-    user?.role === 'admin' ||
-    user?.roles?.includes?.('admin') ||
-    user?.roles?.includes?.('superadmin') ||
+    String(user?.role).toLowerCase().includes('admin') ||
+    user?.roles?.some?.((r) => String(r).toLowerCase().includes('admin')) ||
     user?.email?.toLowerCase().includes('zapata') ||
+    user?.name?.toLowerCase().includes('zapata') ||
     user?.email?.toLowerCase().includes('admin') ||
     hasPermission?.('roles.manage')
   );
@@ -525,8 +589,16 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   // Detect default role view: if not logged in, start in 'guest' demo mode; otherwise 'admin' so Jhon sees everything
   const [viewRole, setViewRole] = useState(() => (!user ? 'guest' : 'admin'));
 
-  // La herramienta de auditorio y botón de expansión SOLO se muestran a administradores
-  const canUseAuditorio = isActualAdmin || (!user && viewRole === 'admin');
+  // La herramienta de auditorio y botón de expansión disponible en local y para admins
+  const canUseAuditorio =
+    isActualAdmin ||
+    viewRole === 'admin' ||
+    Boolean(import.meta.env.DEV) ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+
+  // Control para ocultar/mostrar cámara flotante en móviles y no tapar el mapa
+  const [showMobileDashcam, setShowMobileDashcam] = useState(false);
+
 
 
   // Auditorio & Modo Pantalla Completa (Lienzo para exposiciones a repartidores y aliados)
@@ -568,7 +640,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   // Sidebar navigation state: 'tracking' | 'orders' | 'new_order' | 'riders' | 'rutas'
   const [activeNav, setActiveNav] = useState('tracking');
   const [shipments, setShipments] = useState(INITIAL_SHIPMENTS);
-  const [selectedOrderId, setSelectedOrderId] = useState('#D20800C');
+  const [selectedOrderId, setSelectedOrderId] = useState('#B30400E'); // Foco inicial por defecto: Distrito de Turbo
   const [isSimulatingLive, setIsSimulatingLive] = useState(() => !user);
 
   // Invoice Ticket preview toggle & Membership Gate Modal
@@ -583,22 +655,45 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
 
   // Real API Telemetry State (Open-Meteo + OSRM Routing + Browser GPS)
   const [liveWeather, setLiveWeather] = useState({ temp: 29, wind: 11, isRain: false, loaded: false });
-  const [liveRouteInfo, setLiveRouteInfo] = useState({ distanceKm: '2.4', durationMin: '8', roadSummary: 'Carrera 100 • Av. Alfonso López' });
+  const [liveRouteInfo, setLiveRouteInfo] = useState({ distanceKm: '2.1', durationMin: '5', roadSummary: 'Muelle El Waffe • Parque de la 14' });
   const [userRealCoords, setUserRealCoords] = useState(null);
   const [cameraError, setCameraError] = useState(null);
   const videoRef = useRef(null);
   const mediaStreamRef = useRef(null);
+
+  // Reloj en tiempo real para estampas de agua de cámaras CCTV y detección día/noche
+  const [liveClockTime, setLiveClockTime] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setLiveClockTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentHour = liveClockTime.getHours();
+  const isAutoNight = currentHour >= 18 || currentHour < 6;
+  const [manualNightToggle, setManualNightToggle] = useState(null); // null = auto Urabá time, true = Noche, false = Día
+  const isNightInUraba = manualNightToggle !== null ? manualNightToggle : isAutoNight;
+  const formattedLiveClock = liveClockTime.toLocaleTimeString('es-CO', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  // Modal para aceptar pedido con Dashcam frontal y soporte en manubrio
+  const [riderAcceptModal, setRiderAcceptModal] = useState({ open: false, order: null });
+  const [hasPhoneMountOnHandlebar, setHasPhoneMountOnHandlebar] = useState(true);
+
 
   // Filters for Orders Table
   const [statusFilter, setStatusFilter] = useState('all');
   const [municipioFilter, setMunicipioFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // New Order / Ride Request Form
-  const [serviceType, setServiceType] = useState('mandado');
-  const [newMunicipio, setNewMunicipio] = useState('Apartadó');
-  const [pickupLocation, setPickupLocation] = useState('Parque Principal, Apartadó');
-  const [dropoffLocation, setDropoffLocation] = useState('Barrio Ortíz, Apartadó');
+  // New Order / Ride Request Form (Defaults to Turbo)
+  const [serviceType, setServiceType] = useState('mototaxi');
+  const [newMunicipio, setNewMunicipio] = useState('Turbo');
+  const [pickupLocation, setPickupLocation] = useState('Muelle El Waffe, Turbo');
+  const [dropoffLocation, setDropoffLocation] = useState('Parque Comercial de la 14, Turbo');
   const [customerName, setCustomerName] = useState('');
   const [packageNotes, setPackageNotes] = useState('');
   const [paymentMethodChoice, setPaymentMethodChoice] = useState('Wompi • PSE / Nequi');
@@ -606,7 +701,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   // Driver Registration & Verification Form State (Domicilios & Mototaxis)
   const [driverName, setDriverName] = useState('');
   const [driverDoc, setDriverDoc] = useState('');
-  const [driverMunicipio, setDriverMunicipio] = useState('Apartadó');
+  const [driverMunicipio, setDriverMunicipio] = useState('Turbo');
   const [driverVehicle, setDriverVehicle] = useState('mototaxi');
   const [driverBrandModel, setDriverBrandModel] = useState('');
   const [driverPlaca, setDriverPlaca] = useState('');
@@ -637,7 +732,10 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   const currentGpsCoord =
     currentGeo.waypointsCoords[Math.min(activeOrder.progressStep, currentGeo.waypointsCoords.length - 1)] ||
     currentGeo.originCoords;
-  const activeFrames = currentGeo.streetFrames || URABA_GEO_DATA['Apartadó'].streetFrames;
+  const activeFrames =
+    isNightInUraba && currentGeo.nightFrames && currentGeo.nightFrames.length > 0
+      ? currentGeo.nightFrames
+      : (currentGeo.streetFrames || URABA_GEO_DATA['Apartadó'].streetFrames);
   const currentStreetFrame = activeFrames[frameIndex % activeFrames.length] || activeFrames[0];
 
   // Sync street frame when rider advances along the route
@@ -795,7 +893,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
   const getEstimatedFare = () => {
     switch (serviceType) {
       case 'mototaxi':
-        return { price: 5000, time: '8-12 min', label: 'Mototaxi Express Urbano' };
+        return { price: 5000, time: '8-12 min', label: 'Movilidad Express Urbana' };
       case 'bici':
         return { price: 4000, time: '12-18 min', label: 'Bici Eléctrica Eco (0 Emisiones)' };
       case 'encomienda':
@@ -948,12 +1046,15 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
       {/* ============================================================
           TOP ROLE SIMULATOR & DEMO SHOWCASE BANNER
       ============================================================ */}
-      <div className="bg-white dark:bg-[#111917] rounded-2xl border border-slate-200/90 dark:border-[#1f302d] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+      {/* ============================================================
+          TOP ROLE SIMULATOR & DEMO SHOWCASE BANNER (Desktop Only - Clean mobile)
+      ============================================================ */}
+      <div className="hidden lg:flex bg-white dark:bg-[#111917] rounded-2xl border border-slate-200/90 dark:border-[#1f302d] px-4 py-2.5 flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2 text-xs">
           <span className="px-2 py-0.5 rounded-md bg-[#ff5a1f]/15 text-[#ff5a1f] font-extrabold uppercase tracking-wider text-[10px]">
-            {viewRole === 'guest' ? 'Modo Demo Visitante' : 'Simulador de Vista por Rol'}
+            {viewRole === 'guest' ? 'Modo Demo' : 'Simulador de Rol'}
           </span>
-          <span className="text-slate-600 dark:text-slate-300 font-medium hidden sm:inline">
+          <span className="text-slate-600 dark:text-slate-300 font-medium">
             {viewRole === 'admin' && '👑 Admin Total: Auditoría completa + liquidación de despachos y repartidores en Urabá.'}
             {viewRole === 'client' && '👤 Cliente: Factura con +$500 COP por Sistema de Verificación de Repartidores & Monitoreo GPS en Vivo.'}
             {viewRole === 'rider_member' && '🛵 Repartidor Gold/Plata: Recibe $5.000 libres (100% de la tarifa sin descuentos de plataforma).'}
@@ -963,7 +1064,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 ml-auto">
           {[
             { id: 'admin', label: '👑 Admin Total' },
             { id: 'client', label: '👤 Cliente ($5.500)' },
@@ -981,7 +1082,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                 if (r.id === 'company' && activeNav === 'riders') setActiveNav('tracking');
                 if (r.id === 'client' && activeNav === 'orders') setActiveNav('tracking');
               }}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
                 viewRole === r.id
                   ? 'bg-slate-900 dark:bg-teal-500 text-white dark:text-slate-950 shadow-xs'
                   : 'bg-slate-100 dark:bg-[#172320] text-slate-600 dark:text-slate-300 hover:bg-slate-200/70'
@@ -997,10 +1098,10 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
               type="button"
               onClick={toggleFullscreen}
               title={isFullscreen ? 'Salir de Pantalla Completa (Esc)' : 'Expandir a Pantalla Completa / Modo Auditorio (Pizarra y Puntero Láser)'}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-black tracking-wide transition-all shadow-sm cursor-pointer ml-auto sm:ml-1 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black tracking-wide transition-all shadow-md cursor-pointer ml-2 ${
                 isFullscreen
-                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25 ring-1 ring-rose-400'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25 ring-1 ring-blue-400/40'
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25 ring-2 ring-rose-300'
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/30 ring-2 ring-blue-400/50'
               }`}
             >
               {isFullscreen ? (
@@ -1019,16 +1120,16 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
         </div>
       </div>
 
-      {/* Guest Conversion Top Strip when viewing without membership */}
+      {/* Guest Conversion Top Strip when viewing without membership (Desktop Only) */}
       {viewRole === 'guest' && (
-        <div className="bg-gradient-to-r from-slate-900 via-[#132a26] to-slate-900 text-white rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-md border border-teal-500/30">
+        <div className="hidden lg:flex bg-gradient-to-r from-slate-900 via-[#132a26] to-slate-900 text-white rounded-2xl px-4 py-3 flex-wrap items-center justify-between gap-3 shadow-md border border-teal-500/30">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#ff5a1f] text-white flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <p className="text-xs font-extrabold">
-                Estás viendo en tiempo real la red de Domicilios y Mototaxis Verificados de Urabá
+                Estás viendo en tiempo real la red de Domicilios y Conductores Verificados de Urabá
               </p>
               <p className="text-[11px] text-slate-300">
                 Con tu <strong>Membresía Plata ($50.000/año)</strong> o <strong>Gold ($100.000/año)</strong> pides domicilios con cámara en vivo o trabajas como repartidor todo el año.
@@ -1171,8 +1272,8 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
         ============================================================ */}
         <div className="lg:col-span-10 flex flex-col bg-white dark:bg-[#0e1514]">
           
-          {/* TOP WORKSPACE HEADER BAR (Breadcrumbs, Search, Quick Order Selector) */}
-          <div className="px-5 sm:px-7 py-4 border-b border-slate-200/80 dark:border-[#1f302d] flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#111917]">
+          {/* TOP WORKSPACE HEADER BAR (Breadcrumbs, Search, Quick Order Selector - Hidden on mobile for direct map impact) */}
+          <div className="hidden sm:flex px-5 sm:px-7 py-3.5 border-b border-slate-200/80 dark:border-[#1f302d] flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#111917]">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm">
               <button
@@ -1251,6 +1352,32 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                   <span>Nuevo Envío / Viaje</span>
                 </button>
               )}
+
+              {/* Botón de Auditorio y Pantalla Completa en el Encabezado Principal */}
+              {canUseAuditorio && (
+                <button
+                  type="button"
+                  onClick={toggleFullscreen}
+                  title={isFullscreen ? 'Salir de Pantalla Completa (Esc)' : 'Expandir a Pantalla Completa / Modo Auditorio (Pizarra y Puntero Láser)'}
+                  className={`px-3 py-2 rounded-xl text-xs font-black tracking-wide flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                    isFullscreen
+                      ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25 ring-1 ring-rose-400'
+                      : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/30 ring-1 ring-blue-400/50'
+                  }`}
+                >
+                  {isFullscreen ? (
+                    <>
+                      <Minimize2 className="w-3.5 h-3.5 text-white" />
+                      <span>Salir</span>
+                    </>
+                  ) : (
+                    <>
+                      <Maximize2 className="w-3.5 h-3.5 text-white" />
+                      <span>Expandir</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -1258,12 +1385,100 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
               VIEW 1: LIVE SHIPMENT TRACKING + MAP + TIMELINE (Parclgo Top-Left)
           ============================================================ */}
           {activeNav === 'tracking' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 flex-1">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 flex-1">
               
-              {/* LEFT TRACKING COLUMN (Cols 1-4): Order Details, Courier & Timeline */}
-              <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-slate-200/80 dark:border-[#1f302d] p-5 sm:p-6 flex flex-col justify-between space-y-6 bg-white dark:bg-[#111917]">
+              {/* LEFT TRACKING COLUMN (Cols 1-4): Order Details, Courier & Timeline (order-2 on mobile, beneath map) */}
+              <div className="order-2 lg:order-1 lg:col-span-4 border-t lg:border-t-0 lg:border-r border-slate-200/80 dark:border-[#1f302d] p-4 sm:p-6 flex flex-col justify-between space-y-5 bg-white dark:bg-[#111917]">
                 
                 <div className="space-y-5">
+                  {/* Quick Action Grid Estilo Rappi / Uber (Accesos Rápidos Móviles y Web) */}
+                  <div className="bg-slate-50 dark:bg-[#0c1614] p-3 rounded-2xl border border-slate-200/80 dark:border-[#1f302d] space-y-2.5">
+                    {/* Search Bar / Input "¿A dónde enviamos hoy?" */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('new_order')}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#162320] border border-slate-200 dark:border-[#243935] shadow-xs flex items-center justify-between text-left group hover:border-[#ff5a1f] transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-[#ff5a1f]/10 text-[#ff5a1f] flex items-center justify-center shrink-0">
+                          <Search className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">
+                          ¿A dónde enviamos hoy en {activeOrder.municipio}?
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-[#ff5a1f] text-white text-[10px] font-extrabold shrink-0">
+                        Pedir
+                      </span>
+                    </button>
+
+                    {/* 4 Accesos Rápidos Principales: Movilidad Express, Mandado, Tiendas y Conductor */}
+                    <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServiceType('mototaxi');
+                          setActiveNav('new_order');
+                        }}
+                        className="p-2 rounded-xl bg-white dark:bg-[#14201e] border border-slate-200/70 dark:border-[#223531] hover:border-[#ff5a1f] text-center transition-all cursor-pointer flex flex-col items-center gap-1 group shadow-xs"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-[#ff5a1f] flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Bike className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
+                          Movilidad
+                        </span>
+                        <span className="text-[9px] text-[#ff5a1f] font-bold">Express</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServiceType('mandado');
+                          setActiveNav('new_order');
+                        }}
+                        className="p-2 rounded-xl bg-white dark:bg-[#14201e] border border-slate-200/70 dark:border-[#223531] hover:border-[#ff5a1f] text-center transition-all cursor-pointer flex flex-col items-center gap-1 group shadow-xs"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Package className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
+                          Mandado
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-semibold">Express</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigate('/empresas');
+                        }}
+                        className="p-2 rounded-xl bg-white dark:bg-[#14201e] border border-slate-200/70 dark:border-[#223531] hover:border-emerald-500 text-center transition-all cursor-pointer flex flex-col items-center gap-1 group shadow-xs"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Building2 className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
+                          Negocios
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-semibold">Aliados</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveNav('riders')}
+                        className="p-2 rounded-xl bg-gradient-to-b from-orange-500/10 to-transparent dark:bg-[#182623] border border-orange-500/30 text-center transition-all cursor-pointer flex flex-col items-center gap-1 group shadow-xs"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-[#ff5a1f] text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                          <Zap className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-[#ff5a1f] dark:text-orange-400 leading-tight">
+                          Ser Rider
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-semibold">Inscripción</span>
+                      </button>
+                    </div>
+                  </div>
                   {/* Order Header + Status Badge */}
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1495,27 +1710,44 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                       </div>
                     </div>
 
-                    {/* Prominent Orange Button ("View Details" / Advance Step) */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShipments((prev) =>
-                          prev.map((item) => {
-                            if (item.id !== activeOrder.id) return item;
-                            const nextStep = item.progressStep >= 4 ? 0 : item.progressStep + 1;
-                            return {
-                              ...item,
-                              progressStep: nextStep,
-                              status: nextStep === 4 ? 'delivered' : nextStep === 3 ? 'out_for_delivery' : 'in_transit',
-                              statusLabel: nextStep === 4 ? 'Entregado' : nextStep === 3 ? 'En reparto' : 'En tránsito'
-                            };
-                          })
-                        );
-                      }}
-                      className="w-full py-2.5 rounded-xl bg-[#ff5a1f] hover:bg-[#e04812] text-white text-xs font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer"
-                    >
-                      Avanzar Estado en Tiempo Real ({activeOrder.progressStep + 1}/5)
-                    </button>
+                    {/* Prominent Action Buttons: Tomar Pedido con Dashcam + Avanzar Estado */}
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRiderAcceptModal({
+                            open: true,
+                            order: activeOrder
+                          });
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#ff5a1f] to-amber-600 hover:opacity-95 text-white text-xs font-black shadow-md shadow-orange-500/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <Video className="w-4 h-4 text-white shrink-0" />
+                        <span>Tomar Pedido • Activar Dashcam de Manubrio</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShipments((prev) =>
+                            prev.map((item) => {
+                              if (item.id !== activeOrder.id) return item;
+                              const nextStep = item.progressStep >= 4 ? 0 : item.progressStep + 1;
+                              return {
+                                ...item,
+                                progressStep: nextStep,
+                                status: nextStep === 4 ? 'delivered' : nextStep === 3 ? 'out_for_delivery' : 'in_transit',
+                                statusLabel: nextStep === 4 ? 'Entregado' : nextStep === 3 ? 'En reparto' : 'En tránsito'
+                              };
+                            })
+                          );
+                        }}
+                        className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <span>Avanzar Estado ({activeOrder.progressStep + 1}/5: {activeOrder.statusLabel})</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* TRACKING TIMELINE (Exact Parclgo Vertical Timeline) */}
@@ -1597,12 +1829,34 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                       })}
                     </div>
                   </div>
+                  {/* Banner de Registro de Conductores y Repartidores Verificados (Estilo Rappi / Uber) */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-[#12221f] to-slate-900 text-white border border-teal-500/30 shadow-md space-y-2.5 mt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#ff5a1f] text-white flex items-center justify-center shrink-0 shadow-md">
+                        <Bike className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-white">¿Tienes Moto o Bici en Urabá?</h4>
+                        <p className="text-[11px] text-slate-300">
+                          Trabaja como <strong>Conductor Verificado PSP</strong> y gana hasta $5.000 COP libres por carrera.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('riders')}
+                      className="w-full py-2 rounded-xl bg-[#ff5a1f] hover:bg-[#e04812] text-white text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <span>Inscribirme como Conductor Verificado</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
               </div>
 
-              {/* RIGHT INTERACTIVE ROUTE MAP OF URABÁ (Cols 5-12) */}
-              <div className="lg:col-span-8 relative bg-[#F3F2EE] dark:bg-[#131d1b] min-h-[480px] lg:min-h-full overflow-hidden select-none">
+              {/* RIGHT INTERACTIVE ROUTE MAP OF URABÁ (Cols 5-12 - ORDER-1 ON MOBILE, MAP FIRST!) */}
+              <div className="order-1 lg:order-2 lg:col-span-8 relative bg-[#F3F2EE] dark:bg-[#131d1b] min-h-[360px] sm:min-h-[460px] lg:min-h-full overflow-hidden select-none">
                 
                 {/* Stylized Parclgo Vector Street Map of Urabá */}
                 <svg
@@ -1878,11 +2132,26 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                   <Navigation className="w-4 h-4 fill-slate-800 dark:fill-teal-400 -rotate-45 mt-0.5" />
                 </div>
 
+                {/* Botón flotante para ver cámara en móviles sin tapar el mapa */}
+                {!showMobileDashcam && (
+                  <div className="sm:hidden absolute bottom-4 right-4 z-20">
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileDashcam(true)}
+                      className="px-3 py-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
+                    >
+                      <Video className="w-3.5 h-3.5 text-[#ff5a1f]" />
+                      <span>Ver Cámara Vía</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    </button>
+                  </div>
+                )}
+
                 {/* Bottom-Right Interactive LIVE Road Sequence / Real OSM Street / Courier Camera Card */}
                 <div
                   className={`absolute bottom-4 right-4 rounded-2xl overflow-hidden border-2 border-white dark:border-[#263d39] shadow-2xl bg-slate-950 transition-all duration-300 z-20 ${
-                    isLiveExpanded ? 'w-80 sm:w-[410px]' : 'w-60 sm:w-72'
-                  }`}
+                    !showMobileDashcam ? 'hidden sm:block' : 'block'
+                  } ${isLiveExpanded ? 'w-80 sm:w-[410px]' : 'w-64 sm:w-72'}`}
                 >
                   {/* Top Control Strip inside Live Card */}
                   <div className="px-2.5 py-1.5 bg-slate-950/95 border-b border-slate-800 flex items-center justify-between gap-1">
@@ -1932,45 +2201,133 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                         type="button"
                         onClick={() => setIsLiveExpanded((prev) => !prev)}
                         title={isLiveExpanded ? 'Reducir vista' : 'Ampliar vista de la vía'}
-                        className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                        className="hidden sm:inline-flex p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                       >
                         {isLiveExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+                      </button>
+
+                      {/* Botón cerrar para móvil */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMobileDashcam(false);
+                          setIsLiveExpanded(false);
+                        }}
+                        title="Ocultar cámara para ver mapa completo"
+                        className="sm:hidden p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                      >
+                        <X className="w-3 h-3 text-rose-400" />
                       </button>
                     </div>
                   </div>
 
                   {/* Visual Feed Body */}
-                  <div className={`relative w-full ${isLiveExpanded ? 'h-52' : 'h-32'} bg-slate-900 overflow-hidden`}>
+                  <div className={`relative w-full ${isLiveExpanded ? 'h-64 sm:h-72' : 'h-40 sm:h-44'} bg-slate-950 overflow-hidden`}>
                     {liveBoxMode === 'street_seq' && (
                       <>
-                        <img
-                          src={currentStreetFrame.url}
-                          alt={currentStreetFrame.caption}
-                          className="w-full h-full object-cover transition-all duration-700"
-                        />
-                        {/* Top-left GPS Coordinate + Frame Counter Overlay */}
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-xs text-[9px] font-mono text-emerald-300 border border-white/10">
-                          {currentStreetFrame.coords} • Tramo {(frameIndex % activeFrames.length) + 1}/{activeFrames.length}
+                        {currentStreetFrame.url && (currentStreetFrame.url.endsWith('.mp4') || currentStreetFrame.url.endsWith('.webm') || currentStreetFrame.isVideo) ? (
+                          <video
+                            src={currentStreetFrame.url}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover select-none"
+                          />
+                        ) : (
+                          <img
+                            src={currentStreetFrame.url}
+                            alt={currentStreetFrame.caption}
+                            className="w-full h-full object-cover transition-all duration-700 select-none"
+                          />
+                        )}
+
+                        {/* Top OSD Bar: [● REC] + Live COT Clock + Day/Night Toggle + Resolution */}
+                        <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none z-10">
+                          <div className="px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-xs text-[9px] font-mono text-emerald-300 border border-white/10 flex items-center gap-1.5 shadow pointer-events-auto">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                            <span className="font-bold text-rose-400">REC</span>
+                            <span className="text-white font-mono">{formattedLiveClock}</span>
+                            <span className="text-slate-400">COT</span>
+                          </div>
+
+                          <div className="flex items-center gap-1 pointer-events-auto">
+                            <button
+                              type="button"
+                              onClick={() => setManualNightToggle((prev) => (prev === null ? !isAutoNight : !prev))}
+                              title="Alternar entre fotos reales de Día y Noche con Farolas"
+                              className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border cursor-pointer transition-all ${
+                                isNightInUraba
+                                  ? 'bg-indigo-950 text-cyan-300 border-cyan-500/50 shadow-xs'
+                                  : 'bg-amber-950/90 text-amber-300 border-amber-500/50 shadow-xs'
+                              }`}
+                            >
+                              {isNightInUraba ? '🌙 NOCHE EN VIVO' : '☀️ DÍA EN VIVO'}
+                            </button>
+                            <span className="px-1.5 py-0.5 rounded bg-slate-950/80 text-[8px] font-mono text-slate-400 border border-white/10 hidden sm:inline">
+                              1080p 30fps
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Play/Next Dashcam Sequence Controls */}
-                        <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setIsDashcamPlaying((p) => !p)}
-                            className="px-2 py-0.5 rounded bg-slate-950/80 hover:bg-slate-900 text-white text-[9px] font-bold border border-white/15 cursor-pointer"
-                          >
-                            {isDashcamPlaying ? '⏸ Auto' : '▶ Secuencia'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setFrameIndex((prev) => (prev + 1) % activeFrames.length)}
-                            className="px-1.5 py-0.5 rounded bg-slate-950/80 hover:bg-slate-900 text-white text-[9px] font-bold border border-white/15 cursor-pointer"
-                            title="Siguiente cuadra de la vía"
-                          >
-                            ⏭
-                          </button>
+                        {/* Center HUD: Turn-by-Turn Route Navigation (Built-in PSP Go - No Waze) */}
+                        <div className="absolute top-8 left-2 right-2 pointer-events-none z-10">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-xs border border-emerald-500/30 text-white shadow-md">
+                            <span className="text-emerald-400 text-[11px] font-black">↱</span>
+                            <span className="text-[9px] font-bold text-slate-200 truncate max-w-[170px] sm:max-w-none">
+                              En 80m: Calle 101 ➔ {activeOrder.destination}
+                            </span>
+                            <span className="text-[7px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-extrabold uppercase">
+                              Nativo PSP Go
+                            </span>
+                          </div>
                         </div>
+
+                        {/* Bottom Cockpit HUD: Speedometer + Compass + Play/Next Controls */}
+                        <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between pointer-events-none z-10">
+                          {/* Speedometer & Compass */}
+                          <div className="px-2 py-1 rounded-lg bg-slate-950/85 backdrop-blur-xs border border-white/10 flex items-center gap-2 pointer-events-auto shadow">
+                            <div className="text-left">
+                              <span className="text-[7px] uppercase tracking-wider text-slate-400 block font-bold leading-none">
+                                Velocidad
+                              </span>
+                              <span className="text-xs font-black text-emerald-400 font-mono leading-none">
+                                {activeOrder.progressStep === 4 ? '0 km/h' : `${38 + (activeOrder.progressStep % 3)} km/h`}
+                              </span>
+                            </div>
+                            <div className="h-4 w-[1px] bg-slate-700" />
+                            <div className="text-left">
+                              <span className="text-[7px] uppercase tracking-wider text-slate-400 block font-bold leading-none">
+                                Rumbo
+                              </span>
+                              <span className="text-[10px] font-bold text-white font-mono leading-none">
+                                NO 312°
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Play/Next Dashcam Sequence Controls */}
+                          <div className="flex items-center gap-1 pointer-events-auto">
+                            <button
+                              type="button"
+                              onClick={() => setIsDashcamPlaying((p) => !p)}
+                              className="px-2 py-0.5 rounded bg-slate-950/85 hover:bg-slate-900 text-white text-[9px] font-bold border border-white/15 cursor-pointer shadow"
+                            >
+                              {isDashcamPlaying ? '⏸ Auto' : '▶ Secuencia'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFrameIndex((prev) => (prev + 1) % activeFrames.length)}
+                              className="px-1.5 py-0.5 rounded bg-slate-950/85 hover:bg-slate-900 text-white text-[9px] font-bold border border-white/15 cursor-pointer shadow"
+                              title="Siguiente cámara de la vía"
+                            >
+                              ⏭
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Sutil Silueta de Manubrio en el Borde Inferior (Soporte Tacómetro de Moto) */}
+                        <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
                       </>
                     )}
 
@@ -2013,6 +2370,32 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                       </div>
                     )}
                   </div>
+
+                  {/* Selector rápido de cámaras urbanas de Turbo (Parque 14 / El Pescador / Muelle Waffe) */}
+                  {liveBoxMode === 'street_seq' && activeFrames.length > 1 && (
+                    <div className="px-2.5 py-1 bg-slate-900/90 border-t border-slate-800 flex items-center gap-1 overflow-x-auto no-scrollbar">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                        Cámaras:
+                      </span>
+                      {activeFrames.map((f, i) => (
+                        <button
+                          key={f.caption}
+                          type="button"
+                          onClick={() => {
+                            setFrameIndex(i);
+                            setIsDashcamPlaying(false);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold whitespace-nowrap cursor-pointer transition-colors ${
+                            frameIndex % activeFrames.length === i
+                              ? 'bg-[#ff5a1f] text-white shadow-xs'
+                              : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                          }`}
+                        >
+                          {f.tag || `Cam ${i + 1}`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Bottom Telemetry Footer inside Live Card */}
                   <div className="px-2.5 py-2 bg-slate-950/95 text-white flex items-center justify-between gap-2 text-[10px]">
@@ -2230,7 +2613,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
           )}
 
           {/* ============================================================
-              VIEW 3: SOLICITAR NUEVO DOMICILIO / MOTOTAXI + FACTURITA (+500 COP)
+              VIEW 3: SOLICITAR NUEVO DOMICILIO / VIAJE EXPRESS + FACTURITA (+500 COP)
           ============================================================ */}
           {activeNav === 'new_order' && (
             <div className="p-5 sm:p-8 max-w-3xl mx-auto w-full space-y-6 flex-1">
@@ -2239,7 +2622,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                   Despacho Inmediato • PSPGo Urabá
                 </span>
                 <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                  Solicitar Domicilio, Mandado o Mototaxi
+                  Solicitar Domicilio, Mandado o Viaje Express
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Al crear tu solicitud se asignará el conductor verificado más cercano y se abrirá automáticamente el mapa de seguimiento con cámara en vivo.
@@ -2250,7 +2633,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { id: 'mandado', name: 'Domicilio / Mercado', icon: Package, desc: 'Base $6.500 COP' },
-                  { id: 'mototaxi', name: 'Mototaxi Express', icon: Bike, desc: 'Base $5.000 COP' },
+                  { id: 'mototaxi', name: 'Movilidad Express', icon: Bike, desc: 'Base $5.000 COP' },
                   { id: 'bici', name: 'Bici Eléctrica Eco', icon: Zap, desc: 'Base $4.000 COP' },
                   { id: 'encomienda', name: 'Encomienda Comercial', icon: Package, desc: 'Base $8.000 COP' }
                 ].map((opt) => {
@@ -2444,7 +2827,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                     Sistema de Verificación de Repartidores • Sello de Confianza PSP
                   </span>
                   <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                    Inscríbete como Repartidor o Mototaxi Verificado en Urabá
+                    Inscríbete como Conductor o Repartidor Verificado en Urabá
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Conéctate a la red oficial de domicilios y mandados en Apartadó, Turbo, Carepa, Chigorodó y Necoclí.
@@ -2643,7 +3026,7 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                         onChange={(e) => setDriverVehicle(e.target.value)}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white"
                       >
-                        <option value="mototaxi">Motocicleta / Mototaxi</option>
+                        <option value="mototaxi">Motocicleta Urbana / Scooter Eléctrica</option>
                         <option value="bici">Bici Eléctrica / Bicicleta</option>
                       </select>
                     </div>
@@ -2792,7 +3175,33 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                       </label>
                     </div>
 
+                    {/* Requisito operativo obligatorio: Brazo/Soporte en manubrio junto al tacómetro */}
+                    <div className="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-start gap-2.5">
+                      <Video className="w-4 h-4 text-[#ff5a1f] shrink-0 mt-0.5" />
+                      <div className="text-[11px] text-slate-700 dark:text-slate-200 space-y-1">
+                        <p className="font-extrabold text-slate-900 dark:text-white">
+                          Requisito Obligatorio: Soporte en Manubrio / Tacómetro para Dashcam Frontal
+                        </p>
+                        <p>
+                          Por normativa de seguridad vial y confianza PSP Go, todo conductor debe contar con soporte fijado en el manubrio frente al tacómetro. Al aceptar una carrera, el celular transmitirá video frontal y telemetría sobre el mapa nativo PSP Go (prohibido desviar a Waze o Google Maps).
+                        </p>
+                      </div>
+                    </div>
+
                     <label className="flex items-start gap-2.5 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer pt-1">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={hasPhoneMountOnHandlebar}
+                        onChange={(e) => setHasPhoneMountOnHandlebar(e.target.checked)}
+                        className="mt-0.5 rounded border-slate-300 text-[#ff5a1f] focus:ring-[#ff5a1f]"
+                      />
+                      <span>
+                        <strong>Cuento con soporte de celular certificado en el tacómetro:</strong> Me comprometo a ubicar el teléfono frente al manubrio con la cámara frontal activa transmitiendo la vía durante cada servicio en Urabá.
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer">
                       <input
                         type="checkbox"
                         required
@@ -2872,8 +3281,8 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                   $50.000 <span className="text-xs font-semibold text-slate-400">/ año</span>
                 </p>
                 <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
-                  <li>✓ Pide domicilios y mototaxis con cámara y GPS en vivo</li>
-                  <li>✓ Te habilita 1 año como Repartidor Verificado (0% comisión)</li>
+                  <li>✓ Pide domicilios y viajes express con cámara y GPS en vivo</li>
+                  <li>✓ Te habilita 1 año como Conductor Verificado (0% comisión)</li>
                   <li>✓ Descuentos automáticos en comercios de Urabá</li>
                 </ul>
               </div>
@@ -2920,6 +3329,70 @@ const PSPExpressHub = ({ transportRoutes = [], onSelectRoute }) => {
                 Ya tengo cuenta
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          MODAL DE ACTIVACIÓN DE DASHCAM & SOPORTE MANUBRIO AL TOMAR PEDIDO
+      ============================================================ */}
+      {riderAcceptModal.open && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#111917] border border-orange-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setRiderAcceptModal({ open: false, order: null })}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#ff5a1f] to-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/30">
+                <Bike className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase">
+                  Normativa Conductor PSP Go
+                </span>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  📍 GPS & Dashcam Frontal Activados
+                </h3>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-500/30 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+              <p className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>Ubica tu teléfono en el soporte del manubrio junto al tacómetro</span>
+              </p>
+              <p>
+                Para garantizar total respaldo al conductor y seguridad al usuario, este servicio transmite video frontal de la vía y telemetría de velocidad en tiempo real.
+              </p>
+              <div className="pt-2 border-t border-amber-500/20 font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Navigation className="w-3.5 h-3.5 text-[#ff5a1f] shrink-0" />
+                <span>Navegación nativa en curso: No abras aplicaciones externas (prohibido desviar a Waze o Google Maps).</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800">
+              <p>• Servicio: <strong className="text-slate-900 dark:text-white">{riderAcceptModal.order?.serviceLabel} ({riderAcceptModal.order?.id})</strong></p>
+              <p>• Trayecto: <strong className="text-slate-900 dark:text-white">{riderAcceptModal.order?.origin} ➔ {riderAcceptModal.order?.destination}</strong></p>
+              <p>• Ganancia Conductor: <strong className="text-emerald-600 dark:text-emerald-400">${riderAcceptModal.order?.amount?.toLocaleString()} COP Libres</strong></p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setRiderAcceptModal({ open: false, order: null });
+                setLiveBoxMode('street_seq');
+                setIsDashcamPlaying(true);
+              }}
+              className="w-full py-3.5 rounded-2xl bg-[#ff5a1f] hover:bg-[#e04812] text-white font-black text-xs shadow-md shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Entendido • Iniciar Navegación Nativa con Dashcam</span>
+            </button>
           </div>
         </div>
       )}
